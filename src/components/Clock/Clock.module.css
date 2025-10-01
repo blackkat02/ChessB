@@ -1,0 +1,55 @@
+/* src/components/Clock/Clock.module.css */
+
+.clockContainer {
+    /* Базові розміри та відступи */
+    padding: 10px 15px;
+    margin: 10px;
+    width: 200px; /* Фіксована ширина для вирівнювання */
+    height: 70px;
+    
+    /* Оформлення */
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    
+    /* Центрування вмісту */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    
+    /* Налаштування шрифту */
+    font-family: 'Arial', sans-serif;
+    color: #333; /* Темний текст */
+    transition: all 0.3s ease; /* Плавний перехід для виділення */
+}
+
+.timeDisplay {
+    font-size: 2.5em; /* Великий, легко читабельний шрифт */
+    font-weight: 700;
+    letter-spacing: 1.5px; /* Невеликий інтервал для кращої читабельності цифр */
+}
+
+/* Спеціальний стиль для годинника білих (світлий фон) */
+.lightClock {
+    background-color: #f0f0f0;
+    border: 2px solid #ccc;
+}
+
+/* Спеціальний стиль для годинника чорних (темний фон) */
+.darkClock {
+    background-color: #333;
+    color: #f0f0f0; /* Світлий текст */
+    border: 2px solid #111;
+}
+
+/* Стиль для часу, що закінчується (менше 30 секунд) */
+.lowTime {
+    color: #e74c3c !important; /* Червоний колір */
+    animation: pulse 1s infinite; /* Анімація блимання */
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}

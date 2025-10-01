@@ -1,23 +1,22 @@
-import React, { useState, useMemo } from 'react'; // Використовуємо useMemo для оптимізації
+import React, { useState, useMemo, useCallback } from 'react'; // Усе імпортовано коректно
 import Square from '../Square/Square';
 import styles from './ChessBoardView.module.css';
 import { initialBoardPiecesObject as initialBoardState } from '../../redux/positions';
 
 const ChessBoardView = ({ showSquareId }) => {
-    // === Локальний стан дошки ===
+    // === Стан дошки та виділення ===
     const [boardPiecesObject, setBoardPiecesObject] = useState(initialBoardState);
-
-    // === Локальний стан для виділеної клітинки ===
     const [selectedSquare, setSelectedSquare] = useState(null); 
 
-    // Функція для отримання фігури (НЕ потрібен useCallback, бо вона проста і залежить від стану)
+    // Функція для отримання фігури
+    // Її не потрібно обгортати в useCallback, але вона залежить від boardPiecesObject
     const getPieceAtSquareId = (squareId) => {
         const piece = boardPiecesObject[squareId];
         return piece ? piece : null;
     };
 
-    // Єдина логіка кліку
-    const handleClick = (squareId) => {
+    // === КЛЮЧОВИЙ МОМЕНТ: handleClick зі стабільними залежностями ===
+    const handleClick = useCallback((squareId) => {
         // --- 1. Є ВИБІР: спроба зробити хід ---
         if (selectedSquare !== null) {
             const fromSquare = selectedSquare; 
@@ -29,20 +28,23 @@ const ChessBoardView = ({ showSquareId }) => {
                 return;
             }
 
-            // Отримуємо фігуру, яку потрібно перемістити
-            const pieceToMove = getPieceAtSquareId(fromSquare);
+            // === ВИКОРИСТАННЯ ФУНКЦІОНАЛЬНОГО ОНОВЛЕННЯ ДЛЯ setBoardPiecesObject ===
+            // Це мінімізує залежності, оскільки setBoardPiecesObject тепер не залежить від boardPiecesObject
+            setBoardPiecesObject(prevBoard => {
+                const pieceToMove = prevBoard[fromSquare];
 
-            if (pieceToMove) {
-                // ІМУТАБЕЛЬНЕ ОНОВЛЕННЯ СТАНУ ДОШКИ
-                const newBoard = { ...boardPiecesObject };
-                delete newBoard[fromSquare]; // Видаляємо з початкової клітинки
-                newBoard[toSquare] = pieceToMove; // Додаємо на цільову
+                if (!pieceToMove) {
+                    console.warn(`Помилка логіки: на ${fromSquare} не було фігури.`);
+                    return prevBoard;
+                }
 
-                setBoardPiecesObject(newBoard);
+                const newBoard = { ...prevBoard };
+                delete newBoard[fromSquare];
+                newBoard[toSquare] = pieceToMove;
+
                 console.log(`Хід виконано: ${pieceToMove} з ${fromSquare} на ${toSquare}.`);
-            } else {
-                 console.warn(`Помилка логіки: на ${fromSquare} не було фігури.`);
-            }
+                return newBoard;
+            });
 
             // Завжди скидаємо виділення після спроби ходу
             setSelectedSquare(null); 
@@ -50,21 +52,24 @@ const ChessBoardView = ({ showSquareId }) => {
         
         // --- 2. НЕМАЄ ВИБОРУ: вибір фігури ---
         else { 
+            // Тут ми використовуємо поточний стан boardPiecesObject через getPieceAtSquareId
             const pieceType = getPieceAtSquareId(squareId);
 
-            if (pieceType) { // Якщо фігура є
-                setSelectedSquare(squareId); // Виділяємо клітинку
+            if (pieceType) {
+                setSelectedSquare(squareId);
                 console.log(`Перший клік: Вибрано фігуру ${pieceType} на ${squareId}.`);
             }
         }
-    };
+    // ЗАЛЕЖНОСТІ: Функція оновлюється лише при зміні selectedSquare або getPieceAtSquareId.
+    // Оскільки getPieceAtSquareId залежить від boardPiecesObject, це призведе до оновлення.
+    }, [selectedSquare, getPieceAtSquareId]); 
 
     const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
     const ranks = ['8', '7', '6', '5', '4', '3', '2', '1'];
     
-    // Використовуємо useMemo для створення квадратиків
-    // Це запобіжить їхньому зайвому перерахунку, якщо не змінюється стан
+    // === useMemo для кешування масиву Squares ===
     const boardSquares = useMemo(() => {
+        console.log('--- ПЕРЕРАХУНОК boardSquares (завдяки useMemo) ---');
         const squares = [];
         for (let i = 0; i < 8; i++) {
             for (let j = 0; j < 8; j++) {
@@ -81,14 +86,16 @@ const ChessBoardView = ({ showSquareId }) => {
                         isLight={isLight}
                         showSquareId={showSquareId}
                         pieceType={pieceType}
-                        isSelected={isSelected} // Це критично
-                        onClick={() => handleClick(squareId)} // Передаємо функцію
+                        isSelected={isSelected} 
+                        // ПЕРЕДАЄМО СТАБІЛЬНИЙ КОЛБЕК
+                        onClick={handleClick} 
                     />
                 );
             }
         }
         return squares;
-    }, [boardPiecesObject, selectedSquare, showSquareId]); // Залежності: стан дошки та вибір
+    // ЗАЛЕЖНОСТІ: useMemo спрацює, лише коли зміниться одне з цих значень
+    }, [boardPiecesObject, selectedSquare, showSquareId, getPieceAtSquareId, handleClick]); 
 
     return (
         <div className={styles.mainWrapper}>

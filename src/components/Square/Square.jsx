@@ -2,14 +2,16 @@ import React from 'react';
 import Piece from '../Piece/Piece';
 import styles from './Square.module.css';
 
-const Square = React.memo(({ id, isLight, showSquareId, pieceType, onClick }) => {
+const Square = React.memo(({ id, isLight, showSquareId, pieceType, onClick, isSelected }) => {
+  console.log(`Рендер клітинки: ${id}. Вибрана: ${isSelected}. Фігура: ${pieceType}`); 
+
   const colorName = isLight ? 'світла' : 'темна';
   const pieceDescription = pieceType ? `з фігурою ${pieceType}` : 'порожня';
 
   return (
     <button // Змінили <div> на <button>
       className={`${styles.square} ${isLight ? styles.light : styles.dark} ${styles[id] || ''}`}
-      onClick={onClick}
+      onClick={() => onClick(id)} 
       // Ці атрибути тепер не потрібні, бо <button> надає їх за замовчуванням
       // role="button"
       // tabIndex={0}
