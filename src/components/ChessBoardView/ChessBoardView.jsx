@@ -1,75 +1,28 @@
-import React, { useState, useMemo, useCallback } from 'react'; // Усе імпортовано коректно
+import React, { useMemo, useCallback } from 'react'; 
+import PropTypes from 'prop-types';
 import Square from '../Square/Square';
 import styles from './ChessBoardView.module.css';
-import { initialBoardPiecesObject as initialBoardState } from '../../redux/positions';
 
-const ChessBoardView = ({ showSquareId }) => {
-    // === Стан дошки та виділення ===
-    const [boardPiecesObject, setBoardPiecesObject] = useState(initialBoardState);
-    const [selectedSquare, setSelectedSquare] = useState(null); 
+const ChessBoardView = ({ showSquareId, boardPiecesObject, selectedSquare, onClick }) => {
 
-    // Функція для отримання фігури
-    // Її не потрібно обгортати в useCallback, але вона залежить від boardPiecesObject
-    const getPieceAtSquareId = (squareId) => {
-        const piece = boardPiecesObject[squareId];
-        return piece ? piece : null;
-    };
+    // Функція для отримання фігури (ТЕПЕР ЗАЛЕЖИТЬ ВІД ПРОПСА boardPiecesObject)
+    const getPieceAtSquareId = useCallback((squareId) => {
+        console.log(boardPiecesObject[squareId])
+        return boardPiecesObject[squareId] ?? null; 
+    }, [boardPiecesObject]); 
+    // Використовуємо useCallback, оскільки функція залежить від пропса (boardPiecesObject)
+    // і передається в useMemo.
 
-    // === КЛЮЧОВИЙ МОМЕНТ: handleClick зі стабільними залежностями ===
-    const handleClick = useCallback((squareId) => {
-        // --- 1. Є ВИБІР: спроба зробити хід ---
-        if (selectedSquare !== null) {
-            const fromSquare = selectedSquare; 
-            const toSquare = squareId;
-
-            // Якщо клікнули на ту саму клітинку - знімаємо виділення
-            if (fromSquare === toSquare) {
-                setSelectedSquare(null);
-                return;
-            }
-
-            // === ВИКОРИСТАННЯ ФУНКЦІОНАЛЬНОГО ОНОВЛЕННЯ ДЛЯ setBoardPiecesObject ===
-            // Це мінімізує залежності, оскільки setBoardPiecesObject тепер не залежить від boardPiecesObject
-            setBoardPiecesObject(prevBoard => {
-                const pieceToMove = prevBoard[fromSquare];
-
-                if (!pieceToMove) {
-                    console.warn(`Помилка логіки: на ${fromSquare} не було фігури.`);
-                    return prevBoard;
-                }
-
-                const newBoard = { ...prevBoard };
-                delete newBoard[fromSquare];
-                newBoard[toSquare] = pieceToMove;
-
-                console.log(`Хід виконано: ${pieceToMove} з ${fromSquare} на ${toSquare}.`);
-                return newBoard;
-            });
-
-            // Завжди скидаємо виділення після спроби ходу
-            setSelectedSquare(null); 
-        } 
-        
-        // --- 2. НЕМАЄ ВИБОРУ: вибір фігури ---
-        else { 
-            // Тут ми використовуємо поточний стан boardPiecesObject через getPieceAtSquareId
-            const pieceType = getPieceAtSquareId(squareId);
-
-            if (pieceType) {
-                setSelectedSquare(squareId);
-                console.log(`Перший клік: Вибрано фігуру ${pieceType} на ${squareId}.`);
-            }
-        }
-    // ЗАЛЕЖНОСТІ: Функція оновлюється лише при зміні selectedSquare або getPieceAtSquareId.
-    // Оскільки getPieceAtSquareId залежить від boardPiecesObject, це призведе до оновлення.
-    }, [selectedSquare, getPieceAtSquareId]); 
+    // === ВИДАЛЯЄМО: handleClick — ЛОГІКА КЛІКУ ТЕПЕР У useGameState ===
+    // ТУТ МИ ПРОСТО ВИКОРИСТОВУЄМО КОЛБЕК, ПЕРЕДАНИЙ ЧЕРЕЗ ПРОПСИ
+    const handleSquareClick = onClick; 
 
     const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
     const ranks = ['8', '7', '6', '5', '4', '3', '2', '1'];
     
     // === useMemo для кешування масиву Squares ===
     const boardSquares = useMemo(() => {
-        console.log('--- ПЕРЕРАХУНОК boardSquares (завдяки useMemo) ---');
+        // Ми не виводимо console.log, якщо використовуємо React.memo!
         const squares = [];
         for (let i = 0; i < 8; i++) {
             for (let j = 0; j < 8; j++) {
@@ -77,7 +30,8 @@ const ChessBoardView = ({ showSquareId }) => {
                 const squareId = `${files[j]}${ranks[i]}`;
 
                 const pieceType = getPieceAtSquareId(squareId); 
-                const isSelected = selectedSquare === squareId;
+                // isSelected та showSquareId — тепер пропси або похідні дані
+                const isSelected = selectedSquare === squareId; 
 
                 squares.push(
                     <Square
@@ -87,15 +41,16 @@ const ChessBoardView = ({ showSquareId }) => {
                         showSquareId={showSquareId}
                         pieceType={pieceType}
                         isSelected={isSelected} 
-                        // ПЕРЕДАЄМО СТАБІЛЬНИЙ КОЛБЕК
-                        onClick={handleClick} 
+                        // ПЕРЕДАЄМО КОЛБЕК, ОТРИМАНИЙ ВІД БАТЬКІВСЬКОГО КОМПОНЕНТА
+                        onClick={handleSquareClick} 
                     />
                 );
             }
         }
         return squares;
-    // ЗАЛЕЖНОСТІ: useMemo спрацює, лише коли зміниться одне з цих значень
-    }, [boardPiecesObject, selectedSquare, showSquareId, getPieceAtSquareId, handleClick]); 
+    // ЗАЛЕЖНОСТІ: Спрацює лише, коли зміниться дошка, виділена клітинка, або showSquareId.
+    }, [boardPiecesObject, selectedSquare, showSquareId, getPieceAtSquareId, handleSquareClick]); 
+    // getPieceAtSquareId тепер у залежностях, оскільки він обгорнутий у useCallback
 
     return (
         <div className={styles.mainWrapper}>
@@ -117,6 +72,21 @@ const ChessBoardView = ({ showSquareId }) => {
             </div>
         </div>
     );
+};
+
+// === НОВИЙ КОД: ВАЛІДАЦІЯ ПРОПСІВ ===
+ChessBoardView.propTypes = {
+    // boardPiecesObject тепер обов'язковий і має бути об'єктом
+    boardPiecesObject: PropTypes.object.isRequired, 
+    
+    // selectedSquare може бути рядком або null
+    selectedSquare: PropTypes.string, 
+    
+    // onClick — це функція (наш handleSquareClick)
+    onClick: PropTypes.func.isRequired,
+    
+    // showSquareId — вже був у пропсах
+    showSquareId: PropTypes.bool.isRequired,
 };
 
 export default React.memo(ChessBoardView);

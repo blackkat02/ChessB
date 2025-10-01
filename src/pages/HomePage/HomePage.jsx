@@ -1,68 +1,94 @@
-import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
-// import { initialPosition } from '../../redux/positionsSlice'; 
+// src/components/HomePage/HomePage.jsх
+import React, { useState, useRef, useCallback } from 'react';
+// === ВИДАЛЯЄМО: useDispatch та import { initialPosition } ===
 import ChessBoardView from '../../components/ChessBoardView/ChessBoardView';
 import Clock from '../../components/Clock/Clock';
 import Button from '../../components/Button/Button';
 import styles from './HomePage.module.css';
 
+// === ІМПОРТУЄМО НАШ КАСТОМНИЙ ХУК ===
+import { useGameState } from '../../hooks/useGameState'; 
+// Припустимо, що ти створив файл ../../hooks/useGameState.js
+
 const HomePage = () => {
-  const [showSquareId, setShowSquareId] = useState(false);
+    // 1. WebSocket (залишаємо для майбутнього використання)
+    // У реальному додатку useRef та useEffect для сокета були б тут.
+    const socketRef = useRef(null); 
+    
+    // 2. === ЄДИНЕ ДЖЕРЕЛО ІСТИНИ ===
+    // Увесь стан гри, час та логіка ходів тепер тут
+    const { 
+        gameState, 
+        handleSquareClick, 
+        // handleServerUpdate // Можна додати, якщо ти хочеш керувати socket.onmessage тут
+    } = useGameState(socketRef); 
+    
+    // Деструктуризація для чистоти коду
+    const { 
+        boardPiecesObject, 
+        selectedSquare, 
+        whiteTime, 
+        blackTime, 
+        currentTurn 
+    } = gameState;
 
-  const currentTurn = 'w'; // Отримати з WebSocket
-  const whiteTime = 120000; // Отримати з WebSocket (120 секунд)
-  const blackTime = 120000;
+    // Стан лише для UI (Керується локально)
+    const [showSquareId, setShowSquareId] = useState(false);
 
-  const handleShowId = () => {
-    setShowSquareId(true);
-  };
+    // Функція-заглушка для обробки закінчення часу
+    const handleTimeUp = useCallback((color) => {
+        console.log(`[GAME OVER] Час гравця ${color} вичерпано!`);
+        // Тут буде логіка: відправити на сервер повідомлення про технічну поразку
+    }, []);
 
-  const handleHideId = () => {
-    setShowSquareId(false);
-  };
+    const handleShowId = () => {
+        setShowSquareId(true);
+    };
 
-  return (
-    <div className={styles.homePageWrapper}>
-      <h1>Chess MVP</h1>
+    const handleHideId = () => {
+        setShowSquareId(false);
+    };
 
-      <div style={{ display: 'flex', justifyContent: 'space-around' }}>
-        {/* Годинник Чорних зверху (традиційне розташування) */}
-        <Clock
-          initialTime={blackTime}
-          color="b"
-          isActive={currentTurn === 'b'}
-          onTimeUp={() => handleTimeUp('b')}
-        />
+    return (
+        <div className={styles.homePageWrapper}>
+            <h1>Chess MVP (Controlled)</h1>
 
-        {/* Годинник Білих знизу */}
-        <Clock
-          initialTime={whiteTime}
-          color="w"
-          isActive={currentTurn === 'w'}
-          onTimeUp={() => handleTimeUp('w')}
-        />
-      </div>
+            <div style={{ display: 'flex', justifyContent: 'space-around' }}>
+                {/* Годинник Чорних: використовує СТАН з хука */}
+                <Clock
+                    initialTime={blackTime}
+                    color="b"
+                    isActive={currentTurn === 'b'}
+                    onTimeUp={handleTimeUp} 
+                />
 
-      <ChessBoardView showSquareId={showSquareId} />
+                {/* Годинник Білих: використовує СТАН з хука */}
+                <Clock
+                    initialTime={whiteTime}
+                    color="w"
+                    isActive={currentTurn === 'w'}
+                    onTimeUp={handleTimeUp}
+                />
+            </div>
 
-      <div className={styles.buttonGroup}>
-        <Button
-          onClick={handleShowId}
-          id="show-id-button"
-          className={styles.primaryButton}
-        >
-          Показати назву поля
-        </Button>
-        <Button
-          onClick={handleHideId}
-          id="hide-id-button"
-          className={styles.secondaryButton}
-        >
-          Приховати назву поля
-        </Button>
-      </div>
-    </div>
-  );
+            {/* Дошка: отримує СТАН і КЛІК з хука */}
+            <ChessBoardView 
+                showSquareId={showSquareId} 
+                boardPiecesObject={boardPiecesObject} // Передаємо поточний стан
+                selectedSquare={selectedSquare}       // Передаємо виділену клітинку
+                onClick={handleSquareClick}           // Передаємо єдиний обробник
+            />
+
+            <div className={styles.buttonGroup}>
+                <Button onClick={handleShowId} id="show-id-button" className={styles.primaryButton}>
+                    Показати назву поля
+                </Button>
+                <Button onClick={handleHideId} id="hide-id-button" className={styles.secondaryButton}>
+                    Приховати назву поля
+                </Button>
+            </div>
+        </div>
+    );
 };
 
 export default HomePage;
