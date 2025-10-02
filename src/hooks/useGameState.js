@@ -1,7 +1,7 @@
 // src/hooks/useGameState.js
 
 import { useState, useCallback } from 'react';
-import { initialBoardPiecesObject } from '../redux/positions';
+import { initialBoardPiecesObject } from '../data/positions';
 
 // Єдине Джерело Істини
 const INITIAL_GAME_STATE = {
@@ -28,9 +28,7 @@ export const useGameState = (socketRef = { current: null }) => {
     const simulateMoveUpdate = (from, to, piece, newBoard) => {
         setGameState(prev => {
             const newTurn = prev.currentTurn === 'w' ? 'b' : 'w';
-
             console.log(`[LOCAL SIMULATION] Хід: ${from} -> ${to}. Нова черга: ${newTurn}`);
-
             return {
                 ...prev,
                 boardPiecesObject: newBoard,
@@ -51,10 +49,9 @@ export const useGameState = (socketRef = { current: null }) => {
             // ПЕРЕВІРКА ЧЕРГИ: ЗАБОРОНА ВИБОРУ ЧУЖОЇ ФІГУРИ
             if (pieceColor !== currentTurn) {
                 console.warn(`Хід гравця ${currentTurn}. Не можна вибрати фігуру кольору ${pieceColor}.`);
-                return; // Забороняємо вибір та виходимо з функції
+                return;
             }
 
-            // Дозволяємо виділення, якщо це фігура поточного гравця
             setGameState(prev => ({ ...prev, selectedSquare: squareId }));
         }
 
@@ -70,17 +67,32 @@ export const useGameState = (socketRef = { current: null }) => {
             }
 
             const pieceToMove = boardPiecesObject[fromSquare];
-
-            // !!! ВИДАЛЕНО: ЛОГІКА currentTurn ТА prev НЕ МОЖЕ БУТИ ТУТ !!!
-            // Ти вніс її тут некоректно, тому вона викликала ReferenceError. Її місце – у simulateMoveUpdate.
+            const pieceOnTarget = boardPiecesObject[toSquare]; // <--- Фігура на клітинці призначення
 
             if (pieceToMove) {
+                
+                // === НОВИЙ КОНТРОЛЬ: ЗАБОРОНА БИТИ СВІЙ КОЛІР ===
+                if (pieceOnTarget) {
+                    const targetPieceColor = getPieceColor(pieceOnTarget);
+                    const movingPieceColor = getPieceColor(pieceToMove);
+
+                    if (targetPieceColor === movingPieceColor) {
+                        console.warn(`Неможливий хід: Не можна бити фігуру свого кольору (${targetPieceColor}).`);
+                        
+                        // Ми НЕ робимо хід, але скидаємо виділення
+                        setGameState(prev => ({ ...prev, selectedSquare: null }));
+                        return; // Забороняємо подальше виконання ходу
+                    }
+                }
+                // ===============================================
+                
                 // ІМУТАБЕЛЬНЕ ОНОВЛЕННЯ ДОШКИ
                 const newBoard = { ...boardPiecesObject };
-                delete newBoard[fromSquare];
+                // Фігура на toSquare буде видалена, якщо вона є (якщо це биття, але не свого кольору)
+                delete newBoard[fromSquare]; 
                 newBoard[toSquare] = pieceToMove;
                 
-                // === ВИКЛИК ЛОКАЛЬНОЇ СИМУЛЯЦІЇ (ОНОВИТЬ СТАН) ===
+                // ВИКЛИК ЛОКАЛЬНОЇ СИМУЛЯЦІЇ (ОНОВИТЬ СТАН)
                 simulateMoveUpdate(fromSquare, toSquare, pieceToMove, newBoard);
             } else {
                 console.warn(`Немає фігури на ${fromSquare}.`);
