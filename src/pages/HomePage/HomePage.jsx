@@ -55,13 +55,7 @@ const HomePage = () => {
 
             <div style={{ display: 'flex', justifyContent: 'space-around' }}>
                 {/* Годинник Чорних: використовує СТАН з хука */}
-                <Clock
-                    initialTime={blackTime}
-                    color="b"
-                    isActive={currentTurn === 'b'}
-                    onTimeUp={handleTimeUp} 
-                />
-
+               
                 {/* Годинник Білих: використовує СТАН з хука */}
                 <Clock
                     initialTime={whiteTime}
@@ -69,6 +63,14 @@ const HomePage = () => {
                     isActive={currentTurn === 'w'}
                     onTimeUp={handleTimeUp}
                 />
+
+                 <Clock
+                    initialTime={blackTime}
+                    color="b"
+                    isActive={currentTurn === 'b'}
+                    onTimeUp={handleTimeUp} 
+                />
+
             </div>
 
             {/* Дошка: отримує СТАН і КЛІК з хука */}

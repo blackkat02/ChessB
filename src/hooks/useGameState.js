@@ -1,7 +1,8 @@
 // src/hooks/useGameState.js
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react'; // <--- ДОДАНО useEffect!
 import { initialBoardPiecesObject } from '../data/positions';
+import { loadGameState, saveGameState } from '../storage/localStorageService';
 
 // Єдине Джерело Істини
 const INITIAL_GAME_STATE = {
@@ -18,21 +19,74 @@ const getPieceColor = (pieceSymbol) => {
     return pieceSymbol ? pieceSymbol[0] : null;
 };
 
+// ВІДНОВЛЕННЯ СТАНУ З LOCAL STORAGE (або використання початкового)
+const getInitialState = (initialBoardPiecesObject) => {
+    // 1. Спроба завантажити стан через сервіс
+    const savedState = loadGameState(); 
+    
+    // Якщо loadGameState повернув стан І цей стан має gameId (щоб уникнути старих/пошкоджених записів)
+    if (savedState && savedState.gameId) { 
+        console.log("💾 Завантажено збережений локальний стан.");
+        // Повертаємо збережений стан
+        return savedState; 
+    }
+
+    // =========================================================
+    // 🎯 ВИПРАВЛЕННЯ СИНТАКСИСУ: Виконується, якщо savedState НЕ знайдено.
+    // =========================================================
+    console.log("🆕 Початковий стан гри ініціалізовано.");
+    
+    // Повертаємо початковий стан, використовуючи властивості з INITIAL_GAME_STATE 
+    // та додаючи необхідні для нової гри параметри (unique gameId, empty moveHistory)
+    return {
+        boardPiecesObject: initialBoardPiecesObject,
+        selectedSquare: null,
+        whiteTime: 180000,
+        blackTime: 180000,
+        currentTurn: 'w',
+        gameId: Date.now().toString(), // Новий, унікальний ID для нової гри
+        moveHistory: [], 
+    };
+};
 
 export const useGameState = (socketRef = { current: null }) => {
-    const [gameState, setGameState] = useState(INITIAL_GAME_STATE);
+    
+    // =================================================================
+    // 🎯 ВИПРАВЛЕННЯ: Тепер useState використовує функцію-ініціалізатор!
+    // =================================================================
+    const [gameState, setGameState] = useState(() => getInitialState(initialBoardPiecesObject));
     
     // Деструктуризуємо для чистоти та використання в useCallback
+    // Після виправлення this line: const { boardPiecesObject, selectedSquare, currentTurn } = gameState;
     const { boardPiecesObject, selectedSquare, currentTurn } = gameState;
+
+    // === 🎯 ЗБЕРЕЖЕННЯ: СИНХРОНІЗАЦІЯ З LOCAL STORAGE ===
+    useEffect(() => {
+        // saveGameState викликається при кожній зміні gameState
+        saveGameState(gameState);
+    }, [gameState]);
 
     const simulateMoveUpdate = (from, to, piece, newBoard) => {
         setGameState(prev => {
             const newTurn = prev.currentTurn === 'w' ? 'b' : 'w';
+
+            const newMove = {
+                id: prev.moveHistory.length + 1,
+                from: from,
+                to: to,
+                piece: piece,
+                turn: prev.currentTurn,
+                // whiteTime: prev.whiteTime, // Додай, коли буде логіка таймера
+                // blackTime: prev.blackTime
+            };
+
             console.log(`[LOCAL SIMULATION] Хід: ${from} -> ${to}. Нова черга: ${newTurn}`);
+            
             return {
                 ...prev,
                 boardPiecesObject: newBoard,
                 currentTurn: newTurn,
+                moveHistory: [...prev.moveHistory, newMove], // <--- ДОДАНО: Збереження історії ходів
             };
         });
     };
@@ -79,16 +133,16 @@ export const useGameState = (socketRef = { current: null }) => {
                     if (targetPieceColor === movingPieceColor) {
                         console.warn(`Неможливий хід: Не можна бити фігуру свого кольору (${targetPieceColor}).`);
                         
-                        // Ми НЕ робимо хід, але скидаємо виділення
+                        // Ми НЕ робимо хід, але перемикаємо виділення (залишаємо виділеною нову фігуру)
+                        // Або скидаємо виділення. Тут вирішено скинути для простоти.
                         setGameState(prev => ({ ...prev, selectedSquare: null }));
-                        return; // Забороняємо подальше виконання ходу
+                        return;
                     }
                 }
                 // ===============================================
                 
                 // ІМУТАБЕЛЬНЕ ОНОВЛЕННЯ ДОШКИ
                 const newBoard = { ...boardPiecesObject };
-                // Фігура на toSquare буде видалена, якщо вона є (якщо це биття, але не свого кольору)
                 delete newBoard[fromSquare]; 
                 newBoard[toSquare] = pieceToMove;
                 
