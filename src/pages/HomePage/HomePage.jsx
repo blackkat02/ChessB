@@ -16,17 +16,9 @@ const HomePage = () => {
     gameState,
     handleSquareClick,
     resetGameState
-    // handleServerUpdate // Звісно, ти не забув, що це буде потрібно
   } = useGameState(socketRef);
 
-  // Деструктуризація для чистоти коду
-  const {
-    boardPiecesObject,
-    selectedSquare,
-    whiteTime,
-    blackTime,
-    currentTurn
-  } = gameState;
+  // 🛑 ВИДАЛЕНО: Зайва деструктуризація gameState
 
   // Стан лише для UI (Керується локально)
   const [showSquareId, setShowSquareId] = useState(false);
@@ -36,14 +28,12 @@ const HomePage = () => {
     console.log(`[GAME OVER] Час гравця ${color} вичерпано!`);
   }, []);
 
-  // === 🆕 НОВА ЛОГІКА: Скидання гри ===
+  // === ЛОГІКА: Скидання гри ===
   const handleResetGame = useCallback(() => {
-        resetGameState(); // <--- ВИКЛИКАЄМО ЛИШЕ ЧИСТУ ЛОГІКУ ХУКА!
-        // ВИДАЛИТИ: window.location.reload(); 
-        // ВИДАЛИТИ: console.warn("...");
-    }, [resetGameState]); 
+    resetGameState();
+  }, [resetGameState]);
 
-  // === 🆕 НОВА ЛОГІКА: Тоггл нотацій полів ===
+  // === ЛОГІКА: Тоггл нотацій полів ===
   const handleToggleId = () => {
     setShowSquareId(prev => !prev);
   };
@@ -54,19 +44,19 @@ const HomePage = () => {
       <h1>Chess MVP (Controlled)</h1>
 
       <div style={{ display: 'flex', justifyContent: 'space-around', width: '100%', maxWidth: '600px' }}>
-        {/* Годинник Чорних: використовує СТАН з хука */}
+        {/* Годинник Білих: звертаємося напряму до gameState */}
         <Clock
-          initialTime={whiteTime}
+          initialTime={gameState.whiteTime}
           color="w"
-          isActive={currentTurn === 'w'}
+          isActive={gameState.currentTurn === 'w'}
           onTimeUp={handleTimeUp}
         />
 
-        {/* Годинник Білих: використовує СТАН з хука */}
+        {/* Годинник Чорних: звертаємося напряму до gameState */}
         <Clock
-          initialTime={blackTime}
+          initialTime={gameState.blackTime}
           color="b"
-          isActive={currentTurn === 'b'}
+          isActive={gameState.currentTurn === 'b'}
           onTimeUp={handleTimeUp}
         />
       </div>
@@ -74,14 +64,14 @@ const HomePage = () => {
       {/* Дошка: отримує СТАН і КЛІК з хука */}
       <ChessBoardView
         showSquareId={showSquareId}
-        boardPiecesObject={boardPiecesObject} // Передаємо поточний стан
-        selectedSquare={selectedSquare}       // Передаємо виділену клітинку
-        onClick={handleSquareClick}           // Передаємо єдиний обробник
+        boardPiecesObject={gameState.boardPiecesObject} // Передаємо поточний стан
+        selectedSquare={gameState.selectedSquare}       // Передаємо виділену клітинку
+        onClick={handleSquareClick}           // Передаємо єдиний обробник
       />
 
       <div className={styles.buttonGroup}>
 
-        {/* 🆕 Кнопка СКИДАННЯ (Використовуємо клас danger) */}
+        {/* Кнопка СКИДАННЯ */}
         <Button
           onClick={handleResetGame}
           className={styles.danger}
@@ -89,10 +79,10 @@ const HomePage = () => {
           Скинути гру
         </Button>
 
-        {/* 🆕 Тоггл-кнопка (Використовуємо клас primary) */}
+        {/* Тоггл-кнопка */}
         <Button
           onClick={handleToggleId}
-          className={showSquareId ? styles.primary : ''} // Підсвічуємо, коли активно
+          className={showSquareId ? styles.primary : ''}
         >
           {showSquareId ? 'Приховати нотації' : 'Показати нотації'}
         </Button>
