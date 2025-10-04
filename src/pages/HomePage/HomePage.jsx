@@ -1,96 +1,104 @@
-// src/components/HomePage/HomePage.jsх
 import React, { useState, useRef, useCallback } from 'react';
-// === ВИДАЛЯЄМО: useDispatch та import { initialPosition } ===
 import ChessBoardView from '../../components/ChessBoardView/ChessBoardView';
 import Clock from '../../components/Clock/Clock';
 import Button from '../../components/Button/Button';
 import styles from './HomePage.module.css';
 
 // === ІМПОРТУЄМО НАШ КАСТОМНИЙ ХУК ===
-import { useGameState } from '../../hooks/useGameState'; 
-// Припустимо, що ти створив файл ../../hooks/useGameState.js
+import { useGameState } from '../../hooks/useGameState';
 
 const HomePage = () => {
-    // 1. WebSocket (залишаємо для майбутнього використання)
-    // У реальному додатку useRef та useEffect для сокета були б тут.
-    const socketRef = useRef(null); 
-    
-    // 2. === ЄДИНЕ ДЖЕРЕЛО ІСТИНИ ===
-    // Увесь стан гри, час та логіка ходів тепер тут
-    const { 
-        gameState, 
-        handleSquareClick, 
-        // handleServerUpdate // Можна додати, якщо ти хочеш керувати socket.onmessage тут
-    } = useGameState(socketRef); 
-    
-    // Деструктуризація для чистоти коду
-    const { 
-        boardPiecesObject, 
-        selectedSquare, 
-        whiteTime, 
-        blackTime, 
-        currentTurn 
-    } = gameState;
+  // 1. WebSocket (залишаємо для майбутнього використання)
+  const socketRef = useRef(null);
 
-    // Стан лише для UI (Керується локально)
-    const [showSquareId, setShowSquareId] = useState(false);
+  // 2. === ЄДИНЕ ДЖЕРЕЛО ІСТИНИ ===
+  const {
+    gameState,
+    handleSquareClick,
+    resetGameState
+    // handleServerUpdate // Звісно, ти не забув, що це буде потрібно
+  } = useGameState(socketRef);
 
-    // Функція-заглушка для обробки закінчення часу
-    const handleTimeUp = useCallback((color) => {
-        console.log(`[GAME OVER] Час гравця ${color} вичерпано!`);
-        // Тут буде логіка: відправити на сервер повідомлення про технічну поразку
-    }, []);
+  // Деструктуризація для чистоти коду
+  const {
+    boardPiecesObject,
+    selectedSquare,
+    whiteTime,
+    blackTime,
+    currentTurn
+  } = gameState;
 
-    const handleShowId = () => {
-        setShowSquareId(true);
-    };
+  // Стан лише для UI (Керується локально)
+  const [showSquareId, setShowSquareId] = useState(false);
 
-    const handleHideId = () => {
-        setShowSquareId(false);
-    };
+  // Функція-заглушка для обробки закінчення часу
+  const handleTimeUp = useCallback((color) => {
+    console.log(`[GAME OVER] Час гравця ${color} вичерпано!`);
+  }, []);
 
-    return (
-        <div className={styles.homePageWrapper}>
-            <h1>Chess MVP (Controlled)</h1>
+  // === 🆕 НОВА ЛОГІКА: Скидання гри ===
+  const handleResetGame = useCallback(() => {
+        resetGameState(); // <--- ВИКЛИКАЄМО ЛИШЕ ЧИСТУ ЛОГІКУ ХУКА!
+        // ВИДАЛИТИ: window.location.reload(); 
+        // ВИДАЛИТИ: console.warn("...");
+    }, [resetGameState]); 
 
-            <div style={{ display: 'flex', justifyContent: 'space-around' }}>
-                {/* Годинник Чорних: використовує СТАН з хука */}
-               
-                {/* Годинник Білих: використовує СТАН з хука */}
-                <Clock
-                    initialTime={whiteTime}
-                    color="w"
-                    isActive={currentTurn === 'w'}
-                    onTimeUp={handleTimeUp}
-                />
+  // === 🆕 НОВА ЛОГІКА: Тоггл нотацій полів ===
+  const handleToggleId = () => {
+    setShowSquareId(prev => !prev);
+  };
 
-                 <Clock
-                    initialTime={blackTime}
-                    color="b"
-                    isActive={currentTurn === 'b'}
-                    onTimeUp={handleTimeUp} 
-                />
 
-            </div>
+  return (
+    <div className={styles.homePageWrapper}>
+      <h1>Chess MVP (Controlled)</h1>
 
-            {/* Дошка: отримує СТАН і КЛІК з хука */}
-            <ChessBoardView 
-                showSquareId={showSquareId} 
-                boardPiecesObject={boardPiecesObject} // Передаємо поточний стан
-                selectedSquare={selectedSquare}       // Передаємо виділену клітинку
-                onClick={handleSquareClick}           // Передаємо єдиний обробник
-            />
+      <div style={{ display: 'flex', justifyContent: 'space-around', width: '100%', maxWidth: '600px' }}>
+        {/* Годинник Чорних: використовує СТАН з хука */}
+        <Clock
+          initialTime={whiteTime}
+          color="w"
+          isActive={currentTurn === 'w'}
+          onTimeUp={handleTimeUp}
+        />
 
-            <div className={styles.buttonGroup}>
-                <Button onClick={handleShowId} id="show-id-button" className={styles.primaryButton}>
-                    Показати назву поля
-                </Button>
-                <Button onClick={handleHideId} id="hide-id-button" className={styles.secondaryButton}>
-                    Приховати назву поля
-                </Button>
-            </div>
-        </div>
-    );
+        {/* Годинник Білих: використовує СТАН з хука */}
+        <Clock
+          initialTime={blackTime}
+          color="b"
+          isActive={currentTurn === 'b'}
+          onTimeUp={handleTimeUp}
+        />
+      </div>
+
+      {/* Дошка: отримує СТАН і КЛІК з хука */}
+      <ChessBoardView
+        showSquareId={showSquareId}
+        boardPiecesObject={boardPiecesObject} // Передаємо поточний стан
+        selectedSquare={selectedSquare}       // Передаємо виділену клітинку
+        onClick={handleSquareClick}           // Передаємо єдиний обробник
+      />
+
+      <div className={styles.buttonGroup}>
+
+        {/* 🆕 Кнопка СКИДАННЯ (Використовуємо клас danger) */}
+        <Button
+          onClick={handleResetGame}
+          className={styles.danger}
+        >
+          Скинути гру
+        </Button>
+
+        {/* 🆕 Тоггл-кнопка (Використовуємо клас primary) */}
+        <Button
+          onClick={handleToggleId}
+          className={showSquareId ? styles.primary : ''} // Підсвічуємо, коли активно
+        >
+          {showSquareId ? 'Приховати нотації' : 'Показати нотації'}
+        </Button>
+      </div>
+    </div>
+  );
 };
 
 export default HomePage;

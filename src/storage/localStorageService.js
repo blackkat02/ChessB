@@ -33,5 +33,14 @@ export const saveGameState = (state) => {
     }
 };
 
+export const clearGameState = () => { // <--- НОВА ФУНКЦІЯ
+    try {
+        localStorage.removeItem(STORAGE_KEY);
+        console.log("🔥 Локальний стан гри очищено.");
+    } catch (e) {
+        console.error("Помилка очищення LocalStorage:", e);
+    }
+};
+
 // Можна додати функцію clearGameState, якщо потрібно
 // export const clearGameState = () => { localStorage.removeItem(STORAGE_KEY); };
