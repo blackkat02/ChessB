@@ -13,7 +13,6 @@ const ChessBoardView = ({ showSquareId, boardPiecesObject, selectedSquare, onCli
     // Використовуємо useCallback, оскільки функція залежить від пропса (boardPiecesObject)
     // і передається в useMemo.
 
-    // === ВИДАЛЯЄМО: handleClick — ЛОГІКА КЛІКУ ТЕПЕР У useGameState ===
     // ТУТ МИ ПРОСТО ВИКОРИСТОВУЄМО КОЛБЕК, ПЕРЕДАНИЙ ЧЕРЕЗ ПРОПСИ
     const handleSquareClick = onClick; 
 

@@ -18,8 +18,6 @@ const HomePage = () => {
     resetGameState
   } = useGameState(socketRef);
 
-  // 🛑 ВИДАЛЕНО: Зайва деструктуризація gameState
-
   // Стан лише для UI (Керується локально)
   const [showSquareId, setShowSquareId] = useState(false);
 
@@ -65,8 +63,8 @@ const HomePage = () => {
       <ChessBoardView
         showSquareId={showSquareId}
         boardPiecesObject={gameState.boardPiecesObject} // Передаємо поточний стан
-        selectedSquare={gameState.selectedSquare}       // Передаємо виділену клітинку
-        onClick={handleSquareClick}           // Передаємо єдиний обробник
+        selectedSquare={gameState.selectedSquare}       // Передаємо виділену клітинку
+        onClick={handleSquareClick}                     // Передаємо єдиний обробник
       />
 
       <div className={styles.buttonGroup}>
