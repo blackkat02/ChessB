@@ -8,6 +8,7 @@ const positionPart = STARTING_FEN.split(' ')[0];
 
 // 2. Генеруємо об'єкт лише з FEN
 export const initialBoardPiecesObject = fenToBoardObject(positionPart);
+console.log(initialBoardPiecesObject)
 
 
 

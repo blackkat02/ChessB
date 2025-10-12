@@ -12,4 +12,29 @@
   top: 65%;
   left: 50%;
   transform: translate(-50%, -50%);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7); 
 }
+
+
+/* .piece {
+    /* Базові стилі для центрування та розміру, наприклад */
+    /* font-size: 3.5rem; /* Залежить від розміру твоєї клітинки */
+    /* line-height: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+}  */
+
+/* ⬅️ Це важливо: колір тексту залежить від класу. */
+/* .white {
+    color: #fff; 
+    background-color: #fff;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7); 
+}
+
+.black {
+    color: #000; 
+    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.7); 
+} */

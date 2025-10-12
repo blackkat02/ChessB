@@ -10,10 +10,7 @@ const ChessBoardView = ({ showSquareId, boardPiecesObject, selectedSquare, onCli
         console.log(boardPiecesObject[squareId])
         return boardPiecesObject[squareId] ?? null; 
     }, [boardPiecesObject]); 
-    // Використовуємо useCallback, оскільки функція залежить від пропса (boardPiecesObject)
-    // і передається в useMemo.
 
-    // ТУТ МИ ПРОСТО ВИКОРИСТОВУЄМО КОЛБЕК, ПЕРЕДАНИЙ ЧЕРЕЗ ПРОПСИ
     const handleSquareClick = onClick; 
 
     const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];

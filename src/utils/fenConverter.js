@@ -1,8 +1,8 @@
-// src/utils/fenConverter.js (Новий файл)
+// src/utils/fenConverter.js
 
 /**
  * Конвертує частину FEN, що описує позицію (наприклад, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"),
- * у формат об'єкта { 'a1': 'wr', 'e8': 'bk', ... }, зручний для React.
+ * у формат об'єкта { 'a1': 'R', 'e8': 'k', ... }, використовуючи FEN-символи як значення.
  */
 export const fenToBoardObject = (fenPosition) => {
     const boardObject = {};
@@ -21,12 +21,8 @@ export const fenToBoardObject = (fenPosition) => {
                 // Якщо це символ фігури
                 const squareId = files[fileIndex] + rank;
 
-                // Конвертуємо символ FEN ('P', 'r') у твій формат ('wp', 'br')
-                const color = char === char.toUpperCase() ? 'w' : 'b';
-                const pieceType = char.toLowerCase();
-                const pieceSymbol = color + pieceType; 
-
-                boardObject[squareId] = pieceSymbol;
+                // ✅ ВИПРАВЛЕНО: Використовуємо сам символ 'char' як значення
+                boardObject[squareId] = char;
                 fileIndex++;
             }
         }

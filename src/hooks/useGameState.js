@@ -13,8 +13,22 @@ const INITIAL_GAME_BASE_STATE = {
 };
 
 // Функція для визначення кольору фігури
-const getPieceColor = (pieceSymbol) => {
-  return pieceSymbol ? pieceSymbol[0] : null;
+/**
+ * Визначає колір фігури на основі її FEN-символу.
+ * 'P', 'R', 'K' -> 'w' (White)
+ * 'p', 'r', 'k' -> 'b' (Black)
+ */
+export const getPieceColor = (fenSymbol) => {
+    if (!fenSymbol) {
+        return null; // Порожня клітинка
+    }
+
+    // ✅ Якщо символ дорівнює своїй версії у верхньому регістрі (наприклад, 'P' === 'P'), це біла фігура.
+    if (fenSymbol === fenSymbol.toUpperCase()) {
+        return 'w';
+    } 
+    // Інакше, це чорна фігура (наприклад, 'p' !== 'P').
+    return 'b';
 };
 
 // ВІДНОВЛЕННЯ СТАНУ З LOCAL STORAGE (або використання початкового)
@@ -88,11 +102,16 @@ export const useGameState = (socketRef = { current: null }) => {
       const { boardPiecesObject, selectedSquare, currentTurn } = prev;
 
       console.log(`➡️ [CLICK] Клік на клітинці: ${squareId}. Вибрана фігура: ${selectedSquare}`);
+      console.log(boardPiecesObject)
+      console.log(selectedSquare)
+      console.log(currentTurn)
+      console.log(squareId)
 
       const piece = boardPiecesObject[squareId];
 
       // 1. ПЕРШИЙ КЛІК: ВИБІР ФІГУРИ
       if (selectedSquare === null && piece) {
+        console.log(selectedSquare)
 
         // Перевірка черги
         if (getPieceColor(piece) !== currentTurn) {
@@ -159,11 +178,7 @@ export const useGameState = (socketRef = { current: null }) => {
       // Якщо ми дісталися сюди, стан не змінюється
       return prev;
     });
-  }, []); // ✅ БЕЗ ЗАЛЕЖНОСТЕЙ! (крім getPieceColor, яка є константою)
-
-  // 🛑 УВАГА: Я залишив simulateMoveUpdate, але його виклик з handleSquareClick
-  // був би неправильним, оскільки він викликає setGameState зсередини setGameState.
-  // Я переписав handleSquareClick, щоб він виконував всю логіку сам.
+  }, []); 
 
   return {
     gameState,
