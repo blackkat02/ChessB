@@ -41,7 +41,8 @@ const HomePage = () => {
     <div className={styles.homePageWrapper}>
       <h1>Chess MVP (Controlled)</h1>
 
-      <div className={styles.clocksContainer}>
+      <div style={{ display: 'flex', justifyContent: 'space-around', width: '100%', maxWidth: '600px' }}>
+        {/* Годинник Білих: звертаємося напряму до gameState */}
         <Clock
           initialTime={gameState.whiteTime}
           color="w"
@@ -49,6 +50,7 @@ const HomePage = () => {
           onTimeUp={handleTimeUp}
         />
 
+        {/* Годинник Чорних: звертаємося напряму до gameState */}
         <Clock
           initialTime={gameState.blackTime}
           color="b"
@@ -57,6 +59,7 @@ const HomePage = () => {
         />
       </div>
 
+      {/* Дошка: отримує СТАН і КЛІК з хука */}
       <ChessBoardView
         showSquareId={showSquareId}
         boardPiecesObject={gameState.boardPiecesObject} // Передаємо поточний стан
