@@ -1,7 +1,44 @@
-.container {
+/* ---------------------------------------------------- */
+/* ГЛОБАЛЬНИЙ СКИД І ОСНОВА СТОРІНКИ */
+/* ---------------------------------------------------- */
 
+:global(html), :global(body), #root {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    /* Забезпечуємо, що жоден зовнішній елемент не спричинить горизонтальну прокрутку */
+    overflow-x: hidden; 
+    /* Встановлюємо базовий шрифт для всієї програми */
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: #f7f7f7; /* Світлий фон */
 }
 
-.title {
+/* ---------------------------------------------------- */
+/* КОНТЕЙНЕР APP */
+/* ---------------------------------------------------- */
 
+.appContainer {
+    min-height: 100vh; /* Забезпечуємо повну висоту екрана */
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Центруємо контент горизонтально */
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    max-width: 100%;
+    /* Примушуємо внутрішні елементи вміщуватися, щоб body не прокручувався */
+    overflow-x: hidden; 
+}
+
+/* Стиль для fallback під час lazy loading */
+.loadingFallback {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-size: 1.2rem;
+    color: #444;
 }

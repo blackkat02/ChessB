@@ -1,10 +1,14 @@
 /* src/components/Clock/Clock.module.css */
 
 .clockContainer {
-    /* Базові розміри та відступи */
+    /* Базові стилі */
     padding: 10px 15px;
     margin: 10px;
-    width: 200px; /* Фіксована ширина для вирівнювання */
+    
+    /* ❌ ВИДАЛЕНО: width: 200px; */
+    /* Встановлюємо максимальну ширину, щоб годинник не розтягувався на десктопі */
+    max-width: 280px; 
+    width: 100%; /* Дозволяємо контейнеру займати всю доступну ширину */
     height: 70px;
     
     /* Оформлення */
@@ -19,14 +23,17 @@
     
     /* Налаштування шрифту */
     font-family: 'Arial', sans-serif;
-    color: #333; /* Темний текст */
-    transition: all 0.3s ease; /* Плавний перехід для виділення */
+    color: #333;
+    transition: all 0.3s ease;
 }
 
 .timeDisplay {
-    font-size: 2.5em; /* Великий, легко читабельний шрифт */
+    font-size: 2.5em; 
     font-weight: 700;
-    letter-spacing: 1.5px; /* Невеликий інтервал для кращої читабельності цифр */
+    letter-spacing: 1.5px;
+    /* ✅ Додаємо мінімальну ширину, щоб уникнути стрибків при зміні секунд */
+    min-width: 140px; 
+    text-align: center;
 }
 
 /* Спеціальний стиль для годинника білих (світлий фон) */
@@ -38,18 +45,38 @@
 /* Спеціальний стиль для годинника чорних (темний фон) */
 .darkClock {
     background-color: #333;
-    color: #f0f0f0; /* Світлий текст */
+    color: #f0f0f0;
     border: 2px solid #111;
 }
 
 /* Стиль для часу, що закінчується (менше 30 секунд) */
 .lowTime {
-    color: #e74c3c !important; /* Червоний колір */
-    animation: pulse 1s infinite; /* Анімація блимання */
+    color: #e74c3c !important;
+    animation: pulse 1s infinite;
 }
 
 @keyframes pulse {
     0% { opacity: 1; }
     50% { opacity: 0.7; }
     100% { opacity: 1; }
+}
+
+/* ---------------------------------------------------- */
+/* ✅ MOBILE OPTIMIZATION (@media) */
+/* ---------------------------------------------------- */
+@media (max-width: 600px) {
+    .clockContainer {
+        /* Зменшуємо вертикальний марджин, щоб заощадити місце */
+        margin: 5px 0; 
+        /* Зменшуємо максимальну ширину, щоб годинник не був занадто великим, якщо він один на рядку */
+        max-width: 90%; 
+        width: 100%; /* Займає всю доступну ширину в контейнері clocksContainer (який тепер вертикальний) */
+        height: 60px; /* Трохи менша висота */
+        padding: 8px 10px;
+    }
+
+    .timeDisplay {
+        font-size: 2em; /* Зменшуємо розмір шрифту */
+        min-width: 120px;
+    }
 }

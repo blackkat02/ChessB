@@ -5,23 +5,52 @@
   padding: 20px;
 }
 
+.clocksContainer {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  max-width: 600px;
+}
+
 .buttonGroup {
+  margin-top: 20px;
   margin-bottom: 20px;
   display: flex;
-  gap: 10px;
+  gap: 15px;
 }
 
-/* .primaryButton {
-  background-color: #007bff;
-  color: white;
-  border-color: #007bff;
-}
+/* ---------------------------------------------------- */
+/* ✅ MOBILE OPTIMIZATION (до 768px)          */
+/* ---------------------------------------------------- */
+@media (max-width: 768px) {
 
-.secondaryButton {
-  background-color: #6c757d;
-  color: white;
-  border-color: #6c757d;
-} */
+  .homePageWrapper {
+    padding: 10px;
+  }
+
+  /* ⬅️ ВИКОРИСТОВУЙ ЯВНИЙ КЛАС ДЛЯ АДАПТАЦІЇ ГОДИННИКІВ */
+  .clocksContainer {
+    flex-direction: column;
+    /* Годинники один під одним */
+    gap: 15px;
+    align-items: center;
+    max-width: 100%;
+    /* Дозволяємо контейнеру бути ширшим на мобільному */
+  }
+
+  /* Тобі не потрібен окремий селектор .homePageWrapper>div:first-child */
+
+  .buttonGroup {
+    flex-direction: column;
+    gap: 10px;
+    width: 90%;
+  }
+
+  .buttonGroup button {
+    width: 100%;
+    padding: 12px 15px;
+  }
+}
 
 .primary {
   background-color: #007bff;
@@ -30,21 +59,7 @@
 }
 
 .danger {
-  background-color: #dc3545; /* Використовуємо для кнопки скидання */
+  background-color: #dc3545;
   color: white;
   border-color: #dc3545;
-}
-
-.homePageWrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 20px;
-}
-
-.buttonGroup {
-  margin-top: 20px; /* Додаємо відступ зверху */
-  margin-bottom: 20px;
-  display: flex;
-  gap: 15px; /* Збільшуємо простір між кнопками */
 }

@@ -5,19 +5,21 @@ import { lazy, Suspense, React } from "react";
 const HomePage = lazy(() => import("./pages/HomePage/HomePage"));
 const SandBoxPage = lazy(() => import("./pages/SandBoxPage/SandBoxPage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage/NotFoundPage"));
-// import style from './App.module.css'; 
+import style from './App.module.css';
 
 function App() {
   return (
-    <Suspense fallback={<div>Завантаження сторінки...</div>}>
-      <Routes>
-        <Route path="/" element={<MainLayout />}>
-          <Route index element={<HomePage />} />
-          <Route path="/sandbox" element={<SandBoxPage />} />
-        </Route>
-        <Route path="*" element={<NotFoundPage />} /> 
-      </Routes>
-    </Suspense>
+    <div className={style.appContainer}>
+      <Suspense fallback={<div>Завантаження сторінки...</div>}>
+        <Routes>
+          <Route path="/" element={<MainLayout />}>
+            <Route index element={<HomePage />} />
+            <Route path="/sandbox" element={<SandBoxPage />} />
+          </Route>
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </Suspense>
+    </div>
   );
 }
 
