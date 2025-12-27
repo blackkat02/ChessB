@@ -1,16 +1,14 @@
 // src/data/positions.js (Твій оригінальний файл, але оновлений)
 
 import { fenToBoardObject } from '../utils/fenConverter';
-import { STARTING_FEN } from './fenConstants'; // Припустимо, ти створив цей файл
+import { STARTING_FEN } from './fenConstants';
 
 // 1. Витягуємо лише позиційну частину FEN
 const positionPart = STARTING_FEN.split(' ')[0];
 
 // 2. Генеруємо об'єкт лише з FEN
 export const initialBoardPiecesObject = fenToBoardObject(positionPart);
-console.log(initialBoardPiecesObject)
-
-
+console.log(initialBoardPiecesObject);
 
 // export const initialBoardPiecesArray = [
 //     { name: 'br', position: 'a8' }, { name: 'bn', position: 'b8' }, { name: 'bb', position: 'c8' }, { name: 'bq', position: 'd8' },
@@ -39,4 +37,3 @@ console.log(initialBoardPiecesObject)
 //     acc[piece.position] = piece.name;
 //     return acc;
 // }, {});
-

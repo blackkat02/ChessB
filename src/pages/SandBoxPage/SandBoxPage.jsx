@@ -1,47 +1,36 @@
-import React, { useState } from 'react';
-// import { useDispatch } from 'react-redux'; // Якщо Redux буде потрібен, розкоментуй
-import ChessSandbox from '../../components/ChessSandbox/ChessSandbox'; // Імпортуємо головний компонент пісочниці
+import React, { useState, useEffect } from 'react';
+// import { useDispatch } from 'react-redux';
 import Button from '../../components/Button/Button';
 import styles from './SandBoxPage.module.css';
 
 const SandBoxPage = () => {
-  // Стан для showSquareId, який може бути переданий до ChessSandbox
-  const [showSquareId, setShowSquareId] = useState(false);
+  const [count, setCount] = useState(0);
 
-  const handleShowId = () => {
-    setShowSquareId(true);
-  };
+  const handleIncrement = () => {
+    setCount((prevCount) => prevCount + 1);
 
-  const handleHideId = () => {
-    setShowSquareId(false);
+    console.log('Кнопку натиснуто!', prevCount, count);
   };
 
   return (
     <div className={styles.homePageWrapper}>
-      <h1>Шахова Пісочниця MVP</h1>
-
-      {/* Рендеримо головний компонент пісочниці.
-          Він сам містить палітру вибору фігур та шахівницю.
-          Передаємо showSquareId, якщо SandBoxPage має ним керувати. */}
-      <ChessSandbox 
-        showSquareId={showSquareId} 
-        // Якщо ChessSandbox потребує додаткових пропсів від SandBoxPage, додай їх тут
-      />
+      <h1>TEST</h1>
+      <p>{count}</p>
 
       <div className={styles.buttonGroup}>
         <Button
-          onClick={handleShowId}
-          id="show-id-button"
+          onClick={handleIncrement}
+          id="handleIncrement"
           className={styles.primaryButton}
         >
-          Показати назву поля
+          Click +1
         </Button>
         <Button
-          onClick={handleHideId}
-          id="hide-id-button"
+          // onClick={handleSum}
+          // id="handleSum"
           className={styles.secondaryButton}
         >
-          Приховати назву поля
+          Suma
         </Button>
       </div>
     </div>
