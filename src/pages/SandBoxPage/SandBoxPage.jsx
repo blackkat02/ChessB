@@ -9,7 +9,7 @@ const SandBoxPage = () => {
   const handleIncrement = () => {
     setCount((prevCount) => prevCount + 1);
 
-    console.log('Кнопку натиснуто!', prevCount, count);
+    console.log('Кнопку натиснуто!', count);
   };
 
   return (
