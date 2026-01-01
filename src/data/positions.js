@@ -1,4 +1,4 @@
-// src/data/positions.js (Твій оригінальний файл, але оновлений)
+// src/data/positions.js
 
 import { fenToBoardObject } from '../utils/fenConverter';
 import { STARTING_FEN } from './fenConstants';

@@ -1,10 +1,10 @@
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout/MainLayout';
-import { lazy, Suspense, React } from "react";
+import { lazy, Suspense, React } from 'react';
 
-const HomePage = lazy(() => import("./pages/HomePage/HomePage"));
-const SandBoxPage = lazy(() => import("./pages/SandBoxPage/SandBoxPage"));
-const NotFoundPage = lazy(() => import("./pages/NotFoundPage/NotFoundPage"));
+const HomePage = lazy(() => import('./pages/HomePage/HomePage'));
+const SandBoxPage = lazy(() => import('./pages/SandBoxPage/SandBoxPage'));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage/NotFoundPage'));
 // import style from './App.module.css';
 
 function App() {
