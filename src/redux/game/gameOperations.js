@@ -34,3 +34,28 @@ export const attemptMove = (moveData) => (dispatch, getState) => {
   console.log('✅ Хід валідний! Диспатчимо оновлення.');
   dispatch(moveExecuted(moveData));
 };
+
+// src/redux/game/gameOperations.js
+import { updateTime, setGameOver } from './gameSlice';
+import {
+  selectWhiteTime,
+  selectBlackTime,
+  selectCurrentTurn,
+} from './gameSelectors';
+
+export const tickTimer = () => (dispatch, getState) => {
+  const state = getState();
+  const turn = selectCurrentTurn(state);
+  const currentTime =
+    turn === 'w' ? selectWhiteTime(state) : selectBlackTime(state);
+
+  if (currentTime <= 0) {
+    dispatch(
+      setGameOver({ winner: turn === 'w' ? 'b' : 'w', reason: 'timeout' })
+    );
+    return;
+  }
+
+  // Віднімаємо 1 секунду (1000 мс)
+  dispatch(updateTime({ color: turn, time: currentTime - 1000 }));
+};

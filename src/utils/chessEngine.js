@@ -1,11 +1,21 @@
+import { Chess } from 'chess.js';
+
+/**
+ * Валідація через бібліотеку chess.js
+ * @param {string} fen - поточний стан дошки в FEN
+ * @param {string} from - клітинка звідки (e2)
+ * @param {string} to - клітинка куди (e4)
+ * @returns {boolean}
+ */
 export const validateMoveWithChessJS = (fen, from, to) => {
-  if (selectIsSquareEmpty(state, from)) return false;
+  try {
+    const chess = new Chess(fen);
+    // Спроба зробити хід у віртуальній пам'яті chess.js
+    const move = chess.move({ from, to, promotion: 'q' });
 
-  if (from === to) return false;
-
-  if (!selectIsOwnPiece(state, from)) return false;
-
-  if (selectIsFriendlyFire(state, to)) return false;
-
-  return true;
+    // Якщо move === null, значить хід нелегальний за правилами шахів
+    return move !== null;
+  } catch (e) {
+    return false;
+  }
 };
