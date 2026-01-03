@@ -63,3 +63,8 @@
   color: white;
   border-color: #dc3545;
 }
+
+.clocks {
+  display: flex;
+
+}

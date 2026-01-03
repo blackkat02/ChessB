@@ -1,4 +1,3 @@
-// src/pages/HomePage/HomePage.jsx
 import React, { useState, useCallback } from 'react';
 import ChessBoardView from '../../components/ChessBoardView/ChessBoardView';
 import Clock from '../../components/Clock/Clock';

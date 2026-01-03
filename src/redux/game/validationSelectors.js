@@ -1,20 +1,3 @@
-export const selectBoard = (state) => state.game.board;
-export const selectCurrentTurn = (state) => state.game.turn;
-export const selectSelectedSquare = (state) => state.game.selectedSquare;
-
-export const selectWhiteTime = (state) => state.game.whiteTime;
-export const selectBlackTime = (state) => state.game.blackTime;
-
-// Розумні (рахують логіку на основі базових)
-export const selectIsWhiteTurn = (state) => state.game.turn === 'w';
-
-// Чи активний годинник конкретного кольору?
-export const selectIsClockActive = (state, color) => state.game.turn === color;
-
-// Отримати фігуру на конкретній клітинці (дуже важливо для бота!)
-export const selectPieceAtSquare = (state, squareId) =>
-  state.game.board[squareId];
-
 // Перевірка: чи порожня клітинка?
 export const selectIsSquareEmpty = (state, squareId) =>
   !state.game.board[squareId];
@@ -61,4 +44,16 @@ export const selectIsFriendlyFire = (state, toSquareId) => {
   );
   const targetPieceColor = selectPieceColorAt(state, toSquareId);
   return targetPieceColor !== null && movingPieceColor === targetPieceColor;
+};
+
+export const selectIsMovePossible = (state, from, to) => {
+  if (selectIsSquareEmpty(state, from)) return false;
+
+  if (from === to) return false;
+
+  if (!selectIsOwnPiece(state, from)) return false;
+
+  if (selectIsFriendlyFire(state, to)) return false;
+
+  return true;
 };

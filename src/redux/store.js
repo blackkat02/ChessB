@@ -1,5 +1,5 @@
-// const store = configureStore({ ... });
-
-// if (process.env.NODE_ENV === 'development') {
-//   window.chessStore = store;
-// }
+store.subscribe(() => {
+  const state = store.getState();
+  // Твоє завдання: напиши код, який зберігає state.game в localStorage
+  // під ключем 'chess_game_state'
+});
