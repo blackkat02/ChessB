@@ -1,5 +1,4 @@
 import React, { useState, useCallback } from 'react';
-import ChessBoardView from '../../components/ChessBoardView/ChessBoardView';
 import ChessBoardContainer from '../../components/ChessBoardContainer/ChessBoardContainer';
 import Clock from '../../components/Clock/Clock';
 import Button from '../../components/Button/Button';

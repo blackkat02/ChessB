@@ -40,10 +40,10 @@ const getInitialState = () => {
   // Більше не приймає initialBoardPiecesObject, бо воно в константі
   const savedState = loadGameState();
 
-  if (savedState && savedState.gameId) {
-    console.log('💾 Завантажено збережений локальний стан.');
-    return savedState;
-  }
+  // if (savedState && savedState.gameId) {
+  //   console.log('💾 Завантажено збережений локальний стан.');
+  //   return savedState;
+  // }
 
   console.log('🆕 Початковий стан гри ініціалізовано.');
 
