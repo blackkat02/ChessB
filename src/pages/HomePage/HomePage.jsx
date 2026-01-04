@@ -1,43 +1,34 @@
 import React, { useState, useCallback } from 'react';
 import ChessBoardView from '../../components/ChessBoardView/ChessBoardView';
+import ChessBoardContainer from '../../components/ChessBoardContainer/ChessBoardContainer';
 import Clock from '../../components/Clock/Clock';
 import Button from '../../components/Button/Button';
 import styles from './HomePage.module.css';
 import { useGameState } from '../../hooks/useGameState';
 
 const HomePage = () => {
-  const { gameState, handleSquareClick, resetGameState } = useGameState();
+  const { gameState, resetGameState } = useGameState(); // Лишаємо тільки те, що треба для годинників та кнопок
   const [showSquareId, setShowSquareId] = useState(false);
-
-  const handleTimeUp = useCallback((color) => {
-    console.log(`[GAME OVER] Час гравця ${color} вичерпано!`);
-  }, []);
 
   return (
     <div className={styles.homePageWrapper}>
-      <h1>Chess MVP (Redux Controlled)</h1>
+      <h1>Chess MVP (Redux)</h1>
 
       <div className={styles.clocks}>
         <Clock
           initialTime={gameState.whiteTime}
           color="w"
           isActive={gameState.currentTurn === 'w'}
-          onTimeUp={handleTimeUp}
         />
         <Clock
           initialTime={gameState.blackTime}
           color="b"
           isActive={gameState.currentTurn === 'b'}
-          onTimeUp={handleTimeUp}
         />
       </div>
 
-      <ChessBoardView
-        showSquareId={showSquareId}
-        boardPiecesObject={gameState.boardPiecesObject}
-        selectedSquare={gameState.selectedSquare}
-        onClick={handleSquareClick}
-      />
+      {/* ✅ ТЕПЕР ТУТ КОНТЕЙНЕР. Він сам знає, як дістати дошку та кліки */}
+      <ChessBoardContainer showSquareId={showSquareId} />
 
       <div className={styles.buttonGroup}>
         <Button onClick={resetGameState} className={styles.danger}>

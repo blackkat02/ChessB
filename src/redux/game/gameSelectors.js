@@ -1,46 +1,23 @@
+import { getPieceColor } from '../../utils/chessHelpers';
+
+// === 1. БАЗОВІ СЕЛЕКТОРИ (Raw Data) ===
 export const selectBoard = (state) => state.game.board;
 export const selectCurrentTurn = (state) => state.game.turn;
 export const selectSelectedSquare = (state) => state.game.selectedSquare;
-
 export const selectWhiteTime = (state) => state.game.whiteTime;
 export const selectBlackTime = (state) => state.game.blackTime;
 
-// Розумні (рахують логіку на основі базових)
+// === 2. СЕЛЕКТОРИ СТАНУ (Game Status) ===
 export const selectIsWhiteTurn = (state) => state.game.turn === 'w';
-
-// Чи активний годинник конкретного кольору?
 export const selectIsClockActive = (state, color) => state.game.turn === color;
 
-// Отримати фігуру на конкретній клітинці (дуже важливо для бота!)
+// === 3. СЕЛЕКТОРИ ФІГУР (Piece Intelligence) ===
 export const selectPieceAtSquare = (state, squareId) =>
   state.game.board[squareId];
 
-// Перевірка: чи порожня клітинка?
 export const selectIsSquareEmpty = (state, squareId) =>
   !state.game.board[squareId];
-// Селектор для перевірки валідності (заглушка)
-export const selectCanMakeMove = (state, from, to) => {
-  const board = selectBoard(state);
-  const turn = selectCurrentTurn(state);
 
-  const piece = board[from];
-  const targetPiece = board[to];
-
-  // Проста логіка заглушки:
-  // 1. На клітинці 'from' має бути фігура
-  // 2. Колір фігури має збігатися з поточною чергою (використовуємо твою функцію getPieceColor)
-  // 3. Ми не можемо бити власну фігуру (targetPiece колір != piece колір)
-
-  if (!piece) return false;
-
-  // Тут ми пізніше додамо getPieceColor(piece) === turn
-  // Поки що повертаємо true, щоб хід просто працював
-  return true;
-};
-
-import { getPieceColor } from '../../utils/chessHelpers';
-
-// Дістати колір фігури на певній клітинці
 export const selectPieceColorAt = (state, squareId) => {
   const piece = state.game.board[squareId];
   return piece ? getPieceColor(piece) : null;
@@ -49,16 +26,29 @@ export const selectPieceColorAt = (state, squareId) => {
 // Чи належить фігура на клітинці поточному гравцю?
 export const selectIsOwnPiece = (state, squareId) => {
   const pieceColor = selectPieceColorAt(state, squareId);
-  const currentTurn = selectTurn(state);
+  const currentTurn = selectCurrentTurn(state);
   return pieceColor === currentTurn;
 };
 
+// === 4. ВАЛІДАЦІЙНІ СЕЛЕКТОРИ (Move Validation) ===
+
 // Перевірка: чи не б'ємо ми свого?
 export const selectIsFriendlyFire = (state, toSquareId) => {
-  const movingPieceColor = selectPieceColorAt(
-    state,
-    selectSelectedSquare(state)
-  );
+  const fromSquareId = selectSelectedSquare(state);
+  if (!fromSquareId) return false;
+
+  const movingPieceColor = selectPieceColorAt(state, fromSquareId);
   const targetPieceColor = selectPieceColorAt(state, toSquareId);
+
   return targetPieceColor !== null && movingPieceColor === targetPieceColor;
+};
+
+// Головний валідатор для UI та Бота
+export const selectIsMovePossible = (state, from, to) => {
+  if (selectIsSquareEmpty(state, from)) return false;
+  if (from === to) return false;
+  if (!selectIsOwnPiece(state, from)) return false;
+  if (selectIsFriendlyFire(state, to)) return false;
+
+  return true;
 };
