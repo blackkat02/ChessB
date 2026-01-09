@@ -25,7 +25,7 @@ export const attemptMove = (moveData) => (dispatch, getState) => {
   }
 
   // 4. ПЕРЕВІРКА №3: Чи пуста клітина to та не своєго кольору?
-  if (selectIsFriendlyFire) {
+  if (selectors.selectIsFriendlyFire) {
     console.warn('[OP] Спроба удару своєї фігури, ігноруємо.');
     return;
   }
@@ -36,7 +36,8 @@ export const attemptMove = (moveData) => (dispatch, getState) => {
 };
 
 // src/redux/game/gameOperations.js
-import { updateTime, setGameOver } from './gameSlice';
+// import { updateTime, setGameOver } from './gameSlice';
+import { updateTime } from './gameSlice';
 import {
   selectWhiteTime,
   selectBlackTime,
