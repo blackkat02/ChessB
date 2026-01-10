@@ -35,10 +35,17 @@ export const selectIsOwnPiece = (state, squareId) => {
 // Перевірка: чи не б'ємо ми свого?
 export const selectIsFriendlyFire = (state, toSquareId) => {
   const fromSquareId = selectSelectedSquare(state);
+
+  console.log('selectIsFriendlyFire старт ');
+  console.log('fromSquareId: ', fromSquareId);
+
   if (!fromSquareId) return false;
 
   const movingPieceColor = selectPieceColorAt(state, fromSquareId);
   const targetPieceColor = selectPieceColorAt(state, toSquareId);
+
+  console.log('movingPieceColor: ', movingPieceColor);
+  console.log('targetPieceColor: ', targetPieceColor);
 
   return targetPieceColor !== null && movingPieceColor === targetPieceColor;
 };

@@ -25,7 +25,9 @@ export const attemptMove = (moveData) => (dispatch, getState) => {
   }
 
   // 4. ПЕРЕВІРКА №3: Чи пуста клітина to та не своєго кольору?
-  if (selectors.selectIsFriendlyFire) {
+  const isFriendlyFire = selectors.selectIsFriendlyFire(state, to);
+
+  if (selectors.isFriendlyFire) {
     console.warn('[OP] Спроба удару своєї фігури, ігноруємо.');
     return;
   }
