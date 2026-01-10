@@ -3,24 +3,22 @@ import { initialBoardPiecesObject } from '../../data/positions';
 import { DEFAULT_TIME } from './gameConstants';
 
 const initialState = {
-  board: initialBoardPiecesObject,
-  turn: 'w',
-  selectedSquare: null,
+  board: initialBoardPiecesObject, // Об'єкт { a2: 'P', ... }
+  turn: 'w', // 'w' або 'b'
+  selectedSquare: null, // 'e2' або null
   whiteTime: DEFAULT_TIME,
   blackTime: DEFAULT_TIME,
-  history: [],
-  isLoading: false, // Заглушка для асинхронних запитів до двигуна/сервера
+  history: [], // Масив ходів для бота та аналізу
 };
 
 const gameSlice = createSlice({
   name: 'game',
   initialState,
   reducers: {
-    // 1. Вибір клітинки
+    // Тільки "сухі" факти зміни даних
     setSelection: (state, action) => {
       state.selectedSquare = action.payload;
     },
-    // 2. Базове переміщення (заглушка для рендерингу)
     moveExecuted: (state, action) => {
       const { from, to, piece } = action.payload;
       delete state.board[from];
@@ -29,16 +27,15 @@ const gameSlice = createSlice({
       state.selectedSquare = null;
       state.history.push(action.payload);
     },
-    // 3. Заглушка для валідації (поки що просто логування)
-    validationStarted: (state) => {
-      state.isLoading = true;
+    updateTime: (state, action) => {
+      const { color, time } = action.payload;
+      if (color === 'w') state.whiteTime = time;
+      else state.blackTime = time;
     },
-    resetGame: (state) => {
-      return initialState;
-    },
+    resetGame: () => initialState,
   },
 });
 
-export const { setSelection, moveExecuted, resetGame, validationStarted } =
+export const { setSelection, moveExecuted, resetGame, updateTime } =
   gameSlice.actions;
 export default gameSlice.reducer;

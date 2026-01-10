@@ -2,19 +2,20 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useCallback } from 'react';
 import { attemptMove } from '../redux/game/gameOperations';
 import { setSelection, resetGame } from '../redux/game/gameSlice';
-import {
-  selectBoard,
-  selectSelectedSquare,
-  selectTurn,
-} from '../redux/game/gameSelectors';
+// import {
+//   selectBoard,
+//   selectSelectedSquare,
+//   selectTurn,
+// } from '../redux/game/gameSelectors';
+import * as selectors from '../redux/game/gameSelectors';
 
 export const useGameState = () => {
   const dispatch = useDispatch();
 
   // Витягуємо дані через селектори
-  const board = useSelector(selectBoard);
-  const selectedSquare = useSelector(selectSelectedSquare);
-  const currentTurn = useSelector(selectTurn);
+  const board = useSelector(selectors.selectBoard);
+  const selectedSquare = useSelector(selectors.selectSelectedSquare);
+  const currentTurn = useSelector(selectors.selectTurn);
 
   const handleSquareClick = useCallback(
     (squareId) => {

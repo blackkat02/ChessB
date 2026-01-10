@@ -1,25 +1,64 @@
-import { moveExecuted, validationStarted } from './gameSlice';
-import { selectCurrentTurn } from './gameSelectors';
-import { getPieceColor } from '../../utils/chessHelpers'; // Твоя функція кольору
+import { moveExecuted } from './gameSlice';
+import * as selectors from './gameSelectors';
+import { getPieceColor } from '../../utils/chessHelpers';
 
 export const attemptMove = (moveData) => (dispatch, getState) => {
-  const { piece, from, to } = moveData;
+  const { from, to, piece } = moveData;
   const state = getState();
-  const currentTurn = selectCurrentTurn(state);
 
-  dispatch(validationStarted());
+  // 1. Отримуємо з Redux інформацію: чий зараз хід?
+  const currentTurn = selectors.selectCurrentTurn(state);
 
-  // ВАЛІДАЦІЯ №1: Чи своя зараз черга?
+  console.log(`[OP] Спроба ходу: ${piece} з ${from} на ${to}`);
+  console.log(`[OP] Зараз хід: ${currentTurn === 'w' ? 'БІЛИХ' : 'ЧОРНИХ'}`);
+
+  // 2. ПЕРЕВІРКА №1: Чи своєю фігурою ходимо?
   if (getPieceColor(piece) !== currentTurn) {
-    console.error(
-      `🛑 [VALIDATION] Спроба ходу не своєю фігурою! Зараз хід: ${currentTurn}`
-    );
-    return; // Хід ігнорується, стан не змінюється
+    console.warn('🚨 СТОП! Спроба ходу чужою фігурою. Хід ігнорується.');
+    return; // Просто виходимо, нічого не робимо
   }
 
-  // ВАЛІДАЦІЯ №2: Чи не клікнули ми в ту саму клітинку?
-  if (from === to) return;
+  // 3. ПЕРЕВІРКА №2: Чи не клікнули в ту саму точку?
+  if (from === to) {
+    console.log('[OP] Клік по тій самій клітинці, ігноруємо.');
+    return;
+  }
 
-  // Якщо всі заглушки пройдені — виконуємо
+  // 4. ПЕРЕВІРКА №3: Чи пуста клітина to та не своєго кольору?
+  const isFriendlyFire = selectors.selectIsFriendlyFire(state, to);
+
+  if (selectors.isFriendlyFire) {
+    console.warn('[OP] Спроба удару своєї фігури, ігноруємо.');
+    return;
+  }
+
+  // 5. Якщо все ОК — даємо команду Слайсу оновити дошку
+  console.log('✅ Хід валідний! Диспатчимо оновлення.');
   dispatch(moveExecuted(moveData));
+};
+
+// src/redux/game/gameOperations.js
+// import { updateTime, setGameOver } from './gameSlice';
+import { updateTime } from './gameSlice';
+import {
+  selectWhiteTime,
+  selectBlackTime,
+  selectCurrentTurn,
+} from './gameSelectors';
+
+export const tickTimer = () => (dispatch, getState) => {
+  const state = getState();
+  const turn = selectCurrentTurn(state);
+  const currentTime =
+    turn === 'w' ? selectWhiteTime(state) : selectBlackTime(state);
+
+  if (currentTime <= 0) {
+    dispatch(
+      setGameOver({ winner: turn === 'w' ? 'b' : 'w', reason: 'timeout' })
+    );
+    return;
+  }
+
+  // Віднімаємо 1 секунду (1000 мс)
+  dispatch(updateTime({ color: turn, time: currentTime - 1000 }));
 };

@@ -1,5 +1,5 @@
-import { selectCurrentTurn } from '../redux/game/gameSelectors.js';
-
-const getPieceColor = (piece) => {
-  // piece.
+// src/utils/chessHelpers.js
+export const getPieceColor = (fenSymbol) => {
+  if (!fenSymbol) return null;
+  return fenSymbol === fenSymbol.toUpperCase() ? 'w' : 'b';
 };

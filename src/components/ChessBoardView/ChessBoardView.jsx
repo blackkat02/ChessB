@@ -12,7 +12,7 @@ const ChessBoardView = ({
   // Функція для отримання фігури (ТЕПЕР ЗАЛЕЖИТЬ ВІД ПРОПСА boardPiecesObject)
   const getPieceAtSquareId = useCallback(
     (squareId) => {
-      console.log(boardPiecesObject[squareId]);
+      // console.log(boardPiecesObject[squareId]);
       return boardPiecesObject[squareId] ?? null;
     },
     [boardPiecesObject]
