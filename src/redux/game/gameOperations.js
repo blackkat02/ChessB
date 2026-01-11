@@ -1,16 +1,27 @@
 import { moveExecuted } from './gameSlice';
 import * as selectors from './gameSelectors';
 import { getPieceColor } from '../../utils/chessHelpers';
+// import { updateTime, setGameOver } from './gameSlice';
+import { updateTime } from './gameSlice';
 
 export const attemptMove = (moveData) => (dispatch, getState) => {
-  const { from, to, piece } = moveData;
+  const { from, to, piece, time } = moveData;
   const state = getState();
+  const { isGameOver } = state.game;
 
   // 1. Отримуємо з Redux інформацію: чий зараз хід?
   const currentTurn = selectors.selectCurrentTurn(state);
 
   console.log(`[OP] Спроба ходу: ${piece} з ${from} на ${to}`);
   console.log(`[OP] Зараз хід: ${currentTurn === 'w' ? 'БІЛИХ' : 'ЧОРНИХ'}`);
+
+  if (isGameOver) {
+    // РЕЖИМ АНАЛІЗУ: Просто пересуваємо фігуру без правил і черги
+    console.log('[ANALYSIS] Рух у вільному режимі');
+    dispatch(moveExecuted(moveData));
+    // Важливо: moveExecuted в редьюсері не має перемикати turn, якщо isGameOver: true
+    return;
+  }
 
   // 2. ПЕРЕВІРКА №1: Чи своєю фігурою ходимо?
   if (getPieceColor(piece) !== currentTurn) {
@@ -37,20 +48,13 @@ export const attemptMove = (moveData) => (dispatch, getState) => {
   dispatch(moveExecuted(moveData));
 };
 
-// src/redux/game/gameOperations.js
-// import { updateTime, setGameOver } from './gameSlice';
-import { updateTime } from './gameSlice';
-import {
-  selectWhiteTime,
-  selectBlackTime,
-  selectCurrentTurn,
-} from './gameSelectors';
-
 export const tickTimer = () => (dispatch, getState) => {
   const state = getState();
-  const turn = selectCurrentTurn(state);
+  const turn = selectors.selectCurrentTurn(state);
   const currentTime =
-    turn === 'w' ? selectWhiteTime(state) : selectBlackTime(state);
+    turn === 'w'
+      ? selectors.selectWhiteTime(state)
+      : selectors.selectBlackTime(state);
 
   if (currentTime <= 0) {
     dispatch(
