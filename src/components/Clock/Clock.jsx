@@ -35,6 +35,7 @@ const Clock = ({ initialTime, color, isActive, onTimeUp, isGameOver }) => {
     }
 
     return () => clearInterval(interval);
+    // Додаємо isGameOver у залежності
   }, [isActive, time, color, onTimeUp, isGameOver]);
 
   // === 3. ДИНАМІЧНІ КЛАСИ ТА СТИЛІ ===

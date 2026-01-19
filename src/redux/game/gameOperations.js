@@ -9,6 +9,14 @@ export const attemptMove = (moveData) => (dispatch, getState) => {
   const state = getState();
   const { isGameOver } = state.game;
 
+  const currentPlayerTime =
+    state.game.turn === 'w' ? state.game.whiteTime : state.game.blackTime;
+
+  if (currentPlayerTime <= 0) {
+    dispatch(handleTimeout(state.game.turn));
+    return; // Жодних ходів для трупів
+  }
+
   // 1. Отримуємо з Redux інформацію: чий зараз хід?
   const currentTurn = selectors.selectCurrentTurn(state);
 
@@ -16,17 +24,16 @@ export const attemptMove = (moveData) => (dispatch, getState) => {
   console.log(`[OP] Зараз хід: ${currentTurn === 'w' ? 'БІЛИХ' : 'ЧОРНИХ'}`);
 
   if (isGameOver) {
-    // РЕЖИМ АНАЛІЗУ: Просто пересуваємо фігуру без правил і черги
-    console.log('[ANALYSIS] Рух у вільному режимі');
-    dispatch(moveExecuted(moveData));
-    // Важливо: moveExecuted в редьюсері не має перемикати turn, якщо isGameOver: true
+    console.log('[ANALYSIS] Вільний хід без правил.');
+    // Просто виконуємо переміщення фігури в Redux без зміни черги чи перевірок
+    dispatch(moveExecuted({ ...moveData, analysis: true }));
     return;
   }
 
-  // 2. ПЕРЕВІРКА №1: Чи своєю фігурою ходимо?
-  if (getPieceColor(piece) !== currentTurn) {
-    console.warn('🚨 СТОП! Спроба ходу чужою фігурою. Хід ігнорується.');
-    return; // Просто виходимо, нічого не робимо
+  // СТАНДАРТНА ГРА (Тут твої існуючі перевірки)
+  if (getPieceColor(moveData.piece) !== turn) {
+    console.warn('🚨 СТОП! Хід не за чергою.');
+    return;
   }
 
   // 3. ПЕРЕВІРКА №2: Чи не клікнули в ту саму точку?
