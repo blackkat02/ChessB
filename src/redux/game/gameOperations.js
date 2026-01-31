@@ -9,6 +9,13 @@ export const attemptMove = (moveData) => (dispatch, getState) => {
   const state = getState();
   const { isGameOver } = state.game;
 
+  if (isGameOver) {
+    console.log('[ANALYSIS] Вільний хід без правил.');
+    // Просто виконуємо переміщення фігури в Redux без зміни черги чи перевірок
+    dispatch(moveExecuted({ ...moveData, analysis: true }));
+    return;
+  }
+
   const currentPlayerTime =
     state.game.turn === 'w' ? state.game.whiteTime : state.game.blackTime;
 

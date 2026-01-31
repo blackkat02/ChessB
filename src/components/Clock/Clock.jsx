@@ -19,6 +19,14 @@ const Clock = ({ initialTime, color, isActive, onTimeUp, isGameOver }) => {
   useEffect(() => {
     let interval;
 
+    // Якщо гра закінчена, робимо годинник тьмяним (сірим)
+    const gameOverStyle = isGameOver
+      ? { filter: 'grayscale(1)', opacity: 0.6, pointerEvents: 'none' }
+      : {};
+
+    // Об'єднуємо стилі
+    const finalStyle = { ...activeStyle, ...gameOverStyle };
+
     // БЛОКУВАННЯ: Якщо гра закінчена, інтервал ніколи не створиться
     if (isActive && time > 0 && !isGameOver) {
       interval = setInterval(() => {
