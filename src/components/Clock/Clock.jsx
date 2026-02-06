@@ -60,6 +60,12 @@ const Clock = ({ initialTime, color, isActive, onTimeUp, isGameOver }) => {
   // Клас для часу, що закінчується
   const lowTimeClass = isLowTime ? styles.lowTime : '';
 
+  const gameOverStyle = isGameOver
+    ? { filter: 'grayscale(1)', opacity: 0.6, pointerEvents: 'none' }
+    : {};
+
+  const finalStyle = { ...activeStyle, ...gameOverStyle };
+
   return (
     <div
       className={`${styles.clockContainer} ${baseClass}`}

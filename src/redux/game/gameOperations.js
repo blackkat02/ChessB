@@ -7,7 +7,7 @@ import { updateTime } from './gameSlice';
 export const attemptMove = (moveData) => (dispatch, getState) => {
   const { from, to, piece, time } = moveData;
   const state = getState();
-  const { isGameOver } = state.game;
+  const { isGameOver, turn, whiteTime, blackTime } = state.game;
 
   if (isGameOver) {
     console.log('[ANALYSIS] Вільний хід без правил.');
@@ -24,18 +24,10 @@ export const attemptMove = (moveData) => (dispatch, getState) => {
     return; // Жодних ходів для трупів
   }
 
-  // 1. Отримуємо з Redux інформацію: чий зараз хід?
   const currentTurn = selectors.selectCurrentTurn(state);
 
   console.log(`[OP] Спроба ходу: ${piece} з ${from} на ${to}`);
   console.log(`[OP] Зараз хід: ${currentTurn === 'w' ? 'БІЛИХ' : 'ЧОРНИХ'}`);
-
-  if (isGameOver) {
-    console.log('[ANALYSIS] Вільний хід без правил.');
-    // Просто виконуємо переміщення фігури в Redux без зміни черги чи перевірок
-    dispatch(moveExecuted({ ...moveData, analysis: true }));
-    return;
-  }
 
   // СТАНДАРТНА ГРА (Тут твої існуючі перевірки)
   if (getPieceColor(moveData.piece) !== turn) {
