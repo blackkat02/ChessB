@@ -24,7 +24,6 @@ const Clock = ({ initialTime, color, isActive, onTimeUp, isGameOver }) => {
       ? { filter: 'grayscale(1)', opacity: 0.6, pointerEvents: 'none' }
       : {};
 
-    // Об'єднуємо стилі
     const finalStyle = { ...activeStyle, ...gameOverStyle };
 
     // БЛОКУВАННЯ: Якщо гра закінчена, інтервал ніколи не створиться
@@ -43,7 +42,6 @@ const Clock = ({ initialTime, color, isActive, onTimeUp, isGameOver }) => {
     }
 
     return () => clearInterval(interval);
-    // Додаємо isGameOver у залежності
   }, [isActive, time, color, onTimeUp, isGameOver]);
 
   // === 3. ДИНАМІЧНІ КЛАСИ ТА СТИЛІ ===
@@ -72,7 +70,6 @@ const Clock = ({ initialTime, color, isActive, onTimeUp, isGameOver }) => {
       style={activeStyle}
     >
       <div className={`${styles.timeDisplay} ${lowTimeClass}`}>
-        {/* === ВИПРАВЛЕНО: time та formatTime тепер доступні === */}
         {formatTime(time)}
       </div>
     </div>
