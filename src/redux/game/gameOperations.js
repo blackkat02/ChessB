@@ -1,7 +1,6 @@
 import { moveExecuted } from './gameSlice';
 import * as selectors from './gameSelectors';
 import { getPieceColor } from '../../utils/chessHelpers';
-// import { updateTime, setGameOver } from './gameSlice';
 import { updateTime } from './gameSlice';
 
 export const attemptMove = (moveData) => (dispatch, getState) => {
@@ -11,7 +10,6 @@ export const attemptMove = (moveData) => (dispatch, getState) => {
 
   if (isGameOver) {
     console.log('[ANALYSIS] Вільний хід без правил.');
-    // Просто виконуємо переміщення фігури в Redux без зміни черги чи перевірок
     dispatch(moveExecuted({ ...moveData, analysis: true }));
     return;
   }
@@ -21,7 +19,7 @@ export const attemptMove = (moveData) => (dispatch, getState) => {
 
   if (currentPlayerTime <= 0) {
     dispatch(handleTimeout(state.game.turn));
-    return; // Жодних ходів для трупів
+    return;
   }
 
   const currentTurn = selectors.selectCurrentTurn(state);
@@ -29,7 +27,6 @@ export const attemptMove = (moveData) => (dispatch, getState) => {
   console.log(`[OP] Спроба ходу: ${piece} з ${from} на ${to}`);
   console.log(`[OP] Зараз хід: ${currentTurn === 'w' ? 'БІЛИХ' : 'ЧОРНИХ'}`);
 
-  // СТАНДАРТНА ГРА (Тут твої існуючі перевірки)
   if (getPieceColor(moveData.piece) !== turn) {
     console.warn('🚨 СТОП! Хід не за чергою.');
     return;
