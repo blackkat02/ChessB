@@ -5,6 +5,7 @@ import { store } from './redux/store';
 // import { PersistGate } from 'redux-persist/integration/react';
 // import { store, persistor } from './redux/store';
 import App from './App';
+import 'normalize.css';
 import './index.css';
 import { BrowserRouter } from 'react-router-dom';
 
