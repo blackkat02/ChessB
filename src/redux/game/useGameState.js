@@ -2,11 +2,6 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useCallback } from 'react';
 import { attemptMove } from '../redux/game/gameOperations';
 import { setSelection, resetGame } from '../redux/game/gameSlice';
-// import {
-//   selectBoard,
-//   selectSelectedSquare,
-//   selectTurn,
-// } from '../redux/game/gameSelectors';
 import * as selectors from '../redux/game/gameSelectors';
 
 export const useGameState = () => {
@@ -20,6 +15,8 @@ export const useGameState = () => {
   const handleSquareClick = useCallback(
     (squareId) => {
       const piece = board[squareId];
+
+      // state.game.isGameOverдорівнює true, операція має вивести console.warn
 
       // 1. Вибір фігури (Клік 1)
       if (selectedSquare === null && piece) {
@@ -36,12 +33,30 @@ export const useGameState = () => {
               from: selectedSquare,
               to: squareId,
               piece: board[selectedSquare],
+              timestamp: Date.now(),
             })
           );
         }
       }
     },
     [dispatch, board, selectedSquare]
+  );
+
+  const handleTimeUp = useCallback(
+    (color) => {
+      const state = store.getState(); // Отримуємо актуальний зріз
+
+      // Поки що мат не прописаний, тому просто фіксуємо поразку по часу
+      console.log(`⏰ Time's up for ${color === 'w' ? 'White' : 'Black'}`);
+
+      dispatch(
+        endGame({
+          winner: color === 'w' ? 'b' : 'w',
+          reason: 'timeout',
+        })
+      );
+    },
+    [dispatch]
   );
 
   return {

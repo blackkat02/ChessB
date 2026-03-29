@@ -8,14 +8,16 @@ const initialState = {
   selectedSquare: null, // 'e2' або null
   whiteTime: DEFAULT_TIME,
   blackTime: DEFAULT_TIME,
-  history: [], // Масив ходів для бота та аналізу
+  history: [],
+  winner: null, // 'w', 'b', або 'draw'
+  reason: null, // 'checkmate', 'timeout', 'resignation'
+  isGameOver: false,
 };
 
 const gameSlice = createSlice({
   name: 'game',
   initialState,
   reducers: {
-    // Тільки "сухі" факти зміни даних
     setSelection: (state, action) => {
       state.selectedSquare = action.payload;
     },
@@ -33,6 +35,12 @@ const gameSlice = createSlice({
       else state.blackTime = time;
     },
     resetGame: () => initialState,
+    endGame: (state, action) => {
+      state.winner = action.payload.winner;
+      state.reason = action.payload.reason;
+      state.isGameOver = true;
+      state.currentTurn = null; // Зупиняємо гру
+    },
   },
 });
 
