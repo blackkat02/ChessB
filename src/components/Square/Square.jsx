@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion'; // Додаємо AnimatePresence для плавного зникнення
+import { motion, AnimatePresence } from 'framer-motion';
 import Piece from '../Piece/Piece';
 import styles from './Square.module.css';
 
@@ -11,16 +11,16 @@ const Square = React.memo(
       initial: {
         opacity: 0,
         y: 10,
-        scale: 0.8, // Трохи менший
-        x: '-50%', // Жорстке центрування по X
+        scale: 0.8,
+        x: '-50%',
       },
       animate: {
         opacity: 1,
-        y: 0, // Піднімаємо на місце
+        y: 0,
         scale: 1,
-        x: '-50%', // Залишаємо по центру
+        x: '-50%',
         transition: {
-          type: 'spring', // Пружинна анімація для м'якості
+          type: 'spring',
           stiffness: 300,
           damping: 20,
         },
@@ -29,7 +29,7 @@ const Square = React.memo(
         opacity: 0,
         y: -10,
         scale: 0.8,
-        x: '-50%', // Не рухаємо по X при зникненні
+        x: '-50%',
         transition: { duration: 0.15 },
       },
     };
@@ -41,10 +41,8 @@ const Square = React.memo(
         ${styles[id] || ''}`}
         onClick={() => onClick(id)}
         aria-label={`Клітинка ${id}`}
-        // Події для анімації підказки
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        // Легкий візуальний відгук самої клітинки
         whileHover={{ brightness: 1.1 }}
         whileTap={{ scale: 0.95 }}
       >
@@ -63,10 +61,8 @@ const Square = React.memo(
           )}
         </AnimatePresence>
 
-        {/* Твій існуючий ID (якщо увімкнено в пропсах) */}
         {showSquareId && <span className={styles.squareId}>{id}</span>}
 
-        {/* Фігура */}
         {pieceType && <Piece type={pieceType} />}
       </motion.button>
     );
