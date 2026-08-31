@@ -1,7 +1,9 @@
 import React, { useMemo, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import Square from '../Square/Square';
-import styles from './ChessBoardView.module.css';
+
+const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+const RANKS = ['8', '7', '6', '5', '4', '3', '2', '1'];
 
 const ChessBoardView = ({
   showSquareId,
@@ -9,72 +11,54 @@ const ChessBoardView = ({
   selectedSquare,
   onClick,
 }) => {
-  // Функція для отримання фігури (ТЕПЕР ЗАЛЕЖИТЬ ВІД ПРОПСА boardPiecesObject)
   const getPieceAtSquareId = useCallback(
-    (squareId) => {
-      // console.log(boardPiecesObject[squareId]);
-      return boardPiecesObject[squareId] ?? null;
-    },
+    (squareId) => boardPiecesObject[squareId] ?? null,
     [boardPiecesObject]
   );
 
-  const handleSquareClick = onClick;
-
-  const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-  const ranks = ['8', '7', '6', '5', '4', '3', '2', '1'];
-
-  // === useMemo для кешування масиву Squares ===
   const boardSquares = useMemo(() => {
-    // Ми не виводимо console.log, якщо використовуємо React.memo!
     const squares = [];
     for (let i = 0; i < 8; i++) {
       for (let j = 0; j < 8; j++) {
         const isLight = (i + j) % 2 === 0;
-        const squareId = `${files[j]}${ranks[i]}`;
-
-        const pieceType = getPieceAtSquareId(squareId);
-        // isSelected та showSquareId — тепер пропси або похідні дані
-        const isSelected = selectedSquare === squareId;
-
+        const squareId = `${FILES[j]}${RANKS[i]}`;
         squares.push(
           <Square
             key={squareId}
             id={squareId}
             isLight={isLight}
             showSquareId={showSquareId}
-            pieceType={pieceType}
-            isSelected={isSelected}
-            onClick={handleSquareClick}
+            pieceType={getPieceAtSquareId(squareId)}
+            isSelected={selectedSquare === squareId}
+            onClick={onClick}
           />
         );
       }
     }
     return squares;
-  }, [
-    boardPiecesObject,
-    selectedSquare,
-    showSquareId,
-    getPieceAtSquareId,
-    handleSquareClick,
-  ]);
+  }, [showSquareId, selectedSquare, getPieceAtSquareId, onClick]);
 
   return (
-    <div className={styles.mainWrapper}>
-      <div className={styles.ranksColumn}>
-        {ranks.map((rank) => (
-          <div key={rank} className={styles.rankLabel}>
-            {rank}
+    <div className="inline-block select-none">
+      <div className="flex gap-1.5">
+        <div className="flex w-4 flex-col justify-around py-2 text-center text-xs font-bold text-neutral-500">
+          {RANKS.map((rank) => (
+            <span key={rank}>{rank}</span>
+          ))}
+        </div>
+
+        <div className="w-[min(82vw,460px)] rounded-xl bg-board-frame p-2 shadow-2xl">
+          <div className="grid aspect-square grid-cols-8 overflow-hidden rounded-md ring-1 ring-black/20">
+            {boardSquares}
           </div>
-        ))}
+        </div>
       </div>
 
-      <div className={styles.boardWrapper}>
-        <div className={styles.chessBoard}>{boardSquares}</div>
-        <div className={styles.filesRow}>
-          {files.map((file) => (
-            <div key={file} className={styles.fileLabel}>
-              {file}
-            </div>
+      <div className="mt-1.5 flex gap-1.5">
+        <div className="w-4" />
+        <div className="grid w-[min(82vw,460px)] grid-cols-8 px-2 text-center text-xs font-bold text-neutral-500">
+          {FILES.map((file) => (
+            <span key={file}>{file}</span>
           ))}
         </div>
       </div>
@@ -82,19 +66,11 @@ const ChessBoardView = ({
   );
 };
 
-// === НОВИЙ КОД: ВАЛІДАЦІЯ ПРОПСІВ ===
 ChessBoardView.propTypes = {
-  // boardPiecesObject тепер обов'язковий і має бути об'єктом
   boardPiecesObject: PropTypes.object.isRequired,
-
-  // selectedSquare може бути рядком або null
   selectedSquare: PropTypes.string,
-
-  // onClick — це функція (наш handleSquareClick)
   onClick: PropTypes.func.isRequired,
-
-  // showSquareId — вже був у пропсах
-  showSquareId: PropTypes.bool.isRequired,
+  showSquareId: PropTypes.bool,
 };
 
 export default React.memo(ChessBoardView);

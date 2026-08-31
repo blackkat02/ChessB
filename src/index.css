@@ -1,25 +1,26 @@
+@import 'tailwindcss';
+
+/* ---- Project theme tokens (Tailwind v4) ---- */
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-chess: 'Noto Sans Symbols 2', 'Segoe UI Symbol', sans-serif;
+
+  --color-board-light: #f0d9b5;
+  --color-board-dark: #b58863;
+  --color-board-selected: #cdd26a;
+  --color-board-frame: #3a2c22;
+
+  --color-brand: #3470ff;
+  --color-danger: #dc3545;
+}
+
+/* ---- Base ---- */
 body {
-  font-family: 'Inter', sans-serif;
-  line-height: 1.5; 
+  font-family: var(--font-sans);
+  line-height: 1.5;
   color: #121417;
-  margin: 0; 
-  padding: 0; 
-  box-sizing: border-box;
-}
-
-h1 {
-  font-weight: 600;
-  font-size: 48px;
-  line-height: 1.2;
-}
-
-input,
-textarea,
-button,
-select {
-  font-family: 'Inter', sans-serif;
-  font-weight: 500; 
-  color: #121417;
+  margin: 0;
+  background-color: #f4f2ee;
 }
 
 *,

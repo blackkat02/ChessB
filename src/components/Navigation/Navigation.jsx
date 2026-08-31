@@ -1,41 +1,34 @@
 import { Link, NavLink } from 'react-router-dom';
-import css from './Navigation.module.css';
+import clsx from 'clsx';
+
+const linkClass = ({ isActive }) =>
+  clsx(
+    'rounded-md px-3 py-1.5 text-sm font-medium transition',
+    isActive
+      ? 'bg-brand/10 text-brand'
+      : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900'
+  );
 
 const Navigation = () => {
   return (
-    <header className="site-header">
-    <div className={css.wrapper}>
-      <nav className={css.mainNav}>
-        <Link 
-          to="/" 
-          className={css.navLink}
-        >
-          <p className={css.logo}>Chess<span className={css.logoSpan}>B</span></p>
+    <header className="border-b border-neutral-200 bg-white/80 backdrop-blur">
+      <nav className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
+        <Link to="/" className="text-xl font-extrabold tracking-tight text-neutral-900">
+          Chess<span className="text-brand">B</span>
         </Link>
-        <ul className={css.list}>
+        <ul className="flex gap-1">
           <li>
-            <NavLink 
-              to="/" 
-              className={({ isActive }) => 
-                isActive ? `${css.link} ${css.active}` : css.link
-              }
-            >
+            <NavLink to="/" end className={linkClass}>
               Home
             </NavLink>
           </li>
           <li>
-            <NavLink 
-              to="/sandbox" 
-              className={({ isActive }) => 
-                isActive ? `${css.link} ${css.active}` : css.link
-              }
-            >
+            <NavLink to="/sandbox" className={linkClass}>
               SandBox
             </NavLink>
           </li>
         </ul>
       </nav>
-    </div>
     </header>
   );
 };

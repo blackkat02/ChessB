@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import styles from './Clock.module.css';
+import clsx from 'clsx';
 
-// Функція форматування часу для відображення
 const formatTime = (ms) => {
-  const totalSeconds = Math.floor(ms / 1000);
+  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
-  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 };
 
 const Clock = ({ initialTime, color, isActive, onTimeUp, isGameOver }) => {
@@ -17,61 +16,51 @@ const Clock = ({ initialTime, color, isActive, onTimeUp, isGameOver }) => {
   }, [initialTime]);
 
   useEffect(() => {
-    let interval;
+    if (!isActive || isGameOver || time <= 0) return undefined;
 
-    // Якщо гра закінчена, робимо годинник тьмяним (сірим)
-    const gameOverStyle = isGameOver
-      ? { filter: 'grayscale(1)', opacity: 0.6, pointerEvents: 'none' }
-      : {};
-
-    const finalStyle = { ...activeStyle, ...gameOverStyle };
-
-    // БЛОКУВАННЯ: Якщо гра закінчена, інтервал ніколи не створиться
-    if (isActive && time > 0 && !isGameOver) {
-      interval = setInterval(() => {
-        setTime((prevTime) => {
-          const newTime = prevTime - 1000;
-          if (newTime <= 0) {
-            clearInterval(interval);
-            onTimeUp(color);
-            return 0;
-          }
-          return newTime;
-        });
-      }, 1000);
-    }
+    const interval = setInterval(() => {
+      setTime((prev) => {
+        const next = prev - 1000;
+        if (next <= 0) {
+          clearInterval(interval);
+          onTimeUp?.(color);
+          return 0;
+        }
+        return next;
+      });
+    }, 1000);
 
     return () => clearInterval(interval);
-  }, [isActive, time, color, onTimeUp, isGameOver]);
+  }, [isActive, isGameOver, time, color, onTimeUp]);
 
-  // === 3. ДИНАМІЧНІ КЛАСИ ТА СТИЛІ ===
   const totalSeconds = Math.floor(time / 1000);
-  const isLowTime = totalSeconds < 30 && totalSeconds > 0; // Менше 30 секунд, але не 0
-
-  const baseClass = color === 'w' ? styles.lightClock : styles.darkClock;
-
-  // Стиль, що виділяє активний годинник
-  const activeStyle = isActive
-    ? { transform: 'scale(1.05)', boxShadow: '0 0 15px rgba(255, 223, 0, 0.8)' }
-    : {};
-
-  // Клас для часу, що закінчується
-  const lowTimeClass = isLowTime ? styles.lowTime : '';
-
-  const gameOverStyle = isGameOver
-    ? { filter: 'grayscale(1)', opacity: 0.6, pointerEvents: 'none' }
-    : {};
-
-  const finalStyle = { ...activeStyle, ...gameOverStyle };
+  const isLowTime = totalSeconds > 0 && totalSeconds < 30;
+  const isWhite = color === 'w';
 
   return (
     <div
-      className={`${styles.clockContainer} ${baseClass}`}
-      style={activeStyle}
+      className={clsx(
+        'flex w-44 flex-col items-center rounded-xl border px-4 py-3 transition-all duration-300',
+        isWhite
+          ? 'border-neutral-200 bg-white text-neutral-900'
+          : 'border-neutral-900 bg-neutral-800 text-neutral-50',
+        isActive &&
+          !isGameOver &&
+          'scale-105 border-amber-400 shadow-[0_0_18px_rgba(251,191,36,0.55)]',
+        isGameOver && 'opacity-60 grayscale'
+      )}
     >
-      <div className={`${styles.timeDisplay} ${lowTimeClass}`}>
+      <span className="text-xs font-medium uppercase tracking-widest opacity-60">
+        {isWhite ? 'White' : 'Black'}
+      </span>
+      <span
+        className={clsx(
+          'font-mono text-4xl font-bold tabular-nums',
+          isLowTime && 'animate-pulse text-red-500'
+        )}
+      >
         {formatTime(time)}
-      </div>
+      </span>
     </div>
   );
 };
