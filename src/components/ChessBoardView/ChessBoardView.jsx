@@ -39,16 +39,16 @@ const ChessBoardView = ({
   }, [showSquareId, selectedSquare, getPieceAtSquareId, onClick]);
 
   return (
-    <div className="inline-block select-none">
+    <div className="inline-block select-none font-ui">
       <div className="flex gap-1.5">
-        <div className="flex w-4 flex-col justify-around py-2 text-center text-xs font-bold text-neutral-500">
+        <div className="flex w-4 flex-col justify-around py-2 text-center text-xs font-bold text-board-coord">
           {RANKS.map((rank) => (
             <span key={rank}>{rank}</span>
           ))}
         </div>
 
-        <div className="w-[min(82vw,460px)] rounded-xl bg-board-frame p-2 shadow-2xl">
-          <div className="grid aspect-square grid-cols-8 overflow-hidden rounded-md ring-1 ring-black/20">
+        <div className="w-[var(--c-board-max-width)] max-w-[82vw] rounded-frame bg-board-frame p-2 shadow-board">
+          <div className="grid aspect-square grid-cols-8 overflow-hidden rounded-md ring-1 ring-board-edge">
             {boardSquares}
           </div>
         </div>
@@ -56,7 +56,7 @@ const ChessBoardView = ({
 
       <div className="mt-1.5 flex gap-1.5">
         <div className="w-4" />
-        <div className="grid w-[min(82vw,460px)] grid-cols-8 px-2 text-center text-xs font-bold text-neutral-500">
+        <div className="grid w-[var(--c-board-max-width)] max-w-[82vw] grid-cols-8 px-2 text-center text-xs font-bold text-board-coord">
           {FILES.map((file) => (
             <span key={file}>{file}</span>
           ))}

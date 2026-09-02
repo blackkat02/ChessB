@@ -11,11 +11,10 @@ const Piece = React.memo(({ type }) => {
       aria-label={`${isWhite ? 'White' : 'Black'} ${type.toUpperCase()}`}
       className={clsx(
         'pointer-events-none absolute inset-0 flex select-none items-center justify-center',
-        'font-chess leading-none',
-        'text-[clamp(1.75rem,7vw,2.75rem)]',
+        'font-glyph leading-none text-[length:var(--c-piece-size)]',
         isWhite
-          ? 'text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.55),0_0_1px_rgba(0,0,0,0.9)]'
-          : 'text-neutral-900 [text-shadow:0_1px_1px_rgba(255,255,255,0.25)]'
+          ? 'text-piece-white [text-shadow:var(--c-piece-white-shadow)]'
+          : 'text-piece-black [text-shadow:var(--c-piece-black-shadow)]'
       )}
     >
       {symbol}

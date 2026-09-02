@@ -1,0 +1,76 @@
+/**
+ * ┌─────────────────────────────────────────────────────────────┐
+ * │ LAYER 2 — SEMANTIC                                          │
+ * └─────────────────────────────────────────────────────────────┘
+ * Role-based aliases: "what does this value mean in the UI".
+ * Every value here points at a LAYER 1 primitive — no literals.
+ *
+ * This is the layer you re-map to re-theme the whole app. The
+ * [data-theme='dark'] block at the bottom re-assigns a handful of
+ * these and every component follows automatically.
+ */
+:root {
+  /* ---- surfaces / backgrounds ---- */
+  --sem-bg-page: var(--prim-base-50);
+  --sem-bg-surface: var(--prim-base-0);
+  --sem-bg-surface-sunk: var(--prim-base-75);
+  --sem-bg-inverse: var(--prim-base-800);
+
+  /* ---- foreground / text ---- */
+  --sem-fg: var(--prim-ink);
+  --sem-fg-muted: var(--prim-base-500);
+  --sem-fg-subtle: var(--prim-base-600);
+  --sem-fg-on-inverse: var(--prim-base-25);
+  --sem-fg-on-accent: var(--prim-base-0);
+
+  /* ---- accent / status ---- */
+  --sem-accent: var(--prim-brand-500);
+  --sem-accent-strong: var(--prim-brand-600);
+  --sem-danger: var(--prim-signal-red);
+  --sem-warning: var(--prim-signal-amber);
+  --sem-critical: var(--prim-signal-crimson);
+
+  /* ---- borders / lines ---- */
+  --sem-border: var(--prim-base-150);
+  --sem-border-strong: var(--prim-base-300);
+  --sem-border-inverse: var(--prim-base-900);
+
+  /* ---- elevation ---- */
+  --sem-shadow-card: var(--prim-elevation-1);
+  --sem-shadow-raised: var(--prim-elevation-2);
+  --sem-shadow-overlay: var(--prim-elevation-3);
+  --sem-shadow-focus-glow: var(--prim-elevation-glow-amber);
+
+  /* ---- board domain ---- */
+  --sem-board-square-light: var(--prim-wood-100);
+  --sem-board-square-dark: var(--prim-wood-600);
+  --sem-board-highlight: var(--prim-olive-300);
+  --sem-board-frame: var(--prim-wood-900);
+
+  /* ---- typography ---- */
+  --sem-font-ui: var(--prim-family-sans);
+  --sem-font-glyph: var(--prim-family-symbol);
+  --sem-font-numeric: var(--prim-family-mono);
+
+  /* ---- shape ---- */
+  --sem-radius-control: var(--prim-radius-md);
+  --sem-radius-card: var(--prim-radius-lg);
+  --sem-radius-frame: var(--prim-radius-xl);
+}
+
+/* Opt-in dark theme — set <html data-theme="dark">. Only layer 2 changes. */
+[data-theme='dark'] {
+  --sem-bg-page: var(--prim-base-900);
+  --sem-bg-surface: var(--prim-base-800);
+  --sem-bg-surface-sunk: #101010;
+  --sem-bg-inverse: var(--prim-base-25);
+
+  --sem-fg: var(--prim-base-25);
+  --sem-fg-muted: #9a9a9a;
+  --sem-fg-subtle: #b9b9b9;
+  --sem-fg-on-inverse: var(--prim-ink);
+
+  --sem-border: #333333;
+  --sem-border-strong: #444444;
+  --sem-border-inverse: var(--prim-base-25);
+}

@@ -12,23 +12,23 @@ const HomePage = () => {
   const isWhiteTurn = gameState.currentTurn === 'w';
 
   return (
-    <div className="flex flex-col items-center gap-6 py-6">
+    <div className="flex flex-col items-center gap-6 py-6 font-ui">
       <header className="text-center">
-        <h1 className="text-3xl font-bold tracking-tight text-neutral-900 sm:text-4xl">
-          Chess <span className="text-brand">MVP</span>
+        <h1 className="text-3xl font-bold tracking-tight text-fg sm:text-4xl">
+          Chess <span className="text-accent">MVP</span>
         </h1>
         <p
           className={clsx(
             'mt-2 inline-flex items-center gap-2 rounded-full px-4 py-1 text-sm font-semibold',
             isWhiteTurn
-              ? 'bg-neutral-100 text-neutral-700'
-              : 'bg-neutral-800 text-neutral-50'
+              ? 'bg-turn-white-bg text-turn-white-fg'
+              : 'bg-turn-black-bg text-turn-black-fg'
           )}
         >
           <span
             className={clsx(
               'h-2.5 w-2.5 rounded-full',
-              isWhiteTurn ? 'bg-white ring-1 ring-neutral-400' : 'bg-neutral-900'
+              isWhiteTurn ? 'bg-piece-white ring-1 ring-border' : 'bg-piece-black'
             )}
           />
           Хід {isWhiteTurn ? 'білих' : 'чорних'}
@@ -36,16 +36,8 @@ const HomePage = () => {
       </header>
 
       <div className="flex w-full max-w-lg items-center justify-center gap-4 sm:justify-between">
-        <Clock
-          initialTime={gameState.whiteTime}
-          color="w"
-          isActive={isWhiteTurn}
-        />
-        <Clock
-          initialTime={gameState.blackTime}
-          color="b"
-          isActive={!isWhiteTurn}
-        />
+        <Clock initialTime={gameState.whiteTime} color="w" isActive={isWhiteTurn} />
+        <Clock initialTime={gameState.blackTime} color="b" isActive={!isWhiteTurn} />
       </div>
 
       <ChessBoardContainer showSquareId={showSquareId} />

@@ -5,16 +5,16 @@ const linkClass = ({ isActive }) =>
   clsx(
     'rounded-md px-3 py-1.5 text-sm font-medium transition',
     isActive
-      ? 'bg-brand/10 text-brand'
-      : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900'
+      ? 'bg-nav-link-active-bg text-nav-link-active'
+      : 'text-nav-link hover:bg-nav-link-hover-bg hover:text-nav-link-hover'
   );
 
 const Navigation = () => {
   return (
-    <header className="border-b border-neutral-200 bg-white/80 backdrop-blur">
+    <header className="border-b border-nav-border bg-nav-bg font-ui backdrop-blur">
       <nav className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
-        <Link to="/" className="text-xl font-extrabold tracking-tight text-neutral-900">
-          Chess<span className="text-brand">B</span>
+        <Link to="/" className="text-xl font-extrabold tracking-tight text-fg">
+          Chess<span className="text-accent">B</span>
         </Link>
         <ul className="flex gap-1">
           <li>

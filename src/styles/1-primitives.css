@@ -1,0 +1,62 @@
+/**
+ * ┌─────────────────────────────────────────────────────────────┐
+ * │ LAYER 1 — PRIMITIVES                                         │
+ * └─────────────────────────────────────────────────────────────┘
+ * Raw, context-free values. This is the ONLY file where literal
+ * colours / sizes / shadows are allowed to appear.
+ *
+ * Rules:
+ *  - Never reference a primitive from a component. Go through
+ *    layer 2 (semantic) → layer 3 (component).
+ *  - Names describe the value, not the usage ("wood-600", not "board").
+ */
+:root {
+  /* ---- colour palette ---- */
+  --prim-wood-100: #f0d9b5;
+  --prim-wood-400: #c9a06b;
+  --prim-wood-600: #b58863;
+  --prim-wood-900: #3a2c22;
+  --prim-olive-300: #cdd26a;
+
+  --prim-brand-500: #3470ff;
+  --prim-brand-600: #2555d8;
+
+  --prim-signal-red: #dc3545;
+  --prim-signal-amber: #fbbf24;
+  --prim-signal-crimson: #ef4444;
+
+  --prim-base-0: #ffffff;
+  --prim-base-25: #faf8f4;
+  --prim-base-50: #f4f2ee;
+  --prim-base-75: #f8f9fa;
+  --prim-base-150: #e7e2d9;
+  --prim-base-300: #d4d4d4;
+  --prim-base-500: #737373;
+  --prim-base-600: #525252;
+  --prim-base-800: #262626;
+  --prim-base-900: #171717;
+  --prim-ink: #121417;
+
+  /* ---- radii ---- */
+  --prim-radius-2xs: 4px;
+  --prim-radius-xs: 6px;
+  --prim-radius-sm: 8px;
+  --prim-radius-md: 10px;
+  --prim-radius-lg: 14px;
+  --prim-radius-xl: 20px;
+
+  /* ---- elevation ---- */
+  --prim-elevation-1: 0 1px 2px rgba(0, 0, 0, 0.06), 0 1px 1px rgba(0, 0, 0, 0.04);
+  --prim-elevation-2: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --prim-elevation-3: 0 10px 30px rgba(0, 0, 0, 0.18);
+  --prim-elevation-glow-amber: 0 0 18px rgba(251, 191, 36, 0.55);
+
+  /* ---- type families ---- */
+  --prim-family-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --prim-family-symbol: 'Noto Sans Symbols 2', 'Segoe UI Symbol', sans-serif;
+  --prim-family-mono: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  /* ---- dimensions ---- */
+  --prim-dim-board-max: 460px;
+  --prim-dim-clock-width: 11rem;
+}
