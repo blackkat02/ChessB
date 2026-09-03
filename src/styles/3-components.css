@@ -1,0 +1,164 @@
+/**
+ * ┌─────────────────────────────────────────────────────────────┐
+ * │ LAYER 3 — COMPONENT TOKENS                                  │
+ * └─────────────────────────────────────────────────────────────┘
+ * One group per component. Every value points at a LAYER 2
+ * semantic token (or a composite built from them) — no primitives,
+ * no literals except structural composites (insets, text-shadows).
+ *
+ * The `@theme inline` block at the bottom is the bridge to Tailwind:
+ * it turns these tokens into utilities (`bg-btn-primary`,
+ * `text-clock-black-fg`, `rounded-frame`, `font-glyph`, …) that the
+ * JSX uses. Components reference ONLY layer-3 names.
+ */
+:root {
+  /* ── App shell / pages ───────────────────────────────── */
+  --c-page-bg: var(--sem-bg-page);
+
+  /* ── Navigation ──────────────────────────────────────── */
+  --c-nav-bg: color-mix(in srgb, var(--sem-bg-surface) 82%, transparent);
+  --c-nav-border: var(--sem-border);
+  --c-nav-link-fg: var(--sem-fg-subtle);
+  --c-nav-link-fg-hover: var(--sem-fg);
+  --c-nav-link-bg-hover: var(--sem-bg-surface-sunk);
+  --c-nav-link-fg-active: var(--sem-accent);
+  --c-nav-link-bg-active: color-mix(in srgb, var(--sem-accent) 12%, transparent);
+
+  /* ── Button ──────────────────────────────────────────── */
+  --c-btn-radius: var(--sem-radius-control);
+  --c-btn-shadow: var(--sem-shadow-card);
+  --c-btn-focus-ring: color-mix(in srgb, var(--sem-accent) 45%, transparent);
+  --c-btn-default-bg: var(--sem-bg-surface);
+  --c-btn-default-bg-hover: var(--sem-bg-surface-sunk);
+  --c-btn-default-fg: var(--sem-fg-subtle);
+  --c-btn-default-border: var(--sem-border-strong);
+  --c-btn-primary-bg: var(--sem-accent);
+  --c-btn-primary-fg: var(--sem-fg-on-accent);
+  --c-btn-danger-bg: var(--sem-danger);
+  --c-btn-danger-fg: var(--sem-fg-on-accent);
+
+  /* ── Board (ChessBoardView) ──────────────────────────── */
+  --c-board-max-width: var(--prim-dim-board-max);
+  --c-board-frame-bg: var(--sem-board-frame);
+  --c-board-frame-radius: var(--sem-radius-frame);
+  --c-board-shadow: var(--sem-shadow-overlay);
+  --c-board-coord-fg: var(--sem-fg-muted);
+  --c-board-inner-ring: rgba(0, 0, 0, 0.2);
+
+  /* ── Square ──────────────────────────────────────────── */
+  --c-square-light-bg: var(--sem-board-square-light);
+  --c-square-dark-bg: var(--sem-board-square-dark);
+  --c-square-selected-bg: var(--sem-board-highlight);
+  --c-square-selected-inset: inset 0 0 0 3px rgba(0, 0, 0, 0.25);
+  --c-square-tooltip-bg: rgba(0, 0, 0, 0.8);
+  --c-square-tooltip-fg: var(--prim-base-0);
+  --c-square-coord-fg: rgba(0, 0, 0, 0.4);
+
+  /* ── Piece ───────────────────────────────────────────── */
+  --c-piece-size: clamp(1.75rem, 7vw, 2.75rem);
+  --c-piece-white-fill: var(--prim-base-0);
+  --c-piece-black-fill: var(--prim-base-900);
+  --c-piece-white-shadow: 0 1px 2px rgba(0, 0, 0, 0.55), 0 0 1px rgba(0, 0, 0, 0.9);
+  --c-piece-black-shadow: 0 1px 1px rgba(255, 255, 255, 0.25);
+
+  /* ── Clock ───────────────────────────────────────────── */
+  --c-clock-width: var(--prim-dim-clock-width);
+  --c-clock-radius: var(--sem-radius-card);
+  --c-clock-white-bg: var(--sem-bg-surface);
+  --c-clock-white-fg: var(--sem-fg);
+  --c-clock-white-border: var(--sem-border);
+  --c-clock-black-bg: var(--sem-bg-inverse);
+  --c-clock-black-fg: var(--sem-fg-on-inverse);
+  --c-clock-black-border: var(--sem-border-inverse);
+  --c-clock-active-border: var(--sem-warning);
+  --c-clock-active-glow: var(--sem-shadow-focus-glow);
+  --c-clock-danger-fg: var(--sem-critical);
+
+  /* ── Turn badge (HomePage) ───────────────────────────── */
+  --c-turn-white-bg: var(--sem-bg-surface-sunk);
+  --c-turn-white-fg: var(--sem-fg-subtle);
+  --c-turn-black-bg: var(--sem-bg-inverse);
+  --c-turn-black-fg: var(--sem-fg-on-inverse);
+
+  /* ── Error page (NotFound) ───────────────────────────── */
+  --c-error-code-fg: var(--sem-accent);
+  --c-error-surface-bg: var(--sem-bg-surface);
+  --c-error-page-bg: var(--sem-bg-surface-sunk);
+}
+
+@theme inline {
+  /* colours → bg-* / text-* / border-* / ring-* */
+  --color-page: var(--c-page-bg);
+  --color-surface: var(--sem-bg-surface);
+  --color-surface-sunk: var(--sem-bg-surface-sunk);
+  --color-fg: var(--sem-fg);
+  --color-fg-muted: var(--sem-fg-muted);
+  --color-fg-subtle: var(--sem-fg-subtle);
+  --color-accent: var(--sem-accent);
+  --color-danger: var(--sem-danger);
+  --color-border: var(--sem-border);
+
+  --color-nav-bg: var(--c-nav-bg);
+  --color-nav-border: var(--c-nav-border);
+  --color-nav-link: var(--c-nav-link-fg);
+  --color-nav-link-hover: var(--c-nav-link-fg-hover);
+  --color-nav-link-hover-bg: var(--c-nav-link-bg-hover);
+  --color-nav-link-active: var(--c-nav-link-fg-active);
+  --color-nav-link-active-bg: var(--c-nav-link-bg-active);
+
+  --color-btn-default: var(--c-btn-default-bg);
+  --color-btn-default-hover: var(--c-btn-default-bg-hover);
+  --color-btn-default-fg: var(--c-btn-default-fg);
+  --color-btn-default-border: var(--c-btn-default-border);
+  --color-btn-primary: var(--c-btn-primary-bg);
+  --color-btn-primary-fg: var(--c-btn-primary-fg);
+  --color-btn-danger: var(--c-btn-danger-bg);
+  --color-btn-danger-fg: var(--c-btn-danger-fg);
+  --color-btn-focus: var(--c-btn-focus-ring);
+
+  --color-board-frame: var(--c-board-frame-bg);
+  --color-board-coord: var(--c-board-coord-fg);
+  --color-board-edge: var(--c-board-inner-ring);
+  --color-square-light: var(--c-square-light-bg);
+  --color-square-dark: var(--c-square-dark-bg);
+  --color-square-selected: var(--c-square-selected-bg);
+  --color-square-tooltip: var(--c-square-tooltip-bg);
+  --color-square-tooltip-fg: var(--c-square-tooltip-fg);
+  --color-square-coord: var(--c-square-coord-fg);
+
+  --color-piece-white: var(--c-piece-white-fill);
+  --color-piece-black: var(--c-piece-black-fill);
+
+  --color-clock-white-bg: var(--c-clock-white-bg);
+  --color-clock-white-fg: var(--c-clock-white-fg);
+  --color-clock-white-border: var(--c-clock-white-border);
+  --color-clock-black-bg: var(--c-clock-black-bg);
+  --color-clock-black-fg: var(--c-clock-black-fg);
+  --color-clock-black-border: var(--c-clock-black-border);
+  --color-clock-active-border: var(--c-clock-active-border);
+  --color-clock-danger: var(--c-clock-danger-fg);
+
+  --color-turn-white-bg: var(--c-turn-white-bg);
+  --color-turn-white-fg: var(--c-turn-white-fg);
+  --color-turn-black-bg: var(--c-turn-black-bg);
+  --color-turn-black-fg: var(--c-turn-black-fg);
+
+  --color-error-code: var(--c-error-code-fg);
+  --color-error-surface: var(--c-error-surface-bg);
+  --color-error-page: var(--c-error-page-bg);
+
+  /* radii → rounded-* */
+  --radius-control: var(--c-btn-radius);
+  --radius-card: var(--c-clock-radius);
+  --radius-frame: var(--c-board-frame-radius);
+
+  /* shadows → shadow-* */
+  --shadow-btn: var(--c-btn-shadow);
+  --shadow-board: var(--c-board-shadow);
+  --shadow-clock-active: var(--c-clock-active-glow);
+
+  /* fonts → font-* */
+  --font-ui: var(--sem-font-ui);
+  --font-glyph: var(--sem-font-glyph);
+  --font-numeric: var(--sem-font-numeric);
+}

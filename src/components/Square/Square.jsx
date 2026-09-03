@@ -29,11 +29,9 @@ const Square = React.memo(
         whileHover={{ filter: 'brightness(1.08)' }}
         whileTap={{ scale: 0.96 }}
         className={clsx(
-          'relative flex aspect-square w-full items-center justify-center',
-          'border-0 p-0 outline-none',
-          isLight ? 'bg-board-light' : 'bg-board-dark',
-          isSelected &&
-            'bg-board-selected shadow-[inset_0_0_0_3px_rgba(0,0,0,0.25)]'
+          'relative flex aspect-square w-full items-center justify-center border-0 p-0 outline-none',
+          isLight ? 'bg-square-light' : 'bg-square-dark',
+          isSelected && 'bg-square-selected shadow-[var(--c-square-selected-inset)]'
         )}
       >
         <AnimatePresence>
@@ -43,7 +41,7 @@ const Square = React.memo(
               initial="initial"
               animate="animate"
               exit="exit"
-              className="pointer-events-none absolute -top-7 left-1/2 z-30 rounded bg-black/80 px-1.5 py-0.5 text-[10px] font-bold text-white"
+              className="pointer-events-none absolute -top-7 left-1/2 z-30 rounded bg-square-tooltip px-1.5 py-0.5 text-[10px] font-bold text-square-tooltip-fg"
             >
               {id}
             </motion.span>
@@ -51,7 +49,7 @@ const Square = React.memo(
         </AnimatePresence>
 
         {showSquareId && (
-          <span className="pointer-events-none absolute bottom-0.5 left-1 text-[10px] font-semibold text-black/40">
+          <span className="pointer-events-none absolute bottom-0.5 left-1 text-[10px] font-semibold text-square-coord">
             {id}
           </span>
         )}

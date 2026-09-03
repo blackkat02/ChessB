@@ -1,26 +1,18 @@
 @import 'tailwindcss';
 
-/* ---- Project theme tokens (Tailwind v4) ---- */
-@theme {
-  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
-  --font-chess: 'Noto Sans Symbols 2', 'Segoe UI Symbol', sans-serif;
+/* Three-layer style config — see each file's header.
+   1 primitives → 2 semantic → 3 component tokens (+ Tailwind bridge). */
+@import './styles/1-primitives.css';
+@import './styles/2-semantic.css';
+@import './styles/3-components.css';
 
-  --color-board-light: #f0d9b5;
-  --color-board-dark: #b58863;
-  --color-board-selected: #cdd26a;
-  --color-board-frame: #3a2c22;
-
-  --color-brand: #3470ff;
-  --color-danger: #dc3545;
-}
-
-/* ---- Base ---- */
+/* ---- base ---- */
 body {
-  font-family: var(--font-sans);
-  line-height: 1.5;
-  color: #121417;
   margin: 0;
-  background-color: #f4f2ee;
+  font-family: var(--sem-font-ui);
+  line-height: 1.5;
+  color: var(--sem-fg);
+  background-color: var(--sem-bg-page);
 }
 
 *,
