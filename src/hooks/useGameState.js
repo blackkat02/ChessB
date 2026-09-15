@@ -15,6 +15,7 @@ export const useGameState = () => {
   const turn = useSelector(selectors.selectCurrentTurn);
   const whiteTime = useSelector(selectors.selectWhiteTime);
   const blackTime = useSelector(selectors.selectBlackTime);
+  const hasGameStarted = useSelector(selectors.selectHasGameStarted);
 
   const handleSquareClick = useCallback(
     (squareId) => {
@@ -73,6 +74,7 @@ export const useGameState = () => {
       currentTurn: turn,
       whiteTime,
       blackTime,
+      hasGameStarted,
     },
     handleSquareClick,
     resetGameState,

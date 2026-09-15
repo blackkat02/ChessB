@@ -11,6 +11,7 @@ const Piece = React.memo(({ type }) => {
       aria-label={`${isWhite ? 'White' : 'Black'} ${type.toUpperCase()}`}
       className={clsx(
         'pointer-events-none absolute inset-0 flex select-none items-center justify-center',
+        'translate-y-[var(--c-piece-glyph-offset-y)]',
         'font-glyph leading-none text-[length:var(--c-piece-size)]',
         isWhite
           ? 'text-piece-white [text-shadow:var(--c-piece-white-shadow)]'

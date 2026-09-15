@@ -4,12 +4,15 @@ import ChessBoardContainer from '../../components/ChessBoardContainer/ChessBoard
 import Clock from '../../components/Clock/Clock';
 import Button from '../../components/Button/Button';
 import { useGameState } from '../../hooks/useGameState';
+import { COLORS } from '../../redux/game/gameConstants';
 
 const HomePage = () => {
   const { gameState, resetGameState } = useGameState();
   const [showSquareId, setShowSquareId] = useState(false);
 
-  const isWhiteTurn = gameState.currentTurn === 'w';
+  const isWhiteTurn = gameState.currentTurn === COLORS.WHITE;
+  const isWhiteClockActive = isWhiteTurn && gameState.hasGameStarted;
+  const isBlackClockActive = !isWhiteTurn && gameState.hasGameStarted;
 
   return (
     <div className="flex flex-col items-center gap-6 py-6 font-ui">
@@ -36,8 +39,16 @@ const HomePage = () => {
       </header>
 
       <div className="flex w-full max-w-lg items-center justify-center gap-4 sm:justify-between">
-        <Clock initialTime={gameState.whiteTime} color="w" isActive={isWhiteTurn} />
-        <Clock initialTime={gameState.blackTime} color="b" isActive={!isWhiteTurn} />
+        <Clock
+          initialTime={gameState.whiteTime}
+          color={COLORS.WHITE}
+          isActive={isWhiteClockActive}
+        />
+        <Clock
+          initialTime={gameState.blackTime}
+          color={COLORS.BLACK}
+          isActive={isBlackClockActive}
+        />
       </div>
 
       <ChessBoardContainer showSquareId={showSquareId} />

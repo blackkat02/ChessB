@@ -1,15 +1,20 @@
 import { getPieceColor } from '../../utils/chessHelpers';
+import { COLORS } from './gameConstants';
 
 // === 1. БАЗОВІ СЕЛЕКТОРИ (Raw Data) ===
 export const selectBoard = (state) => state.game.board;
-export const selectCurrentTurn = (state) => state.game.turn;
 export const selectSelectedSquare = (state) => state.game.selectedSquare;
 export const selectWhiteTime = (state) => state.game.whiteTime;
 export const selectBlackTime = (state) => state.game.blackTime;
+export const selectPlyCount = (state) => state.game.plyCount;
 
 // === 2. СЕЛЕКТОРИ СТАНУ (Game Status) ===
-export const selectIsWhiteTurn = (state) => state.game.turn === 'w';
-export const selectIsClockActive = (state, color) => state.game.turn === color;
+// turn — похідне значення, не окреме поле стану: парний plyCount = хід білих.
+export const selectCurrentTurn = (state) =>
+  state.game.plyCount % 2 === 0 ? COLORS.WHITE : COLORS.BLACK;
+export const selectIsWhiteTurn = (state) => selectCurrentTurn(state) === COLORS.WHITE;
+export const selectIsClockActive = (state, color) => selectCurrentTurn(state) === color;
+export const selectHasGameStarted = (state) => state.game.plyCount > 0;
 
 // === 3. СЕЛЕКТОРИ ФІГУР (Piece Intelligence) ===
 export const selectPieceAtSquare = (state, squareId) =>

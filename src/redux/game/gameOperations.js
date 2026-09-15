@@ -2,11 +2,13 @@ import { moveExecuted } from './gameSlice';
 import * as selectors from './gameSelectors';
 import { getPieceColor } from '../../utils/chessHelpers';
 import { updateTime } from './gameSlice';
+import { COLORS } from './gameConstants';
 
 export const attemptMove = (moveData) => (dispatch, getState) => {
   const { from, to, piece, time } = moveData;
   const state = getState();
-  const { isGameOver, turn, whiteTime, blackTime } = state.game;
+  const { isGameOver } = state.game;
+  const turn = selectors.selectCurrentTurn(state);
 
   if (isGameOver) {
     console.log('[ANALYSIS] Вільний хід без правил.');
@@ -15,17 +17,15 @@ export const attemptMove = (moveData) => (dispatch, getState) => {
   }
 
   const currentPlayerTime =
-    state.game.turn === 'w' ? state.game.whiteTime : state.game.blackTime;
+    turn === COLORS.WHITE ? state.game.whiteTime : state.game.blackTime;
 
   if (currentPlayerTime <= 0) {
-    dispatch(handleTimeout(state.game.turn));
+    dispatch(handleTimeout(turn));
     return;
   }
 
-  const currentTurn = selectors.selectCurrentTurn(state);
-
   console.log(`[OP] Спроба ходу: ${piece} з ${from} на ${to}`);
-  console.log(`[OP] Зараз хід: ${currentTurn === 'w' ? 'БІЛИХ' : 'ЧОРНИХ'}`);
+  console.log(`[OP] Зараз хід: ${turn === COLORS.WHITE ? 'БІЛИХ' : 'ЧОРНИХ'}`);
 
   if (getPieceColor(moveData.piece) !== turn) {
     console.warn('🚨 СТОП! Хід не за чергою.');
@@ -41,7 +41,7 @@ export const attemptMove = (moveData) => (dispatch, getState) => {
   // 4. ПЕРЕВІРКА №3: Чи пуста клітина to та не своєго кольору?
   const isFriendlyFire = selectors.selectIsFriendlyFire(state, to);
 
-  if (selectors.isFriendlyFire) {
+  if (isFriendlyFire) {
     console.warn('[OP] Спроба удару своєї фігури, ігноруємо.');
     return;
   }
@@ -55,13 +55,16 @@ export const tickTimer = () => (dispatch, getState) => {
   const state = getState();
   const turn = selectors.selectCurrentTurn(state);
   const currentTime =
-    turn === 'w'
+    turn === COLORS.WHITE
       ? selectors.selectWhiteTime(state)
       : selectors.selectBlackTime(state);
 
   if (currentTime <= 0) {
     dispatch(
-      setGameOver({ winner: turn === 'w' ? 'b' : 'w', reason: 'timeout' })
+      setGameOver({
+        winner: turn === COLORS.WHITE ? COLORS.BLACK : COLORS.WHITE,
+        reason: 'timeout',
+      })
     );
     return;
   }
