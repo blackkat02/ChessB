@@ -4,8 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "predev": "node scripts/generate-favicon.mjs",
     "dev": "vite",
+    "prebuild": "node scripts/generate-favicon.mjs",
     "build": "vite build",
+    "icons:generate": "node scripts/generate-favicon.mjs",
     "preview": "vite preview",
     "lint": "eslint . --ext js,jsx --format stylish",
     "lint:fix": "eslint . --ext js,jsx --fix",

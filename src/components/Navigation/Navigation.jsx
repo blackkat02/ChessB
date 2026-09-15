@@ -1,5 +1,6 @@
 import { Link, NavLink } from 'react-router-dom';
 import clsx from 'clsx';
+import RookIcon from './RookIcon';
 
 const linkClass = ({ isActive }) =>
   clsx(
@@ -13,7 +14,11 @@ const Navigation = () => {
   return (
     <header className="border-b border-nav-border bg-nav-bg font-ui backdrop-blur">
       <nav className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
-        <Link to="/" className="text-xl font-extrabold tracking-tight text-fg">
+        <Link
+          to="/"
+          className="flex items-center gap-1.5 text-xl font-extrabold tracking-tight text-fg"
+        >
+          <RookIcon className="h-6 w-6 text-accent" />
           Chess<span className="text-accent">B</span>
         </Link>
         <ul className="flex gap-1">
