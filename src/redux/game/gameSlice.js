@@ -1,15 +1,15 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { initialBoardPiecesObject } from '../../data/positions';
-import { DEFAULT_TIME } from './gameConstants';
+import { DEFAULT_TIME, COLORS } from './gameConstants';
 
 const initialState = {
   board: initialBoardPiecesObject, // Об'єкт { a2: 'P', ... }
-  turn: 'w', // 'w' або 'b'
   selectedSquare: null, // 'e2' або null
   whiteTime: DEFAULT_TIME,
   blackTime: DEFAULT_TIME,
   history: [],
-  winner: null, // 'w', 'b', або 'draw'
+  plyCount: 0, // кількість зроблених напівходів (ходи = plyCount пар для запису партії)
+  winner: null, // COLORS.WHITE, COLORS.BLACK, або 'draw'
   reason: null, // 'checkmate', 'timeout', 'resignation'
   isGameOver: false,
 };
@@ -25,13 +25,13 @@ const gameSlice = createSlice({
       const { from, to, piece } = action.payload;
       delete state.board[from];
       state.board[to] = piece;
-      state.turn = state.turn === 'w' ? 'b' : 'w';
       state.selectedSquare = null;
       state.history.push(action.payload);
+      state.plyCount += 1;
     },
     updateTime: (state, action) => {
       const { color, time } = action.payload;
-      if (color === 'w') state.whiteTime = time;
+      if (color === COLORS.WHITE) state.whiteTime = time;
       else state.blackTime = time;
     },
     resetGame: () => initialState,
@@ -39,7 +39,6 @@ const gameSlice = createSlice({
       state.winner = action.payload.winner;
       state.reason = action.payload.reason;
       state.isGameOver = true;
-      state.currentTurn = null; // Зупиняємо гру
     },
   },
 });

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import clsx from 'clsx';
+import { COLORS } from '../../redux/game/gameConstants';
 
 const formatTime = (ms) => {
   const totalSeconds = Math.max(0, Math.floor(ms / 1000));
@@ -16,26 +17,27 @@ const Clock = ({ initialTime, color, isActive, onTimeUp, isGameOver }) => {
   }, [initialTime]);
 
   useEffect(() => {
-    if (!isActive || isGameOver || time <= 0) return undefined;
+  if (!isActive || isGameOver) return undefined;
 
-    const interval = setInterval(() => {
-      setTime((prev) => {
-        const next = prev - 1000;
-        if (next <= 0) {
-          clearInterval(interval);
-          onTimeUp?.(color);
-          return 0;
-        }
-        return next;
-      });
-    }, 1000);
+  const interval = setInterval(() => {
+    setTime((prev) => {
+      if (prev <= 0) return prev;
+      const next = prev - 1000;
+      if (next <= 0) {
+        clearInterval(interval);
+        onTimeUp?.(color);
+        return 0;
+      }
+      return next;
+    });
+  }, 1000);
 
-    return () => clearInterval(interval);
-  }, [isActive, isGameOver, time, color, onTimeUp]);
+  return () => clearInterval(interval);
+}, [isActive, isGameOver, color, onTimeUp]);
 
   const totalSeconds = Math.floor(time / 1000);
   const isLowTime = totalSeconds > 0 && totalSeconds < 30;
-  const isWhite = color === 'w';
+  const isWhite = color === COLORS.WHITE;
 
   return (
     <div
