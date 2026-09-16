@@ -7,6 +7,8 @@ export const selectSelectedSquare = (state) => state.game.selectedSquare;
 export const selectWhiteTime = (state) => state.game.whiteTime;
 export const selectBlackTime = (state) => state.game.blackTime;
 export const selectPlyCount = (state) => state.game.plyCount;
+export const selectPlayerSide = (state) => state.game.playerSide;
+export const selectGameId = (state) => state.game.gameId;
 
 // === 2. СЕЛЕКТОРИ СТАНУ (Game Status) ===
 // turn — похідне значення, не окреме поле стану: парний plyCount = хід білих.
