@@ -1,10 +1,11 @@
 import { useSelector, useDispatch } from 'react-redux';
 import { useCallback } from 'react';
 import * as selectors from '../redux/game/gameSelectors';
-import { setSelection, resetGame } from '../redux/game/gameSlice';
+import { setSelection, newGameStarted } from '../redux/game/gameSlice';
 import { attemptMove } from '../redux/game/gameOperations';
 // import { getPieceColor } from '../../utils/chessHelpers';
 import { getPieceColor } from '../utils/chessHelpers';
+import { COLORS, SIDE_OPTIONS } from '../redux/game/gameConstants';
 
 export const useGameState = () => {
   const dispatch = useDispatch();
@@ -16,6 +17,8 @@ export const useGameState = () => {
   const whiteTime = useSelector(selectors.selectWhiteTime);
   const blackTime = useSelector(selectors.selectBlackTime);
   const hasGameStarted = useSelector(selectors.selectHasGameStarted);
+  const playerSide = useSelector(selectors.selectPlayerSide);
+  const gameId = useSelector(selectors.selectGameId);
 
   const handleSquareClick = useCallback(
     (squareId) => {
@@ -63,9 +66,19 @@ export const useGameState = () => {
     [dispatch, board, selectedSquare, turn]
   );
 
-  const resetGameState = useCallback(() => {
-    dispatch(resetGame());
-  }, [dispatch]);
+  const startNewGame = useCallback(
+    ({ time, side }) => {
+      const resolvedSide =
+        side === SIDE_OPTIONS.RANDOM
+          ? Math.random() < 0.5
+            ? COLORS.WHITE
+            : COLORS.BLACK
+          : side;
+
+      dispatch(newGameStarted({ time, side: resolvedSide }));
+    },
+    [dispatch]
+  );
 
   return {
     gameState: {
@@ -75,8 +88,10 @@ export const useGameState = () => {
       whiteTime,
       blackTime,
       hasGameStarted,
+      playerSide,
+      gameId,
     },
     handleSquareClick,
-    resetGameState,
+    startNewGame,
   };
 };

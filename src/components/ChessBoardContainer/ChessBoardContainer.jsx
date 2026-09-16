@@ -6,7 +6,7 @@ import {
 import { useGameState } from '../../hooks/useGameState';
 import ChessBoardView from '../ChessBoardView/ChessBoardView';
 
-const ChessBoardContainer = ({ showSquareId }) => {
+const ChessBoardContainer = ({ showSquareId, flipped }) => {
   const boardPiecesObject = useSelector(selectBoard);
   const selectedSquare = useSelector(selectSelectedSquare);
 
@@ -18,6 +18,7 @@ const ChessBoardContainer = ({ showSquareId }) => {
       boardPiecesObject={boardPiecesObject}
       selectedSquare={selectedSquare}
       onClick={handleSquareClick}
+      flipped={flipped}
     />
   );
 };

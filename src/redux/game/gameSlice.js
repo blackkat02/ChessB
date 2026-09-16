@@ -12,6 +12,8 @@ const initialState = {
   winner: null, // COLORS.WHITE, COLORS.BLACK, або 'draw'
   reason: null, // 'checkmate', 'timeout', 'resignation'
   isGameOver: false,
+  playerSide: COLORS.WHITE, // якою стороною грає гравець за цим пристроєм (впливає лише на орієнтацію дошки)
+  gameId: 0, // зростає з кожною новою партією; UI використовує це як React key, щоб примусово перемонтувати годинники
 };
 
 const gameSlice = createSlice({
@@ -34,7 +36,16 @@ const gameSlice = createSlice({
       if (color === COLORS.WHITE) state.whiteTime = time;
       else state.blackTime = time;
     },
-    resetGame: () => initialState,
+    newGameStarted: (state, action) => {
+      const { time, side } = action.payload;
+      return {
+        ...initialState,
+        whiteTime: time,
+        blackTime: time,
+        playerSide: side,
+        gameId: state.gameId + 1,
+      };
+    },
     endGame: (state, action) => {
       state.winner = action.payload.winner;
       state.reason = action.payload.reason;
@@ -43,6 +54,6 @@ const gameSlice = createSlice({
   },
 });
 
-export const { setSelection, moveExecuted, resetGame, updateTime } =
+export const { setSelection, moveExecuted, newGameStarted, updateTime } =
   gameSlice.actions;
 export default gameSlice.reducer;

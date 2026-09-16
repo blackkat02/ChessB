@@ -3,12 +3,14 @@ import clsx from 'clsx';
 import ChessBoardContainer from '../../components/ChessBoardContainer/ChessBoardContainer';
 import Clock from '../../components/Clock/Clock';
 import Button from '../../components/Button/Button';
+import NewGameModal from '../../components/NewGameModal/NewGameModal';
 import { useGameState } from '../../hooks/useGameState';
 import { COLORS } from '../../redux/game/gameConstants';
 
 const HomePage = () => {
-  const { gameState, resetGameState } = useGameState();
+  const { gameState, startNewGame } = useGameState();
   const [showSquareId, setShowSquareId] = useState(false);
+  const [isNewGameOpen, setIsNewGameOpen] = useState(false);
 
   const isWhiteTurn = gameState.currentTurn === COLORS.WHITE;
   const isWhiteClockActive = isWhiteTurn && gameState.hasGameStarted;
@@ -40,27 +42,39 @@ const HomePage = () => {
 
       <div className="flex w-full max-w-lg items-center justify-center gap-4 sm:justify-between">
         <Clock
+          key={`white-${gameState.gameId}`}
           initialTime={gameState.whiteTime}
           color={COLORS.WHITE}
           isActive={isWhiteClockActive}
         />
         <Clock
+          key={`black-${gameState.gameId}`}
           initialTime={gameState.blackTime}
           color={COLORS.BLACK}
           isActive={isBlackClockActive}
         />
       </div>
 
-      <ChessBoardContainer showSquareId={showSquareId} />
+      <ChessBoardContainer
+        showSquareId={showSquareId}
+        flipped={gameState.playerSide === COLORS.BLACK}
+      />
 
       <div className="flex flex-wrap justify-center gap-3">
-        <Button variant="danger" onClick={resetGameState}>
-          Скинути гру
+        <Button variant="primary" onClick={() => setIsNewGameOpen(true)}>
+          Нова гра
         </Button>
         <Button onClick={() => setShowSquareId((v) => !v)}>
           {showSquareId ? 'Приховати нотації' : 'Показати нотації'}
         </Button>
       </div>
+
+      <NewGameModal
+        isOpen={isNewGameOpen}
+        onClose={() => setIsNewGameOpen(false)}
+        onStart={startNewGame}
+        hasGameStarted={gameState.hasGameStarted}
+      />
     </div>
   );
 };

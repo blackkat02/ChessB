@@ -10,7 +10,11 @@ const ChessBoardView = ({
   boardPiecesObject,
   selectedSquare,
   onClick,
+  flipped,
 }) => {
+  const files = flipped ? [...FILES].reverse() : FILES;
+  const ranks = flipped ? [...RANKS].reverse() : RANKS;
+
   const getPieceAtSquareId = useCallback(
     (squareId) => boardPiecesObject[squareId] ?? null,
     [boardPiecesObject]
@@ -21,7 +25,7 @@ const ChessBoardView = ({
     for (let i = 0; i < 8; i++) {
       for (let j = 0; j < 8; j++) {
         const isLight = (i + j) % 2 === 0;
-        const squareId = `${FILES[j]}${RANKS[i]}`;
+        const squareId = `${files[j]}${ranks[i]}`;
         squares.push(
           <Square
             key={squareId}
@@ -36,13 +40,13 @@ const ChessBoardView = ({
       }
     }
     return squares;
-  }, [showSquareId, selectedSquare, getPieceAtSquareId, onClick]);
+  }, [files, ranks, showSquareId, selectedSquare, getPieceAtSquareId, onClick]);
 
   return (
     <div className="inline-block select-none font-ui">
       <div className="flex gap-1.5">
         <div className="flex w-4 flex-col justify-around py-2 text-center text-xs font-bold text-board-coord">
-          {RANKS.map((rank) => (
+          {ranks.map((rank) => (
             <span key={rank}>{rank}</span>
           ))}
         </div>
@@ -57,7 +61,7 @@ const ChessBoardView = ({
       <div className="mt-1.5 flex gap-1.5">
         <div className="w-4" />
         <div className="grid w-[var(--c-board-max-width)] max-w-[82vw] grid-cols-8 px-2 text-center text-xs font-bold text-board-coord">
-          {FILES.map((file) => (
+          {files.map((file) => (
             <span key={file}>{file}</span>
           ))}
         </div>
@@ -71,6 +75,7 @@ ChessBoardView.propTypes = {
   selectedSquare: PropTypes.string,
   onClick: PropTypes.func.isRequired,
   showSquareId: PropTypes.bool,
+  flipped: PropTypes.bool,
 };
 
 export default React.memo(ChessBoardView);
