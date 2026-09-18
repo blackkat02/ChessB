@@ -5,7 +5,7 @@ const MainLayout = () => {
   return (
     <div className="min-h-screen bg-page">
       <Navigation />
-      <main className="mx-auto max-w-5xl px-4">
+      <main className="mx-auto max-w-6xl px-4">
         <Outlet />
       </main>
     </div>
