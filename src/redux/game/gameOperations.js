@@ -1,8 +1,11 @@
-import { moveExecuted } from './gameSlice';
+import { moveExecuted, endGame } from './gameSlice';
 import * as selectors from './gameSelectors';
-import { getPieceColor } from '../../utils/chessHelpers';
-import { updateTime } from './gameSlice';
+import { getPieceColor, getOpponentColor } from '../../utils/chessHelpers';
 import { COLORS } from './gameConstants';
+import { getPseudoLegalMoves } from '../../engine/pseudoMoves';
+import { filterByKingSafety, getCastlingMoves } from '../../engine/legalMoves';
+import { isCheckmate, isStalemate } from '../../engine/gameStatus';
+import { requiresPromotion, isValidPromotionPiece } from '../../engine/promotion';
 
 export const attemptMove = (moveData) => (dispatch, getState) => {
   const { from, to, piece, time } = moveData;
@@ -20,7 +23,7 @@ export const attemptMove = (moveData) => (dispatch, getState) => {
     turn === COLORS.WHITE ? state.game.whiteTime : state.game.blackTime;
 
   if (currentPlayerTime <= 0) {
-    dispatch(handleTimeout(turn));
+    dispatch(timeExpired(turn));
     return;
   }
 
@@ -46,29 +49,76 @@ export const attemptMove = (moveData) => (dispatch, getState) => {
     return;
   }
 
-  // 5. Якщо все ОК — даємо команду Слайсу оновити дошку
-  console.log('✅ Хід валідний! Диспатчимо оновлення.');
-  dispatch(moveExecuted(moveData));
-};
+  // 5. ПЕРЕВІРКА №4: чи хід відповідає геометрії фігури (крок 1, docs/move-validation.md).
+  // Це псевдолегальність — без урахування, чи хід залишає власного короля
+  // під шахом (це кроки 3+). Знімає головний баг: без цієї перевірки будь-яка
+  // фігура могла "ходити" на будь-яку не свою клітинку дошки.
+  const { board, enPassantTarget, castlingRights } = state.game;
+  const pseudoLegalMoves = getPseudoLegalMoves(board, from, enPassantTarget);
 
-export const tickTimer = () => (dispatch, getState) => {
-  const state = getState();
-  const turn = selectors.selectCurrentTurn(state);
-  const currentTime =
-    turn === COLORS.WHITE
-      ? selectors.selectWhiteTime(state)
-      : selectors.selectBlackTime(state);
+  // Рокіровка — окремий вид ходу, не "геометрія" (король ходить на 2
+  // клітинки лише в цьому випадку). Рахуємо її окремо й додаємо до
+  // кандидатів лише для короля (крок 4, docs/move-validation.md, розділ 3.4).
+  const castlingMoves =
+    getPieceColor(piece) === turn && piece.toUpperCase() === 'K'
+      ? getCastlingMoves(board, turn, castlingRights)
+      : [];
 
-  if (currentTime <= 0) {
-    dispatch(
-      setGameOver({
-        winner: turn === COLORS.WHITE ? COLORS.BLACK : COLORS.WHITE,
-        reason: 'timeout',
-      })
-    );
+  if (![...pseudoLegalMoves, ...castlingMoves].includes(to)) {
+    console.warn('🚨 Хід не відповідає геометрії фігури.');
     return;
   }
 
-  // Віднімаємо 1 секунду (1000 мс)
-  dispatch(updateTime({ color: turn, time: currentTime - 1000 }));
+  // 6. ПЕРЕВІРКА №5: чи хід не залишає власного короля під шахом (крок 3,
+  // docs/move-validation.md). Рокіровку сюди НЕ пускаємо — getCastlingMoves
+  // уже перевірив і шах, і прохід короля через атаковані клітинки власною,
+  // ширшою логікою (filterByKingSafety симулює рух лише ОДНІЄЇ фігури, а
+  // рокіровка рухає короля й туру одночасно).
+  const isCastlingMove = castlingMoves.includes(to);
+  if (!isCastlingMove) {
+    const legalMoves = filterByKingSafety(board, from, pseudoLegalMoves, turn, enPassantTarget);
+    if (!legalMoves.includes(to)) {
+      console.warn('🚨 Хід залишає власного короля під шахом.');
+      return;
+    }
+  }
+
+  // 6.5. ПЕРЕВІРКА №6: якщо це промоція і гравець ЯВНО вказав фігуру —
+  // вона має бути однією з Q/R/B/N (крок 6, docs/move-validation.md).
+  // Якщо `promotion` не вказано — це не помилка, редюсер сам підставить
+  // дефолт (ферзь); UI-вибір фігури — окрема, ще не реалізована задача.
+  if (requiresPromotion(piece, to) && moveData.promotion !== undefined) {
+    if (!isValidPromotionPiece(moveData.promotion)) {
+      console.warn('🚨 Недійсна фігура для промоції.');
+      return;
+    }
+  }
+
+  // 7. Якщо все ОК — даємо команду Слайсу оновити дошку
+  console.log('✅ Хід валідний! Диспатчимо оновлення.');
+  dispatch(moveExecuted(moveData));
+
+  // 8. ПЕРЕВІРКА МАТУ/ПАТУ (крок 5, docs/move-validation.md) — дивимось на
+  // становище НАСТУПНОГО гравця (того, чия черга щойно настала), не того,
+  // хто щойно ходив. moveExecuted уже оновив board/plyCount, тому читаємо
+  // стан заново через getState(), а не використовуємо застарілий `state`.
+  const nextTurn = getOpponentColor(turn);
+  const gameStateAfterMove = getState().game;
+
+  if (isCheckmate(gameStateAfterMove, nextTurn)) {
+    dispatch(endGame({ winner: turn, reason: 'checkmate' }));
+  } else if (isStalemate(gameStateAfterMove, nextTurn)) {
+    dispatch(endGame({ winner: 'draw', reason: 'stalemate' }));
+  }
+};
+
+// Годинник (`Clock.jsx`) сам відраховує час локально й викликає це, коли
+// чийсь час дійшов до нуля (`onTimeUp`) — раніше тут була окрема
+// `tickTimer`, що писала відлік секунда-за-секундою назад у Redux через
+// неіснуючий `setGameOver`, ніким не викликана й ніколи не працювала.
+export const timeExpired = (color) => (dispatch, getState) => {
+  const { isGameOver } = getState().game;
+  if (isGameOver) return; // партія вже могла завершитись матом/патом раніше
+
+  dispatch(endGame({ winner: getOpponentColor(color), reason: 'timeout' }));
 };
