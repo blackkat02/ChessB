@@ -27,7 +27,8 @@ const LAYOUT_GRID_CLASSNAME = [
 ].join(' ');
 
 const HomePage = () => {
-  const { gameState, startNewGame, handleTimeUp } = useGameState();
+  const { gameState, startNewGame, handleTimeUp, handleResign, handleOfferDraw } =
+    useGameState();
   const [showSquareId, setShowSquareId] = useState(false);
   const [isNewGameOpen, setIsNewGameOpen] = useState(false);
   // Результат (мат/пат/час) показується автоматично, щойно isGameOver стає
@@ -42,6 +43,16 @@ const HomePage = () => {
     gameState.isGameOver && dismissedResultGameId !== gameState.gameId && !isNewGameOpen;
 
   const openNewGameModal = () => setIsNewGameOpen(true);
+
+  const confirmResign = () => {
+    if (window.confirm('Ви точно хочете здатися?')) handleResign();
+  };
+
+  // Партнер грає на тому ж пристрої, тож "прийняття" пропозиції нічиєї
+  // підтверджуємо тут-таки, замість окремого мережевого запиту.
+  const confirmOfferDraw = () => {
+    if (window.confirm('Суперник приймає нічию?')) handleOfferDraw();
+  };
 
   return (
     <div className="flex flex-col items-center gap-6 py-6 font-ui">
@@ -60,6 +71,8 @@ const HomePage = () => {
             isBlackClockActive={isBlackClockActive}
             onNewGame={openNewGameModal}
             onTimeUp={handleTimeUp}
+            onResign={confirmResign}
+            onOfferDraw={confirmOfferDraw}
             showSquareId={showSquareId}
             onToggleSquareId={() => setShowSquareId((v) => !v)}
           />

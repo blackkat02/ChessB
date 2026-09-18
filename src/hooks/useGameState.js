@@ -2,7 +2,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useCallback, useState } from 'react';
 import * as selectors from '../redux/game/gameSelectors';
 import { setSelection, newGameStarted } from '../redux/game/gameSlice';
-import { attemptMove, timeExpired } from '../redux/game/gameOperations';
+import { attemptMove, timeExpired, resignGame, offerDraw } from '../redux/game/gameOperations';
 // import { getPieceColor } from '../../utils/chessHelpers';
 import { getPieceColor } from '../utils/chessHelpers';
 import { requiresPromotion } from '../engine/promotion';
@@ -101,6 +101,9 @@ export const useGameState = () => {
   // дійшов до нуля — єдине джерело події "час вичерпано" в UI.
   const handleTimeUp = useCallback((color) => dispatch(timeExpired(color)), [dispatch]);
 
+  const handleResign = useCallback(() => dispatch(resignGame()), [dispatch]);
+  const handleOfferDraw = useCallback(() => dispatch(offerDraw()), [dispatch]);
+
   const startNewGame = useCallback(
     ({ time, side }) => {
       const resolvedSide =
@@ -135,5 +138,7 @@ export const useGameState = () => {
     resolvePromotion,
     cancelPromotion,
     handleTimeUp,
+    handleResign,
+    handleOfferDraw,
   };
 };

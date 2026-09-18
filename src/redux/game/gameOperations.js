@@ -122,3 +122,21 @@ export const timeExpired = (color) => (dispatch, getState) => {
 
   dispatch(endGame({ winner: getOpponentColor(color), reason: 'timeout' }));
 };
+
+// Здається завжди гравець за цим пристроєм (`playerSide`), незалежно від
+// того, чия зараз черга ходити — здача не пов'язана з чергою ходу.
+export const resignGame = () => (dispatch, getState) => {
+  const { isGameOver, playerSide } = getState().game;
+  if (isGameOver) return;
+
+  dispatch(endGame({ winner: getOpponentColor(playerSide), reason: 'resignation' }));
+};
+
+// Пропозиція нічиєї: обидва гравці за одним пристроєм, тому "прийняття"
+// підтверджується локально в UI (window.confirm) ще до диспатчу цього thunk.
+export const offerDraw = () => (dispatch, getState) => {
+  const { isGameOver } = getState().game;
+  if (isGameOver) return;
+
+  dispatch(endGame({ winner: 'draw', reason: 'draw-agreement' }));
+};

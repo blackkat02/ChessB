@@ -10,10 +10,14 @@ const GameInfoPanel = ({
   isBlackClockActive,
   onNewGame,
   onTimeUp,
+  onResign,
+  onOfferDraw,
   showSquareId,
   onToggleSquareId,
 }) => {
   const playerSideLabel = gameState.playerSide === COLORS.WHITE ? 'білими' : 'чорними';
+  // Здатися/запропонувати нічию має сенс лише поки партія триває.
+  const canOfferGameActions = gameState.hasGameStarted && !gameState.isGameOver;
 
   return (
     <div className="flex w-full flex-col gap-4 rounded-card border border-border bg-surface p-4 font-ui shadow-btn">
@@ -62,6 +66,16 @@ const GameInfoPanel = ({
         <Button variant="primary" onClick={onNewGame} className="lg:w-full">
           Нова гра
         </Button>
+        {canOfferGameActions && (
+          <>
+            <Button onClick={onOfferDraw} className="lg:w-full">
+              Запропонувати нічию
+            </Button>
+            <Button variant="danger" onClick={onResign} className="lg:w-full">
+              Здатися
+            </Button>
+          </>
+        )}
         <Button onClick={onToggleSquareId} className="lg:w-full">
           {showSquareId ? 'Приховати нотації' : 'Показати нотації'}
         </Button>
