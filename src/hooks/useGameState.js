@@ -2,7 +2,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useCallback, useState } from 'react';
 import * as selectors from '../redux/game/gameSelectors';
 import { setSelection, newGameStarted } from '../redux/game/gameSlice';
-import { attemptMove, timeExpired } from '../redux/game/gameOperations';
+import { attemptMove, timeExpired, resignGame, offerDraw } from '../redux/game/gameOperations';
 // import { getPieceColor } from '../../utils/chessHelpers';
 import { getPieceColor } from '../utils/chessHelpers';
 import { requiresPromotion } from '../engine/promotion';
@@ -11,12 +11,12 @@ import { COLORS, SIDE_OPTIONS } from '../redux/game/gameConstants';
 export const useGameState = () => {
   const dispatch = useDispatch();
 
-  // Витягуємо дані окремими селекторами для оптимізації
   const board = useSelector(selectors.selectBoard);
   const selectedSquare = useSelector(selectors.selectSelectedSquare);
   const turn = useSelector(selectors.selectCurrentTurn);
   const whiteTime = useSelector(selectors.selectWhiteTime);
   const blackTime = useSelector(selectors.selectBlackTime);
+  const turnStartedAt = useSelector((state) => state.game.turnStartedAt);
   const hasGameStarted = useSelector(selectors.selectHasGameStarted);
   const playerSide = useSelector(selectors.selectPlayerSide);
   const gameId = useSelector(selectors.selectGameId);
@@ -24,11 +24,6 @@ export const useGameState = () => {
   const winner = useSelector(selectors.selectWinner);
   const reason = useSelector(selectors.selectReason);
 
-  // Хід пішака на останній ряд призупиняється тут (docs/move-validation.md,
-  // крок 6): замість негайного dispatch(attemptMove) чекаємо на вибір
-  // фігури гравцем. `attemptMove` самостійно перевірить легальність ходу
-  // вже ПІСЛЯ вибору — цей прапорець лише вирішує, чи показувати модалку,
-  // він не дублює й не підміняє саму валідацію.
   const [pendingPromotion, setPendingPromotion] = useState(null); // { from, to, piece } | null
 
   const handleSquareClick = useCallback(
@@ -97,9 +92,10 @@ export const useGameState = () => {
 
   const cancelPromotion = useCallback(() => setPendingPromotion(null), []);
 
-  // Clock.jsx сам відраховує час локально й кличе це, коли чийсь час
-  // дійшов до нуля — єдине джерело події "час вичерпано" в UI.
   const handleTimeUp = useCallback((color) => dispatch(timeExpired(color)), [dispatch]);
+
+  const handleResign = useCallback(() => dispatch(resignGame()), [dispatch]);
+  const handleOfferDraw = useCallback(() => dispatch(offerDraw()), [dispatch]);
 
   const startNewGame = useCallback(
     ({ time, side }) => {
@@ -122,6 +118,7 @@ export const useGameState = () => {
       currentTurn: turn,
       whiteTime,
       blackTime,
+      turnStartedAt,
       hasGameStarted,
       playerSide,
       gameId,
@@ -135,5 +132,7 @@ export const useGameState = () => {
     resolvePromotion,
     cancelPromotion,
     handleTimeUp,
+    handleResign,
+    handleOfferDraw,
   };
 };

@@ -112,13 +112,42 @@ export const attemptMove = (moveData) => (dispatch, getState) => {
   }
 };
 
-// Годинник (`Clock.jsx`) сам відраховує час локально й викликає це, коли
-// чийсь час дійшов до нуля (`onTimeUp`) — раніше тут була окрема
-// `tickTimer`, що писала відлік секунда-за-секундою назад у Redux через
-// неіснуючий `setGameOver`, ніким не викликана й ніколи не працювала.
+// Диспатчиться з useGameState.js, коли selectClockRemaining показує 0 для
+// активної сторони (docs/clock-and-game-record.md, розділ 7.2) — Clock.jsx
+// сам по собі суто презентаційний і нічого не диспатчить (розділ 7.3).
+// Раніше тут була окрема `tickTimer`, що писала відлік секунда-за-секундою
+// назад у Redux через неіснуючий `setGameOver`, ніким не викликана й ніколи
+// не працювала.
 export const timeExpired = (color) => (dispatch, getState) => {
-  const { isGameOver } = getState().game;
-  if (isGameOver) return; // партія вже могла завершитись матом/патом раніше
+  const state = getState();
+  if (state.game.isGameOver) return; // партія вже могла завершитись матом/патом раніше
 
-  dispatch(endGame({ winner: getOpponentColor(color), reason: 'timeout' }));
+  // Захист від гонки (docs/clock-and-game-record.md, розділ 6, рядок
+  // "таймаут прийшов двічі"): перевіряємо ЩЕ РАЗ, живим селектором, а не
+  // довіряємо самому факту виклику — викликач міг спиратись на застарілий
+  // замикання значення `remaining` (наприклад, ефект у useGameState.js
+  // порахував 0 на попередньому рендері, диспатч дійшов сюди із затримкою,
+  // а за цей час партія вже завершилась матом, або (гіпотетично) сюди
+  // прийшло ще одне повідомлення про той самий таймаут).
+  if (selectors.selectClockRemaining(state, color) > 0) return;
+
+  dispatch(endGame({ winner: getOpponentColor(color), reason: 'timeout', timedOutColor: color }));
+};
+
+// Здається завжди гравець за цим пристроєм (`playerSide`), незалежно від
+// того, чия зараз черга ходити — здача не пов'язана з чергою ходу.
+export const resignGame = () => (dispatch, getState) => {
+  const { isGameOver, playerSide } = getState().game;
+  if (isGameOver) return;
+
+  dispatch(endGame({ winner: getOpponentColor(playerSide), reason: 'resignation' }));
+};
+
+// Пропозиція нічиєї: обидва гравці за одним пристроєм, тому "прийняття"
+// підтверджується локально в UI (window.confirm) ще до диспатчу цього thunk.
+export const offerDraw = () => (dispatch, getState) => {
+  const { isGameOver } = getState().game;
+  if (isGameOver) return;
+
+  dispatch(endGame({ winner: 'draw', reason: 'draw-agreement' }));
 };

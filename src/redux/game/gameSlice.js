@@ -12,6 +12,7 @@ const initialState = {
   selectedSquare: null, // 'e2' або null
   whiteTime: DEFAULT_TIME,
   blackTime: DEFAULT_TIME,
+  turnStartedAt: null, // Date.now() коли почала цокати активна сторона; null = годинники не йдуть (docs/clock-and-game-record.md, розділ 5.1)
   history: [],
   plyCount: 0, // кількість зроблених напівходів (ходи = plyCount пар для запису партії)
   winner: null, // COLORS.WHITE, COLORS.BLACK, або 'draw'
@@ -163,6 +164,20 @@ const gameSlice = createSlice({
         { isCheck: givesCheck, isCheckmate: givesCheckmate }
       );
 
+      const now = Date.now();
+
+      let moveTimeMs = 0;
+      if (typeof state.turnStartedAt === 'number') {
+        moveTimeMs = now - state.turnStartedAt;
+        const moverColor = getPieceColor(piece);
+        if (moverColor === COLORS.WHITE) {
+          state.whiteTime = Math.max(0, state.whiteTime - moveTimeMs);
+        } else {
+          state.blackTime = Math.max(0, state.blackTime - moveTimeMs);
+        }
+      }
+      state.turnStartedAt = now;
+
       state.selectedSquare = null;
       state.history.push({
         ...action.payload,
@@ -173,13 +188,11 @@ const gameSlice = createSlice({
         isCheck: givesCheck,
         isCheckmate: givesCheckmate,
         san,
+        timestamp: now,
+        moveTimeMs,
+        clockAfter: { w: state.whiteTime, b: state.blackTime },
       });
       state.plyCount += 1;
-    },
-    updateTime: (state, action) => {
-      const { color, time } = action.payload;
-      if (color === COLORS.WHITE) state.whiteTime = time;
-      else state.blackTime = time;
     },
     newGameStarted: (state, action) => {
       const { time, side } = action.payload;
@@ -192,13 +205,21 @@ const gameSlice = createSlice({
       };
     },
     endGame: (state, action) => {
-      state.winner = action.payload.winner;
-      state.reason = action.payload.reason;
+      const { winner, reason, timedOutColor } = action.payload;
+
+      if (reason === 'timeout' && timedOutColor && typeof state.turnStartedAt === 'number') {
+        const elapsed = Date.now() - state.turnStartedAt;
+        if (timedOutColor === COLORS.WHITE) state.whiteTime = Math.max(0, state.whiteTime - elapsed);
+        else state.blackTime = Math.max(0, state.blackTime - elapsed);
+      }
+
+      state.winner = winner;
+      state.reason = reason;
       state.isGameOver = true;
+      state.turnStartedAt = null; // годинники завжди зупиняються, коли партія завершена
     },
   },
 });
 
-export const { setSelection, moveExecuted, newGameStarted, updateTime, endGame } =
-  gameSlice.actions;
+export const { setSelection, moveExecuted, newGameStarted, endGame } = gameSlice.actions;
 export default gameSlice.reducer;

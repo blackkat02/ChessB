@@ -5,6 +5,8 @@ const REASON_TITLE = {
   checkmate: 'Мат',
   stalemate: 'Пат',
   timeout: 'Час вичерпано',
+  resignation: 'Здача',
+  'draw-agreement': 'Нічия за згодою',
 };
 
 const winnerSubtitle = (winner) => {
