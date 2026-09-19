@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { configureStore } from '@reduxjs/toolkit';
 import gameReducer from './gameSlice';
 import { attemptMove, timeExpired } from './gameOperations';
@@ -78,13 +78,21 @@ describe('attemptMove — промоція', () => {
   });
 });
 
-// timeExpired — Clock.jsx кличе це напряму (onTimeUp), коли час дійшов до
-// нуля; єдине джерело події 'timeout' для endGame (раніше тут була зламана
-// tickTimer, що дзвонила в неіснуючий setGameOver — див. коментар у
-// gameOperations.js).
+// timeExpired — диспатчиться з useGameState.js, коли selectClockRemaining
+// показує 0 для активної сторони (docs/clock-and-game-record.md); єдине
+// джерело події 'timeout' для endGame (раніше тут була зламана tickTimer,
+// що дзвонила в неіснуючий setGameOver — див. коментар у gameOperations.js).
 describe('timeExpired', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it('завершує партію перемогою суперника кольору, чий час вичерпався', () => {
-    const store = createTestStore({});
+    const store = createTestStore({
+      plyCount: 2, // парне число — хід білих, і саме їхній час вичерпався
+      whiteTime: 0,
+      turnStartedAt: Date.now(),
+    });
 
     store.dispatch(timeExpired('w'));
 
@@ -105,5 +113,48 @@ describe('timeExpired', () => {
       winner: 'w',
       reason: 'checkmate',
     });
+  });
+
+  // docs/clock-and-game-record.md, розділ 6, рядок "таймаут прийшов двічі":
+  // захист від застарілого замикання — викликач міг порахувати 0 на
+  // попередньому рендері, а на момент, коли dispatch дійшов сюди, час
+  // насправді ще є (наприклад, після Кроку 4 — вкладка повернулась з фону,
+  // і за цю мить встиг пройти ще один, вже актуальний перерахунок).
+  it('НЕ завершує партію, якщо жива перевірка (selectClockRemaining) показує, що час ще є', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(1_000_000);
+
+    const store = createTestStore({
+      plyCount: 2,
+      whiteTime: 5000, // 5с реально лишається
+      turnStartedAt: 1_000_000,
+    });
+
+    vi.setSystemTime(1_001_000); // минула лише 1с — залишок ще додатній
+
+    store.dispatch(timeExpired('w'));
+
+    expect(store.getState().game.isGameOver).toBe(false);
+  });
+
+  // Крок 1 (gameSlice.js) підготував гілку endGame, що фіксує залишок
+  // сторони, яка прострочила час, у 0 — але вона мовчки не спрацьовувала,
+  // бо жоден реальний виклик не передавав `timedOutColor`. Цей крок
+  // під'єднав його — ось де саме та гілка нарешті оживає.
+  it('фіксує залишок сторони, що прострочила час, рівно у 0 у фінальному записі', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(1_000_000);
+
+    const store = createTestStore({
+      plyCount: 2,
+      whiteTime: 200, // формально ще не 0, коли подія прийшла
+      turnStartedAt: 1_000_000,
+    });
+
+    vi.setSystemTime(1_005_000); // а насправді минуло 5с — час давно вичерпано
+
+    store.dispatch(timeExpired('w'));
+
+    expect(store.getState().game.whiteTime).toBe(0);
   });
 });

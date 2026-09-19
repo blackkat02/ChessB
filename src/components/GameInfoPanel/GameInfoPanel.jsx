@@ -41,7 +41,8 @@ const GameInfoPanel = ({
       <div className="flex flex-wrap items-center justify-center gap-3 lg:flex-col lg:items-stretch">
         <Clock
           key={`white-${gameState.gameId}`}
-          initialTime={gameState.whiteTime}
+          storedMs={gameState.whiteTime}
+          turnStartedAt={gameState.turnStartedAt}
           color={COLORS.WHITE}
           isActive={isWhiteClockActive}
           isGameOver={gameState.isGameOver}
@@ -49,7 +50,8 @@ const GameInfoPanel = ({
         />
         <Clock
           key={`black-${gameState.gameId}`}
-          initialTime={gameState.blackTime}
+          storedMs={gameState.blackTime}
+          turnStartedAt={gameState.turnStartedAt}
           color={COLORS.BLACK}
           isActive={isBlackClockActive}
           isGameOver={gameState.isGameOver}

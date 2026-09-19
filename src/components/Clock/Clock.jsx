@@ -1,41 +1,68 @@
 import React, { useEffect, useState } from 'react';
 import clsx from 'clsx';
-import { COLORS } from '../../redux/game/gameConstants';
+import { COLORS, LOW_TIME_THRESHOLD_MS } from '../../redux/game/gameConstants';
+
+const NORMAL_TICK_MS = 250; // достатньо часто для плавного відображення секунд
+const FAST_TICK_MS = 100; // нижче LOW_TIME_THRESHOLD_MS — для плавних десятих секунди
 
 const formatTime = (ms) => {
-  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+  const clamped = Math.max(0, ms);
+
+  if (clamped < LOW_TIME_THRESHOLD_MS) {
+    const totalTenths = Math.floor(clamped / 100);
+    const seconds = Math.floor(totalTenths / 10);
+    const tenths = totalTenths % 10;
+    return `${seconds}.${tenths}`;
+  }
+
+  const totalSeconds = Math.floor(clamped / 1000);
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
   return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 };
 
-const Clock = ({ initialTime, color, isActive, onTimeUp, isGameOver }) => {
-  const [time, setTime] = useState(initialTime);
+const Clock = ({ storedMs, turnStartedAt, color, isActive, isGameOver, onTimeUp }) => {
+  const [, forceRerender] = useState(0);
+  const isRunning = isActive && !isGameOver && turnStartedAt !== null;
+
+  const remainingMs = isRunning
+    ? Math.max(0, storedMs - (Date.now() - turnStartedAt))
+    : storedMs;
 
   useEffect(() => {
-    setTime(initialTime);
-  }, [initialTime]);
+    if (!isRunning) return undefined;
 
-  useEffect(() => {
-  if (!isActive || isGameOver) return undefined;
+    let timeoutId;
+    let firedTimeUp = false;
 
-  const interval = setInterval(() => {
-    setTime((prev) => {
-      if (prev <= 0) return prev;
-      const next = prev - 1000;
-      if (next <= 0) {
-        clearInterval(interval);
-        onTimeUp?.(color);
-        return 0;
+    const tick = () => {
+      const remaining = Math.max(0, storedMs - (Date.now() - turnStartedAt));
+      forceRerender((n) => n + 1);
+
+      if (remaining <= 0) {
+        if (!firedTimeUp) {
+          firedTimeUp = true;
+          onTimeUp?.(color);
+        }
+        return;
       }
-      return next;
-    });
-  }, 1000);
 
-  return () => clearInterval(interval);
-}, [isActive, isGameOver, color, onTimeUp]);
+      const delay = remaining < LOW_TIME_THRESHOLD_MS ? FAST_TICK_MS : NORMAL_TICK_MS;
+      timeoutId = setTimeout(tick, delay);
+    };
 
-  const totalSeconds = Math.floor(time / 1000);
+    timeoutId = setTimeout(tick, 0);
+
+    const onVisibility = () => forceRerender((n) => n + 1);
+    document.addEventListener('visibilitychange', onVisibility);
+
+    return () => {
+      clearTimeout(timeoutId);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, [isRunning, storedMs, turnStartedAt, color, onTimeUp]);
+
+  const totalSeconds = Math.floor(remainingMs / 1000);
   const isLowTime = totalSeconds > 0 && totalSeconds < 30;
   const isWhite = color === COLORS.WHITE;
 
@@ -59,7 +86,7 @@ const Clock = ({ initialTime, color, isActive, onTimeUp, isGameOver }) => {
           isLowTime && 'animate-pulse text-clock-danger'
         )}
       >
-        {formatTime(time)}
+        {formatTime(remainingMs)}
       </span>
     </div>
   );
