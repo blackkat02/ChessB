@@ -38,7 +38,7 @@ npm run coverage   # звіт покриття (провайдер v8)
 
 | Модуль | Файл тестів | Що перевіряється |
 |---|---|---|
-| `src/utils/boardUtils.js` | `src/utils/boardUtils.test.js` | `algebraicToCoords` / `coordsToAlgebraic`: кути та центр дошки, незалежність від регістру, валідація помилок, round-trip для всіх 64 клітинок |
+| `src/engine/boardUtils.js` | `src/engine/boardUtils.test.js` | `algebraicToCoords` / `coordsToAlgebraic`: кути та центр дошки, незалежність від регістру, валідація помилок, round-trip для всіх 64 клітинок |
 
 ## Структура
 

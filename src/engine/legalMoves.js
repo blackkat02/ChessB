@@ -3,9 +3,9 @@
 // рокіровка та взяття на проході. Див. docs/move-validation.md,
 // розділ 5 (кроки 3-4).
 
-import { algebraicToCoords, coordsToAlgebraic } from '../utils/boardUtils';
-import { getOpponentColor } from '../utils/chessHelpers';
-import { COLORS } from '../redux/game/gameConstants';
+import { algebraicToCoords, coordsToAlgebraic } from './boardUtils';
+import { getOpponentColor } from './chessHelpers';
+import { COLORS } from './constants';
 import { isSquareAttacked } from './attacks';
 
 const KING_SYMBOLS = { w: 'K', b: 'k' };

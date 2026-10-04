@@ -5,7 +5,7 @@
 // побудовані на getAllLegalMoves/isCheck/isCheckmate (docs/move-validation.md,
 // крок 7), бо повний генератор легальних ходів уже готовий (кроки 1-5).
 
-import { getPieceColor } from '../utils/chessHelpers';
+import { getPieceColor } from './chessHelpers';
 import { getAllLegalMoves } from './gameStatus';
 
 const fileOf = (square) => square[0];

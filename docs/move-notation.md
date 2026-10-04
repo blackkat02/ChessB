@@ -42,7 +42,7 @@
 |---|---|---|
 | `redux/game/gameSlice.js` | `moveExecuted` двигає фігуру, пушить `{from,to,piece}` в `history`, інкрементить `plyCount` | не знає, чи це взяття, чи це шах/мат, чи рокіровка/en passant/промоція |
 | `redux/game/gameOperations.js` (`attemptMove`) | перевіряє лише чергу ходу, `from !== to`, friendly-fire | немає перевірки шляху фігури, шаху власному королю, взагалі "легальності" ходу за правилами шахів |
-| `utils/boardUtils.js` | конвертація `'e2' ↔ {row, col}` | немає руху фігур/атак |
+| `engine/boardUtils.js` | конвертація `'e2' ↔ {row, col}` | немає руху фігур/атак |
 | `redux/store.js` | на кожен `store.subscribe` серіалізує **весь** `state.game` в `localStorage['chess_game_state']` | пише на **кожен тік годинника** (раз/сек), без версії схеми, без try/catch на читанні |
 
 Важливий висновок: **у проєкті ще немає шахового "двигуна"** (генерації

@@ -1,5 +1,4 @@
-// src/utils/chessHelpers.js
-import { COLORS } from '../redux/game/gameConstants';
+import { COLORS } from './constants';
 
 export const getPieceColor = (fenSymbol) => {
   if (!fenSymbol) return null;

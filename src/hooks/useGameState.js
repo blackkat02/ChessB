@@ -3,8 +3,8 @@ import { useCallback, useState } from 'react';
 import * as selectors from '../redux/game/gameSelectors';
 import { setSelection, newGameStarted } from '../redux/game/gameSlice';
 import { attemptMove, timeExpired, resignGame, offerDraw } from '../redux/game/gameOperations';
-// import { getPieceColor } from '../../utils/chessHelpers';
-import { getPieceColor } from '../utils/chessHelpers';
+// import { getPieceColor } from '../../engine/chessHelpers';
+import { getPieceColor } from '../engine/chessHelpers';
 import { requiresPromotion } from '../engine/promotion';
 import { COLORS, SIDE_OPTIONS } from '../redux/game/gameConstants';
 

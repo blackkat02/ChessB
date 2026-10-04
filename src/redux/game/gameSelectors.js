@@ -1,5 +1,5 @@
 import { createSelector } from '@reduxjs/toolkit';
-import { getPieceColor } from '../../utils/chessHelpers';
+import { getPieceColor } from '../../engine/chessHelpers';
 import { COLORS } from './gameConstants';
 
 // === 1. БАЗОВІ СЕЛЕКТОРИ (Raw Data) ===

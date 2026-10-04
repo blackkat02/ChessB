@@ -1,5 +1,8 @@
+import { COLORS } from '../../engine/constants';
+
+export { COLORS };
+
 export const DEFAULT_TIME = 180000;
-export const COLORS = { WHITE: 'w', BLACK: 'b' };
 
 export const TIME_CONTROLS = [
   { label: '1 хв', value: 60000 },

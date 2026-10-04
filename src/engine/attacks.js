@@ -3,9 +3,9 @@
 // легальності ходу короля й рокіровки. Див. docs/move-validation.md,
 // розділ 3.3 та розділ 5 (крок 3).
 
-import { algebraicToCoords, coordsToAlgebraic } from '../utils/boardUtils';
-import { getPieceColor } from '../utils/chessHelpers';
-import { COLORS } from '../redux/game/gameConstants';
+import { algebraicToCoords, coordsToAlgebraic } from './boardUtils';
+import { getPieceColor } from './chessHelpers';
+import { COLORS } from './constants';
 import {
   KNIGHT_OFFSETS,
   KING_OFFSETS,
@@ -87,13 +87,16 @@ export function isSquareAttacked(board, square, byColor) {
         if (stepAttacksSquare(pieceSquare, KING_OFFSETS, square)) return true;
         break;
       case 'R':
-        if (slideAttacksSquare(board, pieceSquare, ROOK_DIRECTIONS, square)) return true;
+        if (slideAttacksSquare(board, pieceSquare, ROOK_DIRECTIONS, square))
+          return true;
         break;
       case 'B':
-        if (slideAttacksSquare(board, pieceSquare, BISHOP_DIRECTIONS, square)) return true;
+        if (slideAttacksSquare(board, pieceSquare, BISHOP_DIRECTIONS, square))
+          return true;
         break;
       case 'Q':
-        if (slideAttacksSquare(board, pieceSquare, QUEEN_DIRECTIONS, square)) return true;
+        if (slideAttacksSquare(board, pieceSquare, QUEEN_DIRECTIONS, square))
+          return true;
         break;
       default:
         break;

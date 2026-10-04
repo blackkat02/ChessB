@@ -1,6 +1,6 @@
 import { moveExecuted, endGame } from './gameSlice';
 import * as selectors from './gameSelectors';
-import { getPieceColor, getOpponentColor } from '../../utils/chessHelpers';
+import { getPieceColor, getOpponentColor } from '../../engine/chessHelpers';
 import { COLORS } from './gameConstants';
 import { getPseudoLegalMoves } from '../../engine/pseudoMoves';
 import { filterByKingSafety, getCastlingMoves } from '../../engine/legalMoves';

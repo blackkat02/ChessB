@@ -4,7 +4,7 @@ import {
   selectSelectedSquare,
 } from '../../redux/game/gameSelectors';
 import { useGameState } from '../../hooks/useGameState';
-import { getPieceColor } from '../../utils/chessHelpers';
+import { getPieceColor } from '../../engine/chessHelpers';
 import ChessBoardView from '../ChessBoardView/ChessBoardView';
 import PromotionModal from '../PromotionModal/PromotionModal';
 

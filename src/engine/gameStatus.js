@@ -2,7 +2,7 @@
 // Шах / мат / пат — усі три через один і той самий getAllLegalMoves.
 // Див. docs/move-validation.md, розділ 3.5 та розділ 5 (крок 5).
 
-import { getPieceColor, getOpponentColor } from '../utils/chessHelpers';
+import { getPieceColor, getOpponentColor } from './chessHelpers';
 import { getPseudoLegalMoves } from './pseudoMoves';
 import { filterByKingSafety, getCastlingMoves, findKingSquare } from './legalMoves';
 import { isSquareAttacked } from './attacks';
