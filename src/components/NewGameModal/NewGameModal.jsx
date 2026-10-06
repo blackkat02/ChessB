@@ -1,7 +1,11 @@
 import { useState } from 'react';
 import clsx from 'clsx';
 import Button from '../Button/Button';
-import { TIME_CONTROLS, SIDE_OPTIONS, DEFAULT_TIME } from '../../redux/game/gameConstants';
+import {
+  TIME_CONTROLS,
+  SIDE_OPTIONS,
+  DEFAULT_TIME,
+} from '../../redux/game/gameConstants';
 
 const SIDE_CHOICES = [
   { label: 'Білими', value: SIDE_OPTIONS.WHITE },
@@ -12,9 +16,7 @@ const SIDE_CHOICES = [
 const optionButtonClass = (isSelected) =>
   clsx(
     'flex-1',
-    isSelected
-      ? 'ring-2 ring-btn-focus'
-      : 'opacity-70 hover:opacity-100'
+    isSelected ? 'ring-2 ring-btn-focus' : 'opacity-70 hover:opacity-100'
   );
 
 const NewGameModal = ({ isOpen, onClose, onStart, hasGameStarted }) => {
@@ -40,7 +42,9 @@ const NewGameModal = ({ isOpen, onClose, onStart, hasGameStarted }) => {
         )}
 
         <div className="mt-4">
-          <p className="mb-2 text-sm font-semibold text-fg-subtle">Контроль часу</p>
+          <p className="mb-2 text-sm font-semibold text-fg-subtle">
+            Контроль часу
+          </p>
           <div className="flex flex-wrap gap-2">
             {TIME_CONTROLS.map((control) => (
               <Button
@@ -55,7 +59,9 @@ const NewGameModal = ({ isOpen, onClose, onStart, hasGameStarted }) => {
         </div>
 
         <div className="mt-4">
-          <p className="mb-2 text-sm font-semibold text-fg-subtle">Ваша сторона</p>
+          <p className="mb-2 text-sm font-semibold text-fg-subtle">
+            Ваша сторона
+          </p>
           <div className="flex gap-2">
             {SIDE_CHOICES.map((choice) => (
               <Button

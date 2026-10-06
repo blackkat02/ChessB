@@ -3,9 +3,9 @@
 // рокіровка та взяття на проході. Див. docs/move-validation.md,
 // розділ 5 (кроки 3-4).
 
-import { algebraicToCoords, coordsToAlgebraic } from '../utils/boardUtils';
-import { getOpponentColor } from '../utils/chessHelpers';
-import { COLORS } from '../redux/game/gameConstants';
+import { algebraicToCoords, coordsToAlgebraic } from './boardUtils';
+import { getOpponentColor } from './chessHelpers';
+import { COLORS } from './constants';
 import { isSquareAttacked } from './attacks';
 
 const KING_SYMBOLS = { w: 'K', b: 'k' };
@@ -74,7 +74,7 @@ export function filterByKingSafety(board, from, pseudoMoves, color, enPassantTar
  *
  * @param {Record<string, string>} board
  * @param {'w'|'b'} color
- * @param {{wK: boolean, wQ: boolean, bK: boolean, bQ: boolean}} castlingRights
+ * @param {{whiteShort: boolean, whiteLong: boolean, blackShort: boolean, blackLong: boolean}} castlingRights
  * @returns {string[]}
  */
 export function getCastlingMoves(board, color, castlingRights) {
@@ -89,7 +89,7 @@ export function getCastlingMoves(board, color, castlingRights) {
   if (isSquareAttacked(board, kingStart, opponentColor)) return [];
 
   const moves = [];
-  const rightKey = color === COLORS.WHITE ? { K: 'wK', Q: 'wQ' } : { K: 'bK', Q: 'bQ' };
+  const rightKey = color === COLORS.WHITE ? { K: 'whiteShort', Q: 'whiteLong' } : { K: 'blackShort', Q: 'blackLong' };
 
   // Коротка рокіровка (O-O): король e->g, тура h->f.
   if (castlingRights[rightKey.K]) {

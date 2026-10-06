@@ -22,7 +22,7 @@ function createTestStore(gameStateOverrides) {
         isGameOver: false,
         playerSide: 'w',
         gameId: 0,
-        castlingRights: { wK: false, wQ: false, bK: false, bQ: false },
+        castlingRights: { whiteShort: false, whiteLong: false, blackShort: false, blackLong: false },
         enPassantTarget: null,
         ...gameStateOverrides,
       },

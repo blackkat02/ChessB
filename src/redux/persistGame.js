@@ -3,8 +3,9 @@
 // браузера (jsdom у тестах дає справжній localStorage, тож навіть тут
 // нічого мокати не треба).
 export const STORAGE_KEY = 'chessb:v1:game';
-// 2, не 1 — payload тепер містить clockAfter/timestamp в history (крок 6).
-export const SCHEMA_VERSION = 2;
+// 2 — payload містить clockAfter/timestamp в history (крок 6).
+// 3 — castlingRights перейменовано: wK/wQ/bK/bQ → whiteShort/whiteLong/blackShort/blackLong.
+export const SCHEMA_VERSION = 3;
 
 export function savePersistedGame(gameState) {
   try {

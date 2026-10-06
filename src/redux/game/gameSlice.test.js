@@ -67,8 +67,8 @@ describe('gameSlice: moveExecuted', () => {
   });
 });
 
-const FULL_CASTLING_RIGHTS = { wK: true, wQ: true, bK: true, bQ: true };
-const NO_CASTLING_RIGHTS = { wK: false, wQ: false, bK: false, bQ: false };
+const FULL_CASTLING_RIGHTS = { whiteShort: true, whiteLong: true, blackShort: true, blackLong: true };
+const NO_CASTLING_RIGHTS = { whiteShort: false, whiteLong: false, blackShort: false, blackLong: false };
 
 // Крок 4 (docs/move-validation.md, розділ 5): рокіровка, взяття на проході,
 // оновлення castlingRights/enPassantTarget — усе відбувається в одному й
@@ -133,8 +133,8 @@ describe('gameSlice: moveExecuted — крок 4', () => {
 
     const next = gameReducer(state, moveExecuted({ from: 'e1', to: 'f1', piece: 'K' }));
 
-    expect(next.castlingRights).toMatchObject({ wK: false, wQ: false });
-    expect(next.castlingRights).toMatchObject({ bK: true, bQ: true });
+    expect(next.castlingRights).toMatchObject({ whiteShort: false, whiteLong: false });
+    expect(next.castlingRights).toMatchObject({ blackShort: true, blackLong: true });
   });
 
   it('хід тури зі стартової клітинки відбирає лише ВІДПОВІДНЕ право', () => {
@@ -149,14 +149,14 @@ describe('gameSlice: moveExecuted — крок 4', () => {
 
     const next = gameReducer(state, moveExecuted({ from: 'a1', to: 'a4', piece: 'R' }));
 
-    expect(next.castlingRights).toMatchObject({ wQ: false, wK: true });
+    expect(next.castlingRights).toMatchObject({ whiteLong: false, whiteShort: true });
   });
 
   it('НЕ туру, а іншу фігуру, що поїхала зі стартової клітинки тури, право не чіпає', () => {
     // Штучний, нереальний "знімок" стану (нормальна гра ніколи так не
     // прийде), але важливо, щоб код перевіряв ТИП фігури, а не лише
     // клітинку — інакше ферзь, що випадково опинився на h8, забрав би
-    // чуже право bK, хоча чорна тура там ще стоїть.
+    // чуже право blackShort, хоча чорна тура там ще стоїть.
     const state = {
       board: { h8: 'Q' },
       selectedSquare: 'h8',
@@ -168,7 +168,7 @@ describe('gameSlice: moveExecuted — крок 4', () => {
 
     const next = gameReducer(state, moveExecuted({ from: 'h8', to: 'h4', piece: 'Q' }));
 
-    expect(next.castlingRights).toMatchObject({ bK: true });
+    expect(next.castlingRights).toMatchObject({ blackShort: true });
   });
 
   it('взяття тури суперника на її стартовій клітинці теж відбирає право', () => {
@@ -184,7 +184,7 @@ describe('gameSlice: moveExecuted — крок 4', () => {
     // Ферзь іде h8 -> a8, "з'їдаючи" чорну туру на її стартовій клітинці.
     const next = gameReducer(state, moveExecuted({ from: 'h8', to: 'a8', piece: 'Q' }));
 
-    expect(next.castlingRights).toMatchObject({ bQ: false, bK: true });
+    expect(next.castlingRights).toMatchObject({ blackLong: false, blackShort: true });
   });
 
   it('хід пішака на 2 клітинки встановлює enPassantTarget на клітинку позаду нього', () => {

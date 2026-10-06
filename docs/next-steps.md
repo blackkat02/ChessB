@@ -118,28 +118,33 @@
 (без `.test.js`) не повертає нічого поза `debugLog.js` і `console.error` у
 `persistGame.js`.
 
-### Крок 3 — заповнити фасад `engine/index.js` ⬜
+### Крок 3 — заповнити фасад `engine/index.js` 🔄 (виконується в `layer-separation.md`)
 
-Джерело дизайну: `move-validation.md`, розділи 4.2–4.3 (там же пояснення,
-чому `attemptMove` зараз обходить фасад).
+> **Замінено планом `docs/layer-separation.md`, кроки 2–3.** Попередня
+> версія цього кроку пропонувала `getMoveDetails(gameState, from, to)`, що
+> змішує нову позицію й деталі ходу в один плаский об'єкт і приймає
+> `gameState` (зріз Redux). Цільовий контракт інший: рушій приймає
+> **позицію**, а не стан Redux, і нічого не знає про шари вище.
 
 Файли: `src/engine/index.js`, `src/redux/game/gameOperations.js`.
 
-1. Реалізувати `isMoveLegal(gameState, from, to)` — тонка обгортка над
-   `getPseudoLegalMoves` + `filterByKingSafety` + `getCastlingMoves`
-   (композиція того, що зараз `attemptMove` робить інлайн).
-2. Реалізувати `getMoveDetails(gameState, from, to, options)` — повертає
-   `{ captured, castling, enPassant, promotion, isCheck, isCheckmate,
-   castlingRights, enPassantTarget }`, тобто те, що зараз частково рахує
-   `gameSlice.moveExecuted`, частково `gameOperations.attemptMove`.
-   **Обережно:** це рефакторинг існуючої логіки, що вже покрита 184
-   тестами (станом на 2026-09-19, після `docs/clock-and-game-record.md`) —
-   робити маленькими кроками, ганяючи `npm run test` після кожного, не
-   переписувати все одразу.
-3. Реалізувати `getLegalMoves(gameState, from)` — обгортка над вже готовим
-   `getAllLegalMoves`, відфільтрована по клітинці `from`. Потрібна для
-   майбутньої підсвітки легальних ходів у UI (згадана як ідея в
-   `move-validation.md`, розділ 4.3, не зроблена).
+Публічний API фасаду (єдині двері в рушій):
+
+| Функція | Повертає | Хто викликає |
+|---|---|---|
+| `getLegalMoves(position, from)` | `string[]` клітинок | thunk (`.includes(to)`), селектор підсвітки `selectLegalTargets` |
+| `applyMove(position, move)` | `{ position, details }` | thunk (після кроку 3; на кроці 2 — редюсер) |
+| `getStatus(position, color)` | `{ isCheck, isCheckmate, isStalemate }` | thunk |
+| `toSan(before, move, details, status)` | `'Nbd2+'` | thunk |
+
+1. `getLegalMoves` — композиція `getPseudoLegalMoves` + `getCastlingMoves`
+   + `filterByKingSafety` (те, що зараз `attemptMove` робить інлайн, а
+   `gameStatus.getAllLegalMoves` — у циклі). `getAllLegalMoves` після цього
+   викликає `getLegalMoves` для кожної фігури, щоб логіка була в одному місці.
+2. `isMoveLegal(position, from, to)` — за бажанням, обгортка
+   `getLegalMoves(...).includes(to)`.
+3. `getStatus` рахує легальні ходи **один раз** і виводить з них і мат, і
+   пат (зараз `isCheckmate` і `isStalemate` рахують їх кожна окремо).
 4. Перевести `gameOperations.js` на виклики лише через `engine/index.js`,
    прибрати прямі імпорти внутрішніх модулів (`pseudoMoves`, `legalMoves`,
    `gameStatus`, `promotion`).
@@ -158,20 +163,26 @@
 
 Файл: `src/engine/perft.test.js` (новий).
 
-1. Написати `perft(gameState, depth)` — рекурсивний підрахунок вузлів
-   дерева ходів через уже готовий `getAllLegalMoves`:
+1. Написати `perft(position, color, depth)` — рекурсивний підрахунок вузлів
+   дерева ходів через уже готовий `getAllLegalMoves`. Це тест рушія:
+   працює лише з позицією, без store:
    ```js
-   function perft(state, depth) {
+   function perft(position, color, depth) {
      if (depth === 0) return 1;
-     const moves = getAllLegalMoves(state, currentColor(state));
+     const moves = getAllLegalMoves(position, color);
      if (depth === 1) return moves.length;
-     return moves.reduce((sum, move) => sum + perft(applyMove(state, move), depth - 1), 0);
+     return moves.reduce((sum, { from, to }) => {
+       const move = { from, to, piece: position.board[from] };
+       const next = applyMove(position, move).position;
+       return sum + perft(next, getOpponentColor(color), depth - 1);
+     }, 0);
    }
    ```
-   (`applyMove` — можливо, доведеться написати як чисту функцію в
-   `engine/`, якщо її ще немає окремо від Redux-редюсера — перевірити,
-   чи можна перевикористати щось із `legalMoves.js`/`gameStatus.js`, перш
-   ніж писати нову).
+   (`applyMove` уже є чистою функцією рушія — `src/engine/applyMove.js`,
+   `docs/layer-separation.md`, крок 2. У perft викликати
+   `applyMove(position, move).position`. Perft потребує ще й черги ходу —
+   якщо вона на той момент не частина `position` (відкрите питання кроку 4
+   `layer-separation.md`), передавати колір окремим аргументом.)
 2. Звірити зі стартової позиції з еталонними числами:
    `perft(1)=20, perft(2)=400, perft(3)=8902, perft(4)=197281`.
 3. Якщо є час/потреба — додати 1-2 відомі "тестові" FEN-позиції
@@ -217,24 +228,29 @@ PGN"/"Завантажити .pgn").
 Дизайн: `move-notation.md`, розділ 11. Найдорожчий пункт — вимагає зміни
 моделі даних, тому розбитий на під-кроки.
 
-1. **Додати `fenAfter` в елемент `history`.** Зміна в
-   `gameSlice.js:moveExecuted` — після застосування ходу серіалізувати
-   `state.board` у FEN (є вже `fenConverter.js` у проєкті — перевірити, чи
-   покриває напрямок `board → FEN`, чи лише `FEN → board`; можливо,
-   доведеться дописати зворотну функцію).
+1. **Додати `fenAfter` в елемент `history`.** З урахуванням трьох шарів
+   (`layer-separation.md`): серіалізацію робить **рушій** —
+   `toFen(position)` у `src/engine/` (FEN — шахове поняття, тож
+   `boardToFen` теж належить рушію, а не `utils/`). Викликає її **thunk**
+   `attemptMove` після `applyMove` і кладе готовий рядок у payload
+   `moveExecuted`; редюсер лише записує `fenAfter` у `history`.
+   Зараз `src/utils/fenConverter.js` має лише напрямок `FEN → board`.
    - **Ризик:** це зміна форми `history`, яка вплине на тести, що звіряють
      точну форму об'єкта (184 станом на 2026-09-19). Робити окремим
      комітом, прогнати повний `npm run test` одразу після.
    - **Сумісність зі збереженими партіями (крок 1):** старі записи в
      `localStorage` не матимуть `fenAfter` — саме для цього призначена
-     `SCHEMA_VERSION`: підняти версію на **3**, не на 2 (2 вже зайнята
+     `SCHEMA_VERSION`: підняти версію на наступну вільну (2 і 3 вже зайняті:
+     3 — перейменування ключів `castlingRights`; 2 зайнята
      реалізацією Кроку 1 — `clockAfter`/`timestamp`/`moveTimeMs` там уже є,
      докладніше `docs/clock-and-game-record.md`, крок 6; саме `fenAfter`
      тут — єдине справді нове поле, якого ще нема).
 2. **Read-only перегляд позиції** (простіший сценарій, робити першим):
    клік по ходу в `MoveList` → показати `fenAfter` цього ходу на дошці в
-   окремому "viewing mode" (прапорець у `gameSlice`, наприклад
-   `viewingPly: number | null`), не чіпаючи `board`/`plyCount`. Вихід із
+   окремому "viewing mode" (прапорець у слайсі **`ui`**, наприклад
+   `viewingPly: number | null` — це стан екрана, а не партії), не чіпаючи
+   `position`/`plyCount`. Позицію для показу дає селектор:
+   `viewingPly === null ? position : history[viewingPly].fenAfter`. Вихід із
    режиму — клік на "поточну позицію"/останній хід.
 3. **Справжній undo** (обрізання `history`, відновлення `board`,
    коригування `plyCount` і часу) — окреме продуктове рішення: чи взагалі
@@ -251,10 +267,55 @@ PGN"/"Завантажити .pgn").
 Дизайн: `move-validation.md`, розділ 3.6, крок 8. Три незалежні під-пункти,
 кожен можна робити окремо, без впливу на решту плану:
 
-1. `halfmoveClock` — лічильник у `gameSlice`, скидається на взяття/хід
-   пішака, 50 напівходів без нього → `endGame({winner: 'draw', reason: 'fifty-move'})`.
-2. Потрійне повторення позиції — реєстр FEN-позицій (без лічильників ходів
-   у самому FEN-рядку) з лічильником повторів у `gameSlice`.
+1. **Правило 50 ходів** (FIDE 9.3, 9.6.2) — лічильник `halfmoveClock`
+   (поле 5 у FEN).
+   - **Де живе:** це частина позиції, тож поле `position.halfmoveClock`,
+     а не `gameSlice`. Наступне значення рахує `applyMove`, так само як
+     `nextEnPassantTarget`:
+     `next = (piece — пішак || details.captured) ? 0 : prev + 1`.
+   - **Що скидає на 0:** будь-який хід пішака (зокрема промоція), будь-яке
+     взяття (зокрема на проході). **Рокіровка НЕ скидає**, хоч вона й
+     незворотна: правило згадує лише пішаків і взяття.
+   - **Межі в напівходах:** "50 ходів" — це 50 ходів *кожної* сторони, тобто
+     **100 напівходів**. При `>= 100` гравець **може вимагати** нічию; при
+     `>= 150` (75 ходів) нічия **автоматична** →
+     `endGame({ winner: 'draw', reason: 'fifty-move' })`. Виняток: якщо
+     останній хід дав мат, мат важливіший.
+   - **Перевірка:** зі значенням 37 після `Nf3` → 38, `O-O` → 38,
+     `Bxf7` → 0, `exd6 e.p.` → 0, `a8=Q` → 0.
+2. **Повторення позиції** (FIDE 9.2.3: трикратне — на вимогу; 9.6.1:
+   п'ятикратне — автоматично).
+   - **Що таке "та сама позиція":** той самий гравець ходить, ті самі
+     фігури на тих самих клітинках і **однаковий набір можливих ходів**.
+     Тому в ключ позиції входять: `board`, черга ходу, `castlingRights` і
+     прапорець взяття на проході. Лічильники (`halfmoveClock`, номер ходу)
+     у ключ **не** входять.
+   - **Прапорець взяття на проході.** `enPassantTarget` потрапляє в ключ
+     **лише якщо взяття на проході справді можливе**, тобто поруч стоїть
+     ворожий пішак, який може легально бити. Інакше в ключ іде `null`.
+     Без цього серія повторень, що починається одразу після стрибка
+     пішака, не буде знайдена:
+     ```
+          ... d7-d5     → позиція A, enPassantTarget 'd6', але бити нікому
+     1.   Nf3  Nf6
+     2.   Ng1  Ng8      → A ще раз (enPassantTarget null)
+     3.   Nf3  Nf6
+     4.   Ng1  Ng8      → A втретє → за FIDE нічию можна вимагати
+     ```
+     Якщо порівнювати `enPassantTarget` "як є", перше входження відрізнятиметься
+     ('d6' проти null), і код нарахує лише 2 повтори замість 3.
+     Ворожий пішак поруч, але зв'язаний — граничний випадок: за принципом
+     "однакові можливі ходи" взяття неможливе, тож прапорець не ставиться.
+   - **Як далеко шукати:** позиції, старші за останній хід пішака чи взяття,
+     повторитися не можуть (пішак не ходить назад, побита фігура не
+     повертається). Тому досить переглянути останні `halfmoveClock`
+     напівходів — лічильник з пункту 1 обмежує пошук.
+   - **Де живе:** ключ позиції — функція рушія (наприклад,
+     `positionKey(position, turn)`); список ключів партії — у слайсі `game`
+     поряд з `history` (це запис партії, а не позиція).
+   - Передумова: відкрите питання з `layer-separation.md`, крок 4, чи черга
+     ходу — частина `position`. За FIDE — так, вона входить в означення
+     позиції.
 3. Недостатність матеріалу — статична перевірка фігур на `board`
    (`K vs K`, `K+N vs K`, `K+B vs K`, однокольорові слони) в `gameStatus.js`.
 
@@ -262,7 +323,7 @@ PGN"/"Завантажити .pgn").
 
 | # | Крок | Складність | Блокує інші кроки? |
 |---|---|---|---|
-| 1 | `localStorage` зі схемою версій | середня | ✅ виконано (`docs/clock-and-game-record.md`) — Крок 6 підніме `SCHEMA_VERSION` до 3 |
+| 1 | `localStorage` зі схемою версій | середня | ✅ виконано (`docs/clock-and-game-record.md`) — `SCHEMA_VERSION` уже 3 (перейменування `castlingRights`), наступна зміна форми стану підніме до 4 |
 | 2 | Прибрати debug-логи | низька | — |
 | 3 | Фасад `engine/index.js` | середня (рефакторинг під тестами) | Бажано зробити до кроку 7 |
 | 4 | Perft-тест | низька | — |

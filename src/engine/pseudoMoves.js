@@ -3,9 +3,9 @@
 // шляху, БЕЗ урахування шаху власному королю. Див. docs/move-validation.md,
 // розділ 3.1, 3.2 та розділ 5 (крок 1).
 
-import { algebraicToCoords, coordsToAlgebraic } from '../utils/boardUtils';
-import { getPieceColor } from '../utils/chessHelpers';
-import { COLORS } from '../redux/game/gameConstants';
+import { algebraicToCoords, coordsToAlgebraic } from './boardUtils';
+import { getPieceColor } from './chessHelpers';
+import { COLORS } from './constants';
 import {
   KNIGHT_OFFSETS,
   KING_OFFSETS,
@@ -102,9 +102,13 @@ function getPawnMoves(board, square, color, enPassantTarget) {
 
     const captureSquare = coordsToAlgebraic(captureRow, captureCol);
     const targetPiece = board[captureSquare];
-    const isEnPassantCapture = captureSquare === enPassantTarget && !targetPiece;
+    const isEnPassantCapture =
+      captureSquare === enPassantTarget && !targetPiece;
 
-    if ((targetPiece && getPieceColor(targetPiece) !== color) || isEnPassantCapture) {
+    if (
+      (targetPiece && getPieceColor(targetPiece) !== color) ||
+      isEnPassantCapture
+    ) {
       moves.push(captureSquare);
     }
   }

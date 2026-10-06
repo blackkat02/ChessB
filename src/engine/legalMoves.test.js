@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { getPseudoLegalMoves } from './pseudoMoves';
 import { filterByKingSafety, getCastlingMoves } from './legalMoves';
 
-const FULL_CASTLING_RIGHTS = { wK: true, wQ: true, bK: true, bQ: true };
-const NO_CASTLING_RIGHTS = { wK: false, wQ: false, bK: false, bQ: false };
+const FULL_CASTLING_RIGHTS = { whiteShort: true, whiteLong: true, blackShort: true, blackLong: true };
+const NO_CASTLING_RIGHTS = { whiteShort: false, whiteLong: false, blackShort: false, blackLong: false };
 
 // Крок 3 (docs/move-validation.md, розділ 5): фільтр по безпеці короля.
 describe('filterByKingSafety', () => {

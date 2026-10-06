@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { buildSan } from './notation';
 
-const NO_CASTLING_RIGHTS = { wK: false, wQ: false, bK: false, bQ: false };
+const NO_CASTLING_RIGHTS = { whiteShort: false, whiteLong: false, blackShort: false, blackLong: false };
 
 const gameStateBefore = (board) => ({
   board,

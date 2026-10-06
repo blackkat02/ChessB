@@ -5,8 +5,8 @@
 // дефолтом (ферзь), поки UI-вибору ще не існує. Див. docs/move-validation.md,
 // розділ 3.4 та розділ 5 (крок 6).
 
-import { getPieceColor } from '../utils/chessHelpers';
-import { COLORS } from '../redux/game/gameConstants';
+import { getPieceColor } from './chessHelpers';
+import { COLORS } from './constants';
 
 const LAST_RANK = { [COLORS.WHITE]: '8', [COLORS.BLACK]: '1' };
 
