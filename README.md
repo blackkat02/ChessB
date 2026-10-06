@@ -42,22 +42,30 @@ npm run coverage   # звіт покриття (провайдер v8)
 
 ## Структура
 
+Три шари, залежності йдуть лише вниз: **UI → Redux → рушій**
+(докладно — `docs/layer-separation.md`).
+
 ```
 src/
-├── components/
-│   └── ChessBoardContainer/   # контейнер дошки (Redux → View)
+├── components/, pages/, layouts/  # UI: лише селектори й thunk-и, без імпортів рушія
+├── hooks/
+│   └── useGameState.js        # обробка кліків → dispatch(thunk)
+├── redux/                     # стан застосунку
+│   ├── store.js               # store + збереження в localStorage (persistGame.js)
+│   └── game/                  # slice, операції (thunks), селектори, константи
+├── engine/                    # шахові правила: чисті функції, не знає про Redux/React
+│   ├── index.js               # фасад — єдині двері в рушій
+│   ├── applyMove.js           # (position, move) → { position, details }
+│   ├── pseudoMoves.js, legalMoves.js, attacks.js, gameStatus.js
+│   ├── notation.js, promotion.js
+│   ├── boardUtils.js          # нотація ↔ координати масиву
+│   ├── chessHelpers.js        # колір фігури за FEN-символом
+│   └── constants.js           # COLORS
 ├── data/
 │   ├── fenConstants.js        # стандартні FEN-рядки
 │   └── positions.js           # початкова позиція фігур з FEN
-├── hooks/
-│   └── useGameState.js        # логіка вибору клітинки та ходу
-├── redux/
-│   ├── store.js               # store + збереження в localStorage
-│   └── game/                  # slice, операції (thunks), селектори, константи
 ├── utils/
-│   ├── boardUtils.js          # нотація ↔ координати масиву
 │   ├── fenConverter.js        # FEN → об'єкт дошки { a1: 'R', ... }
-│   ├── chessHelpers.js        # колір фігури за FEN-символом
 │   └── getPieceSymbol.js      # FEN-символ → юнікод-гліф фігури
 └── test/
     └── setup.js               # налаштування тестового середовища

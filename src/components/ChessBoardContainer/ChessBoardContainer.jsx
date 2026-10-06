@@ -12,8 +12,12 @@ const ChessBoardContainer = ({ showSquareId, flipped }) => {
   const boardPiecesObject = useSelector(selectBoard);
   const selectedSquare = useSelector(selectSelectedSquare);
 
-  const { handleSquareClick, pendingPromotion, resolvePromotion, cancelPromotion } =
-    useGameState();
+  const {
+    handleSquareClick,
+    pendingPromotion,
+    resolvePromotion,
+    cancelPromotion,
+  } = useGameState();
 
   return (
     <>

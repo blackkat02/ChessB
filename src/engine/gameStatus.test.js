@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { isCheck, getAllLegalMoves, isCheckmate, isStalemate } from './gameStatus';
 
-const NO_CASTLING_RIGHTS = { wK: false, wQ: false, bK: false, bQ: false };
+const NO_CASTLING_RIGHTS = { whiteShort: false, whiteLong: false, blackShort: false, blackLong: false };
 
 const baseGameState = (board) => ({
   board,
@@ -50,7 +50,7 @@ describe('getAllLegalMoves', () => {
     const gameState = {
       board: { e1: 'K', h1: 'R' },
       enPassantTarget: null,
-      castlingRights: { wK: true, wQ: false, bK: false, bQ: false },
+      castlingRights: { whiteShort: true, whiteLong: false, blackShort: false, blackLong: false },
     };
     const moves = getAllLegalMoves(gameState, 'w');
 

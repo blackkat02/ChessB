@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import ChessBoardContainer from '../../components/ChessBoardContainer/ChessBoardContainer';
 import GameInfoPanel from '../../components/GameInfoPanel/GameInfoPanel';
 import NewGameModal from '../../components/NewGameModal/NewGameModal';
@@ -7,18 +7,6 @@ import MoveListContainer from '../../components/MoveList/MoveListContainer';
 import { useGameState } from '../../hooks/useGameState';
 import { COLORS } from '../../redux/game/gameConstants';
 
-// Респонсивна розкладка через CSS Grid named areas — один і той самий DOM
-// (інфо/дошка/ходи рендеряться рівно один раз), лише `grid-template-areas`
-// і кількість колонок змінюються за брейкпоінтом:
-//  - мобілка (<640px): 1 колонка, все в стовпчик (інфо зверху, потім дошка, потім ходи);
-//  - планшет (sm, ≥640px): 2 колонки, дошка на всю ширину зверху, інфо/ходи по половині знизу;
-//  - десктоп (lg, ≥1024px): 3 колонки в один ряд — інфо | дошка | ходи (запит користувача).
-//
-// `minmax(240px, 1fr)` для середньої колонки — дошці ніколи не дають
-// стиснутись нижче розумного мінімуму. Якщо навіть цього не вистачає місця
-// (сильне збільшення масштабу сторінки на десктопі звужує ефективну ширину
-// вьюпорту) — `overflow-x-auto` дає горизонтальну прокрутку самої сітки
-// замість того, щоб колонки візуально "наїжджали" одна на одну.
 const LAYOUT_GRID_CLASSNAME = [
   'grid w-full max-w-6xl gap-6 overflow-x-auto',
   "grid-cols-1 [grid-template-areas:'info'_'board'_'moves']",
@@ -27,20 +15,24 @@ const LAYOUT_GRID_CLASSNAME = [
 ].join(' ');
 
 const HomePage = () => {
-  const { gameState, startNewGame, handleTimeUp, handleResign, handleOfferDraw } =
-    useGameState();
+  const {
+    gameState,
+    startNewGame,
+    handleTimeUp,
+    handleResign,
+    handleOfferDraw,
+  } = useGameState();
   const [showSquareId, setShowSquareId] = useState(false);
   const [isNewGameOpen, setIsNewGameOpen] = useState(false);
-  // Результат (мат/пат/час) показується автоматично, щойно isGameOver стає
-  // true. Закриття відстежується по gameId (а не окремим прапорцем
-  // isGameOverModalOpen), щоб не забути скинути його на старті нової партії.
   const [dismissedResultGameId, setDismissedResultGameId] = useState(null);
 
   const isWhiteTurn = gameState.currentTurn === COLORS.WHITE;
   const isWhiteClockActive = isWhiteTurn && gameState.hasGameStarted;
   const isBlackClockActive = !isWhiteTurn && gameState.hasGameStarted;
   const showGameOverModal =
-    gameState.isGameOver && dismissedResultGameId !== gameState.gameId && !isNewGameOpen;
+    gameState.isGameOver &&
+    dismissedResultGameId !== gameState.gameId &&
+    !isNewGameOpen;
 
   const openNewGameModal = () => setIsNewGameOpen(true);
 
@@ -78,11 +70,10 @@ const HomePage = () => {
           />
         </div>
 
-        {/* min-w-0 скасовує дефолтний min-width:auto грід-елемента — без
-            цього браузер все одно тримав би трек не вужчим за "природний"
-            мінімальний розмір дошки, і при зменшенні колонки (десктопний
-            зум) вона б виїжджала за межі своєї клітинки в сусідню секцію. */}
-        <div style={{ gridArea: 'board' }} className="flex min-w-0 items-start justify-center">
+        <div
+          style={{ gridArea: 'board' }}
+          className="flex min-w-0 items-start justify-center"
+        >
           <ChessBoardContainer
             showSquareId={showSquareId}
             flipped={gameState.playerSide === COLORS.BLACK}

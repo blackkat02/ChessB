@@ -248,7 +248,7 @@ moveExecuted({
    похідні дані, їх не зберігають.
 7. **Store і persist.** У `store.js` — три редюсери. `persistenceMiddleware`
    зберігає `{ position, game, ui: { playerSide } }` (вибір клітинки
-   зберігати не треба). Підніми `SCHEMA_VERSION` до 3 у `persistGame.js`:
+   зберігати не треба). Підніми `SCHEMA_VERSION` до 4 у `persistGame.js`:
    старі збереження просто ігноруються.
 
 Готово, коли: `state.game` не містить ні `board`, ні `selectedSquare`.
@@ -313,7 +313,7 @@ moveExecuted({
 - [ ] Крок 1: `COLORS` у `src/engine/constants.js`, рушій не імпортує `redux`
 - [ ] Крок 2: `engine/applyMove.js` + тести, редюсер викликає його
 - [ ] Крок 3: `attemptMove` рахує все, `moveExecuted` лише записує, `Date.now()` у payload
-- [ ] Крок 4: слайси `position` / `game` / `ui`, `gameEvents.js`, `SCHEMA_VERSION = 3`
+- [ ] Крок 4: слайси `position` / `game` / `ui`, `gameEvents.js`, `SCHEMA_VERSION = 4`
 - [ ] Крок 5: UI без імпортів рушія, ESLint `overrides` працюють
 - [ ] Кожен крок — окремий коміт, тести зелені після кожного
 - [ ] Відкрите питання про `turn` вирішене й обґрунтоване

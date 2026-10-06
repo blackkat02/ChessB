@@ -37,7 +37,7 @@
 ```js
 position = {
   board: { e1: 'K', e2: 'P', ... },            // клітинка → фігура, і НІЧОГО більше
-  castlingRights: { wK, wQ, bK, bQ },          // хто ще має право рокірувати
+  castlingRights: { whiteShort, whiteLong, blackShort, blackLong },          // хто ще має право рокірувати
   enPassantTarget: 'e3' | null,                // куди можна бити на проході цей напівхід
 }
 ```
@@ -138,12 +138,12 @@ board.enPassantTarget = nextEnPassantTarget(...);
 правильні. Але тут `board` — дошка, тож після ходу вона виглядає так:
 
 ```js
-{ e4: 'P', ..., castlingRights: { wK: true, ... }, enPassantTarget: 'e3' }
+{ e4: 'P', ..., castlingRights: { whiteShort: true, ... }, enPassantTarget: 'e3' }
 ```
 
 Рушій обходить дошку через `Object.entries(board)` (`attacks.js:74`,
 `gameStatus.js:37`) і вважає **кожен ключ клітинкою, а кожне значення
-фігурою**. Він спробує викликати `getPieceColor({ wK: true, … })` і впаде або
+фігурою**. Він спробує викликати `getPieceColor({ whiteShort: true, … })` і впаде або
 порахує нісенітницю. Тест `expect(next.board).toEqual({ e4: 'P' })` теж
 впаде через зайві ключі.
 
@@ -410,7 +410,7 @@ promotion» перевіряє саме це.
 import { describe, it, expect } from 'vitest';
 import { applyMove } from './applyMove';
 
-const ALL_RIGHTS = { wK: true, wQ: true, bK: true, bQ: true };
+const ALL_RIGHTS = { whiteShort: true, whiteLong: true, blackShort: true, blackLong: true };
 const pos = (board, extra = {}) => ({
   board,
   castlingRights: ALL_RIGHTS,
@@ -447,7 +447,7 @@ describe('applyMove', () => {
 - [ ] довга рокіровка чорних (`castling: 'Q'`)
 - [ ] промоція без вибору → ферзь (`'Q'` на дошці, `promotion: 'Q'`)
 - [ ] промоція з вибором чорних (`promotion: 'n'` → `'n'` на дошці, `details.promotion: 'N'`)
-- [ ] взяття тури на h8 відбирає `bK`; хід тури з a1 відбирає `wQ`
+- [ ] взяття тури на h8 відбирає `blackShort`; хід тури з a1 відбирає `whiteLong`
 - [ ] вхідна позиція не змінилась (**включно з `castlingRights`**)
 - [ ] у `position.board` немає ключів, крім клітинок (тест-захист від бага 2)
 

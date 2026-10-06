@@ -102,9 +102,13 @@ function getPawnMoves(board, square, color, enPassantTarget) {
 
     const captureSquare = coordsToAlgebraic(captureRow, captureCol);
     const targetPiece = board[captureSquare];
-    const isEnPassantCapture = captureSquare === enPassantTarget && !targetPiece;
+    const isEnPassantCapture =
+      captureSquare === enPassantTarget && !targetPiece;
 
-    if ((targetPiece && getPieceColor(targetPiece) !== color) || isEnPassantCapture) {
+    if (
+      (targetPiece && getPieceColor(targetPiece) !== color) ||
+      isEnPassantCapture
+    ) {
       moves.push(captureSquare);
     }
   }

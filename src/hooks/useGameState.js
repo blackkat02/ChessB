@@ -2,8 +2,12 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useCallback, useState } from 'react';
 import * as selectors from '../redux/game/gameSelectors';
 import { setSelection, newGameStarted } from '../redux/game/gameSlice';
-import { attemptMove, timeExpired, resignGame, offerDraw } from '../redux/game/gameOperations';
-// import { getPieceColor } from '../../engine/chessHelpers';
+import {
+  attemptMove,
+  timeExpired,
+  resignGame,
+  offerDraw,
+} from '../redux/game/gameOperations';
 import { getPieceColor } from '../engine/chessHelpers';
 import { requiresPromotion } from '../engine/promotion';
 import { COLORS, SIDE_OPTIONS } from '../redux/game/gameConstants';
@@ -65,7 +69,11 @@ export const useGameState = () => {
       const movingPiece = board[selectedSquare];
 
       if (requiresPromotion(movingPiece, squareId)) {
-        setPendingPromotion({ from: selectedSquare, to: squareId, piece: movingPiece });
+        setPendingPromotion({
+          from: selectedSquare,
+          to: squareId,
+          piece: movingPiece,
+        });
         return;
       }
 
@@ -92,7 +100,10 @@ export const useGameState = () => {
 
   const cancelPromotion = useCallback(() => setPendingPromotion(null), []);
 
-  const handleTimeUp = useCallback((color) => dispatch(timeExpired(color)), [dispatch]);
+  const handleTimeUp = useCallback(
+    (color) => dispatch(timeExpired(color)),
+    [dispatch]
+  );
 
   const handleResign = useCallback(() => dispatch(resignGame()), [dispatch]);
   const handleOfferDraw = useCallback(() => dispatch(offerDraw()), [dispatch]);

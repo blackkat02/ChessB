@@ -74,7 +74,7 @@ export function filterByKingSafety(board, from, pseudoMoves, color, enPassantTar
  *
  * @param {Record<string, string>} board
  * @param {'w'|'b'} color
- * @param {{wK: boolean, wQ: boolean, bK: boolean, bQ: boolean}} castlingRights
+ * @param {{whiteShort: boolean, whiteLong: boolean, blackShort: boolean, blackLong: boolean}} castlingRights
  * @returns {string[]}
  */
 export function getCastlingMoves(board, color, castlingRights) {
@@ -89,7 +89,7 @@ export function getCastlingMoves(board, color, castlingRights) {
   if (isSquareAttacked(board, kingStart, opponentColor)) return [];
 
   const moves = [];
-  const rightKey = color === COLORS.WHITE ? { K: 'wK', Q: 'wQ' } : { K: 'bK', Q: 'bQ' };
+  const rightKey = color === COLORS.WHITE ? { K: 'whiteShort', Q: 'whiteLong' } : { K: 'blackShort', Q: 'blackLong' };
 
   // Коротка рокіровка (O-O): король e->g, тура h->f.
   if (castlingRights[rightKey.K]) {

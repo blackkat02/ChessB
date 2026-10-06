@@ -29,15 +29,17 @@
 | Що | Де | Значення для мультиплеєра |
 |---|---|---|
 | Рушій: pseudo-moves, king safety, рокіровка, en passant, промоція, мат/пат, SAN | `src/engine/*.js` (покрито тестами, ~184 тести на 2026-09-19) | Переноситься на сервер майже без змін |
-| Застосування ходу (оновлення дошки, `castlingRights`, `enPassantTarget`, history) | **редюсер** `src/redux/game/gameSlice.js` (`moveExecuted`, `nextCastlingRights`, `nextEnPassantTarget`) | ❗ Треба винести в чисту `applyMove(state, move)` — інакше сервер не зможе перевикористати |
-| Фасад `engine/index.js` | заглушка | Заповнити (`docs/next-steps.md`, крок 3) — це і є публічний API пакета |
+| Застосування ходу (оновлення дошки, `castlingRights`, `enPassantTarget`) | 🔄 переноситься з редюсера `gameSlice.js` у чисту `src/engine/applyMove.js` (`docs/layer-separation.md`, крок 2) | Контракт `applyMove(position, move) → { position, details }` — приймає позицію, не стан Redux, тож сервер перевикористає без змін. `history` лишається записом партії (слайс `game` / таблиця `Move`), не частиною рушія |
+| Фасад `engine/index.js` | частково: експортує `applyMove` | Заповнити `getLegalMoves` / `getStatus` / `toSan` (`docs/layer-separation.md`, крок 3; `docs/next-steps.md`, крок 3) — це і є публічний API пакета |
 | Годинник на `Date.now()`-мітках (`turnStartedAt`, `clockAfter`, `moveTimeMs` в history) | `docs/clock-and-game-record.md` | Модель без змін лягає на сервер: лише джерело часу — серверне |
 | Resign / draw offer | UI + slice | Стануть WS-командами |
 | Стан у `localStorage` зі `SCHEMA_VERSION` | `src/redux/persistGame.js` | Лишається лише для локальної (hot-seat) гри / офлайн-режиму |
 
 Дрібні зв'язки рушія з рештою коду, які треба розірвати при винесенні:
-- `engine/*` імпортує `COLORS` з `redux/game/gameConstants` → перенести константи в пакет рушія.
-- `engine/*` імпортує `utils/boardUtils`, `utils/chessHelpers` → перенести в пакет (це частина домену, не UI).
+- ✅ `COLORS` перенесено в `src/engine/constants.js`; рушій більше не імпортує `redux/` (`layer-separation.md`, крок 1).
+- ✅ `boardUtils` і `chessHelpers` перенесено в `src/engine/` (там само).
+- ⬜ `fenConverter` (`src/utils/`) — FEN є шаховим поняттям і потрібен серверу (`fen` у `Game`), тож переїде в рушій разом із `boardToFen`.
+- ⬜ Межі шарів стереже ESLint (`layer-separation.md`, крок 5) — у пакеті це стане природною межею модуля.
 
 ---
 
@@ -133,7 +135,7 @@ packages/
 2. Завантажити стан партії (Postgres; кеш у Redis — оптимізація Фази 5).
 3. Перевірити `status = IN_PROGRESS`, черговість, `ply === game.ply`.
 4. Порахувати годинник: `elapsed = now − turnStartedAt`; якщо `timeLeft − elapsed ≤ 0` → партія програна за часом (хід не приймається).
-5. `chess-engine`: `isMoveLegal` → `applyMove` → `isCheckmate/isStalemate`.
+5. `chess-engine` (той самий фасад, що й на клієнті): `getLegalMoves(position, from).includes(to)` → `applyMove(position, move)` → `getStatus(position, opponent)` → `toSan(...)`.
 6. **Одна транзакція**: `INSERT Move (gameId, ply, …)` + умовний `UPDATE Game SET ply = ply + 1, fen = …, whiteTimeMs/blackTimeMs = …, turnStartedAt = now WHERE id = ? AND ply = ?` + (якщо кінець) результат + `OutboxEvent`. У цій же транзакції — наслідки для нічиєї: хід гасить активну пропозицію суперника (D4), а `offerDraw: true` створює нову (D12).
 7. Розіслати `game:move-applied` у кімнату `game:{id}`; переставити flag-таймер (4.3).
 
@@ -500,7 +502,7 @@ Python-сервіс (`apps/chess-analysis`, FastAPI + `aiokafka`, `python-chess`
 
 ### Фаза 0 — рушій як пакет (у ChessB, потім перенесення)
 1. `docs/next-steps.md` кроки 2–4 ChessB: прибрати debug-логи, заповнити фасад `engine/index.js`, perft-тест.
-2. Винести `applyMove(state, move)` з `gameSlice.js` у рушій; редюсер стає тонкою обгорткою. Тести мають лишитись зеленими без зміни очікувань.
+2. Розділити шари за `docs/layer-separation.md` (кроки 1–5): `applyMove(position, move)` у рушії, thunk рахує все через фасад, редюсери лише записують, слайси `position`/`game`/`ui`. Тести мають лишитись зеленими без зміни очікувань. Саме це робить рушій придатним для сервера: він не знає ні Redux, ні `Date.now()`.
 3. Додати `boardToFen` / `fenToState` (сервер зберігає `fen`).
 4. Перенести ChessB у `apps/chess-web`, рушій — у `packages/chess-engine` (за бажанням — у TS).
 
@@ -539,6 +541,6 @@ Socket.IO Redis adapter для кількох інстансів, кеш жив�
 ## 11. Як відновити контекст роботи
 
 1. Прочитати цей документ (розділи 0, 3, 9).
-2. У ChessB: `docs/next-steps.md` (що лишилось у рушії), `docs/clock-and-game-record.md` (модель годинника), `src/redux/game/gameSlice.js` (що треба винести в `applyMove`).
+2. У ChessB: `docs/next-steps.md` (що лишилось у рушії), `docs/clock-and-game-record.md` (модель годинника), `docs/layer-separation.md` (статус розділення шарів — чекліст у розділі 9).
 3. У SyncEvent: `booking-concurrency.md` (реєстрація + outbox — перевикористовується для турнірів), `scheduled-tasks-worker.md` (BullMQ).
 4. Перевірити статус фаз у розділі 9 і продовжити з першої незакритої.

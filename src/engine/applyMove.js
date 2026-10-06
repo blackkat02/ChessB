@@ -4,10 +4,10 @@ import { requiresPromotion, resolvePromotionPiece } from './promotion';
 import { COLORS } from './constants';
 
 export const ROOK_HOME_SQUARE_RIGHT = {
-  a1: 'wQ',
-  h1: 'wK',
-  a8: 'bQ',
-  h8: 'bK',
+  a1: 'whiteLong',
+  h1: 'whiteShort',
+  a8: 'blackLong',
+  h8: 'blackShort',
 };
 
 export const CASTLING_ROOK_MOVES = {
@@ -31,7 +31,7 @@ export const CASTLING_ROOK_MOVES = {
  */
 export function applyMove(position, move) {
   const { from, to, piece, promotion } = move;
-  const board = { ...position.board }; // власна копія — далі її можна мутувати
+  const board = { ...position.board };
 
   let captured = board[to] || null;
 
@@ -51,10 +51,10 @@ export function applyMove(position, move) {
     ? resolvePromotionPiece(piece, promotion)
     : piece;
 
-  // ...
   delete board[from];
   board[to] = pieceToPlace;
-  // ...
+
+  const castlingRights = nextCastlingRights(position.castlingRights, move);
 
   const castlingRookMove = getCastlingRookMove(piece, from, to);
 
@@ -64,24 +64,17 @@ export function applyMove(position, move) {
     board[castlingRookMove.to] = rook;
   }
 
-  // position.castlingRights = nextCastlingRights(position.castlingRights, {
-  //   from,
-  //   to,
-  //   piece,
-  // });
-  // position.enPassantTarget = nextEnPassantTarget({ piece, from, to });
-
   return {
     position: {
       board,
-      castlingRights: nextCastlingRights(position.castlingRights, move),
+      castlingRights: castlingRights,
       enPassantTarget: nextEnPassantTarget(move),
     },
     details: {
-      captured: undefined,
-      castling: undefined,
-      enPassant: undefined,
-      promotion: undefined,
+      captured: captured,
+      castling: castlingRookMove?.side ?? null,
+      enPassant: isEnPassantCapture,
+      promotion: isPromotion ? pieceToPlace.toUpperCase() : null,
     },
   };
 }
@@ -91,11 +84,11 @@ export function nextCastlingRights(current, { from, to, piece }) {
 
   if (piece.toUpperCase() === 'K') {
     if (getPieceColor(piece) === COLORS.WHITE) {
-      rights.wK = false;
-      rights.wQ = false;
+      rights.whiteShort = false;
+      rights.whiteLong = false;
     } else {
-      rights.bK = false;
-      rights.bQ = false;
+      rights.blackShort = false;
+      rights.blackLong = false;
     }
   } else if (piece.toUpperCase() === 'R' && ROOK_HOME_SQUARE_RIGHT[from]) {
     // Важливо перевіряти саме тип фігури: клітинка a1/h1/a8/h8 могла вже

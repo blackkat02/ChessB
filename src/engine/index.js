@@ -6,7 +6,7 @@ export { applyMove };
 
 /**
  * Повертає деталі ходу (captured, castling, enPassant, promotion, isCheck,
- * isCheckmate) і нову позицію для вже перевіреного легального ходу.
+ * isCheckmate) і но -ву позицію для вже перевіреного легального ходу.
  *
  * @param {{ board: { [x: string]: any; }, castlingRights: any, enPassantTarget: any }} gameState
  * @param {string} from
