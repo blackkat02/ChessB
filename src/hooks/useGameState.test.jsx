@@ -4,6 +4,7 @@ import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import gameReducer from '../redux/game/gameSlice';
 import { useGameState } from './useGameState';
+import { NO_CASTLING } from '../test/fixtures';
 
 function createTestStore(gameStateOverrides) {
   return configureStore({
@@ -22,7 +23,7 @@ function createTestStore(gameStateOverrides) {
         isGameOver: false,
         playerSide: 'w',
         gameId: 0,
-        castlingRights: { whiteShort: false, whiteLong: false, blackShort: false, blackLong: false },
+        castlingRights: NO_CASTLING,
         enPassantTarget: null,
         ...gameStateOverrides,
       },

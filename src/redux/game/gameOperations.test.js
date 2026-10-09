@@ -2,6 +2,7 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 import { configureStore } from '@reduxjs/toolkit';
 import gameReducer from './gameSlice';
 import { attemptMove, timeExpired } from './gameOperations';
+import { NO_CASTLING } from '../../test/fixtures';
 
 // Мінімальний ізольований store — без redux-persist/localStorage побічних
 // ефектів справжнього src/redux/store.js (вони тут не потрібні й лише
@@ -22,7 +23,7 @@ function createTestStore(gameStateOverrides) {
         isGameOver: false,
         playerSide: 'w',
         gameId: 0,
-        castlingRights: { whiteShort: false, whiteLong: false, blackShort: false, blackLong: false },
+        castlingRights: NO_CASTLING,
         enPassantTarget: null,
         ...gameStateOverrides,
       },

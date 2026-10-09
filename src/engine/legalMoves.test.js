@@ -1,9 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { getPseudoLegalMoves } from './pseudoMoves';
 import { filterByKingSafety, getCastlingMoves } from './legalMoves';
-
-const FULL_CASTLING_RIGHTS = { whiteShort: true, whiteLong: true, blackShort: true, blackLong: true };
-const NO_CASTLING_RIGHTS = { whiteShort: false, whiteLong: false, blackShort: false, blackLong: false };
+import { ALL_CASTLING, NO_CASTLING } from '../test/fixtures';
 
 // Крок 3 (docs/move-validation.md, розділ 5): фільтр по безпеці короля.
 describe('filterByKingSafety', () => {
@@ -64,50 +62,50 @@ describe('filterByKingSafety', () => {
 describe('getCastlingMoves', () => {
   it('обидві рокіровки легальні на чистій дошці з повними правами', () => {
     const board = { e1: 'K', a1: 'R', h1: 'R' };
-    expect(getCastlingMoves(board, 'w', FULL_CASTLING_RIGHTS)).toEqual(
+    expect(getCastlingMoves(board, 'w', ALL_CASTLING)).toEqual(
       expect.arrayContaining(['g1', 'c1'])
     );
   });
 
   it('те саме для чорних (8-й ряд)', () => {
     const board = { e8: 'k', a8: 'r', h8: 'r' };
-    expect(getCastlingMoves(board, 'b', FULL_CASTLING_RIGHTS)).toEqual(
+    expect(getCastlingMoves(board, 'b', ALL_CASTLING)).toEqual(
       expect.arrayContaining(['g8', 'c8'])
     );
   });
 
   it('немає прав — немає рокіровки, навіть якщо дошка дозволяє', () => {
     const board = { e1: 'K', a1: 'R', h1: 'R' };
-    expect(getCastlingMoves(board, 'w', NO_CASTLING_RIGHTS)).toEqual([]);
+    expect(getCastlingMoves(board, 'w', NO_CASTLING)).toEqual([]);
   });
 
   it('заблокована фігурою між королем і турою (коротка)', () => {
     const board = { e1: 'K', h1: 'R', f1: 'B' };
-    expect(getCastlingMoves(board, 'w', FULL_CASTLING_RIGHTS)).not.toContain('g1');
+    expect(getCastlingMoves(board, 'w', ALL_CASTLING)).not.toContain('g1');
   });
 
   it('заблокована фігурою між королем і турою (довга, включно з b-клітинкою)', () => {
     const board = { e1: 'K', a1: 'R', b1: 'N' };
-    expect(getCastlingMoves(board, 'w', FULL_CASTLING_RIGHTS)).not.toContain('c1');
+    expect(getCastlingMoves(board, 'w', ALL_CASTLING)).not.toContain('c1');
   });
 
   it('неможлива, коли король стоїть під шахом', () => {
     const board = { e1: 'K', h1: 'R', e8: 'r' }; // чорна тура шахує по e-файлу
-    expect(getCastlingMoves(board, 'w', FULL_CASTLING_RIGHTS)).toEqual([]);
+    expect(getCastlingMoves(board, 'w', ALL_CASTLING)).toEqual([]);
   });
 
   it('неможлива, коли король ПЕРЕТИНАЄ атаковану клітинку (навіть якщо не приземляється на неї під шахом)', () => {
     const board = { e1: 'K', h1: 'R', f8: 'r' }; // чорна тура атакує f1 по f-файлу
-    expect(getCastlingMoves(board, 'w', FULL_CASTLING_RIGHTS)).not.toContain('g1');
+    expect(getCastlingMoves(board, 'w', ALL_CASTLING)).not.toContain('g1');
   });
 
   it('неможлива, коли клітинка приземлення атакована', () => {
     const board = { e1: 'K', h1: 'R', g8: 'r' }; // чорна тура атакує g1
-    expect(getCastlingMoves(board, 'w', FULL_CASTLING_RIGHTS)).not.toContain('g1');
+    expect(getCastlingMoves(board, 'w', ALL_CASTLING)).not.toContain('g1');
   });
 
   it('неможлива без тури на стартовій клітинці, навіть якщо право ще не відкликане', () => {
     const board = { e1: 'K' }; // тури взагалі немає
-    expect(getCastlingMoves(board, 'w', FULL_CASTLING_RIGHTS)).toEqual([]);
+    expect(getCastlingMoves(board, 'w', ALL_CASTLING)).toEqual([]);
   });
 });

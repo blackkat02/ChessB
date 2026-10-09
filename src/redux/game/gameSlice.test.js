@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import gameReducer, { moveExecuted, endGame } from './gameSlice';
 import { COLORS } from './gameConstants';
+import { ALL_CASTLING, NO_CASTLING } from '../../test/fixtures';
 
 // Крок 2 (docs/move-validation.md, розділ 5): захоплення `captured`
 // до перезапису клітинки `to`, безпосередньо в редюсері — так це
@@ -67,8 +68,6 @@ describe('gameSlice: moveExecuted', () => {
   });
 });
 
-const FULL_CASTLING_RIGHTS = { whiteShort: true, whiteLong: true, blackShort: true, blackLong: true };
-const NO_CASTLING_RIGHTS = { whiteShort: false, whiteLong: false, blackShort: false, blackLong: false };
 
 // Крок 4 (docs/move-validation.md, розділ 5): рокіровка, взяття на проході,
 // оновлення castlingRights/enPassantTarget — усе відбувається в одному й
@@ -80,7 +79,7 @@ describe('gameSlice: moveExecuted — крок 4', () => {
       selectedSquare: 'e1',
       history: [],
       plyCount: 0,
-      castlingRights: FULL_CASTLING_RIGHTS,
+      castlingRights: ALL_CASTLING,
       enPassantTarget: null,
     };
 
@@ -96,7 +95,7 @@ describe('gameSlice: moveExecuted — крок 4', () => {
       selectedSquare: 'e8',
       history: [],
       plyCount: 1,
-      castlingRights: FULL_CASTLING_RIGHTS,
+      castlingRights: ALL_CASTLING,
       enPassantTarget: null,
     };
 
@@ -112,7 +111,7 @@ describe('gameSlice: moveExecuted — крок 4', () => {
       selectedSquare: 'e1',
       history: [],
       plyCount: 0,
-      castlingRights: FULL_CASTLING_RIGHTS,
+      castlingRights: ALL_CASTLING,
       enPassantTarget: null,
     };
 
@@ -127,7 +126,7 @@ describe('gameSlice: moveExecuted — крок 4', () => {
       selectedSquare: 'e1',
       history: [],
       plyCount: 0,
-      castlingRights: FULL_CASTLING_RIGHTS,
+      castlingRights: ALL_CASTLING,
       enPassantTarget: null,
     };
 
@@ -143,7 +142,7 @@ describe('gameSlice: moveExecuted — крок 4', () => {
       selectedSquare: 'a1',
       history: [],
       plyCount: 0,
-      castlingRights: FULL_CASTLING_RIGHTS,
+      castlingRights: ALL_CASTLING,
       enPassantTarget: null,
     };
 
@@ -162,7 +161,7 @@ describe('gameSlice: moveExecuted — крок 4', () => {
       selectedSquare: 'h8',
       history: [],
       plyCount: 1,
-      castlingRights: FULL_CASTLING_RIGHTS,
+      castlingRights: ALL_CASTLING,
       enPassantTarget: null,
     };
 
@@ -177,7 +176,7 @@ describe('gameSlice: moveExecuted — крок 4', () => {
       selectedSquare: 'h8',
       history: [],
       plyCount: 1,
-      castlingRights: FULL_CASTLING_RIGHTS,
+      castlingRights: ALL_CASTLING,
       enPassantTarget: null,
     };
 
@@ -193,7 +192,7 @@ describe('gameSlice: moveExecuted — крок 4', () => {
       selectedSquare: 'e2',
       history: [],
       plyCount: 0,
-      castlingRights: FULL_CASTLING_RIGHTS,
+      castlingRights: ALL_CASTLING,
       enPassantTarget: null,
     };
 
@@ -208,7 +207,7 @@ describe('gameSlice: moveExecuted — крок 4', () => {
       selectedSquare: 'a1',
       history: [],
       plyCount: 2,
-      castlingRights: FULL_CASTLING_RIGHTS,
+      castlingRights: ALL_CASTLING,
       enPassantTarget: 'e3', // залишок від минулого напівходу
     };
 
@@ -224,7 +223,7 @@ describe('gameSlice: moveExecuted — крок 4', () => {
       selectedSquare: 'e5',
       history: [],
       plyCount: 3,
-      castlingRights: FULL_CASTLING_RIGHTS,
+      castlingRights: ALL_CASTLING,
       enPassantTarget: 'd6',
     };
 
@@ -244,7 +243,7 @@ describe('gameSlice: moveExecuted — крок 6 (промоція)', () => {
       selectedSquare: 'a7',
       history: [],
       plyCount: 0,
-      castlingRights: FULL_CASTLING_RIGHTS,
+      castlingRights: ALL_CASTLING,
       enPassantTarget: null,
     };
 
@@ -260,7 +259,7 @@ describe('gameSlice: moveExecuted — крок 6 (промоція)', () => {
       selectedSquare: 'a2',
       history: [],
       plyCount: 1,
-      castlingRights: FULL_CASTLING_RIGHTS,
+      castlingRights: ALL_CASTLING,
       enPassantTarget: null,
     };
 
@@ -279,7 +278,7 @@ describe('gameSlice: moveExecuted — крок 6 (промоція)', () => {
       selectedSquare: 'a6',
       history: [],
       plyCount: 0,
-      castlingRights: FULL_CASTLING_RIGHTS,
+      castlingRights: ALL_CASTLING,
       enPassantTarget: null,
     };
 
@@ -295,7 +294,7 @@ describe('gameSlice: moveExecuted — крок 6 (промоція)', () => {
       selectedSquare: 'b7',
       history: [],
       plyCount: 0,
-      castlingRights: FULL_CASTLING_RIGHTS,
+      castlingRights: ALL_CASTLING,
       enPassantTarget: null,
     };
 
@@ -319,7 +318,7 @@ describe('gameSlice: moveExecuted — крок 7 (нотація)', () => {
       selectedSquare: 'e2',
       history: [],
       plyCount: 0,
-      castlingRights: FULL_CASTLING_RIGHTS,
+      castlingRights: ALL_CASTLING,
       enPassantTarget: null,
     };
 
@@ -336,7 +335,7 @@ describe('gameSlice: moveExecuted — крок 7 (нотація)', () => {
       selectedSquare: 'e4',
       history: [],
       plyCount: 0,
-      castlingRights: FULL_CASTLING_RIGHTS,
+      castlingRights: ALL_CASTLING,
       enPassantTarget: null,
     };
 
@@ -352,7 +351,7 @@ describe('gameSlice: moveExecuted — крок 7 (нотація)', () => {
       selectedSquare: 'a1',
       history: [],
       plyCount: 0,
-      castlingRights: FULL_CASTLING_RIGHTS,
+      castlingRights: ALL_CASTLING,
       enPassantTarget: null,
     };
 
@@ -369,7 +368,7 @@ describe('gameSlice: moveExecuted — крок 7 (нотація)', () => {
       selectedSquare: 'a2',
       history: [],
       plyCount: 1,
-      castlingRights: NO_CASTLING_RIGHTS,
+      castlingRights: NO_CASTLING,
       enPassantTarget: null,
     };
 
@@ -385,7 +384,7 @@ describe('gameSlice: moveExecuted — крок 7 (нотація)', () => {
       selectedSquare: 'e1',
       history: [],
       plyCount: 0,
-      castlingRights: FULL_CASTLING_RIGHTS,
+      castlingRights: ALL_CASTLING,
       enPassantTarget: null,
     };
 
@@ -416,7 +415,7 @@ describe('gameSlice: moveExecuted — годинник (docs/clock-and-game-reco
       whiteTime: 180000,
       blackTime: 180000,
       turnStartedAt: 1_000_000 - 4230, // чорні отримали хід 4.23с тому
-      castlingRights: FULL_CASTLING_RIGHTS,
+      castlingRights: ALL_CASTLING,
       enPassantTarget: null,
     };
 
@@ -436,7 +435,7 @@ describe('gameSlice: moveExecuted — годинник (docs/clock-and-game-reco
       whiteTime: 180000,
       blackTime: 180000,
       turnStartedAt: null,
-      castlingRights: FULL_CASTLING_RIGHTS,
+      castlingRights: ALL_CASTLING,
       enPassantTarget: null,
     };
 
@@ -459,7 +458,7 @@ describe('gameSlice: moveExecuted — годинник (docs/clock-and-game-reco
       whiteTime: 180000,
       blackTime: 500, // лишалось пів секунди
       turnStartedAt: 1_000_000 - 4000, // а минуло 4с
-      castlingRights: FULL_CASTLING_RIGHTS,
+      castlingRights: ALL_CASTLING,
       enPassantTarget: null,
     };
 
@@ -491,7 +490,7 @@ describe('gameSlice: moveExecuted — повний запис партії (кр
       whiteTime: 180000,
       blackTime: 180000,
       turnStartedAt: null, // до першого ходу годинник не йде
-      castlingRights: FULL_CASTLING_RIGHTS,
+      castlingRights: ALL_CASTLING,
       enPassantTarget: null,
     };
 
@@ -516,7 +515,7 @@ describe('gameSlice: moveExecuted — повний запис партії (кр
       whiteTime: 180000,
       blackTime: 180000,
       turnStartedAt: 1_000_000 - 4230, // чорні думали 4.23с
-      castlingRights: FULL_CASTLING_RIGHTS,
+      castlingRights: ALL_CASTLING,
       enPassantTarget: null,
     };
 
@@ -541,7 +540,7 @@ describe('gameSlice: moveExecuted — повний запис партії (кр
       whiteTime: 180000,
       blackTime: 180000,
       turnStartedAt: null,
-      castlingRights: FULL_CASTLING_RIGHTS,
+      castlingRights: ALL_CASTLING,
       enPassantTarget: null,
     };
 
