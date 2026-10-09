@@ -392,6 +392,23 @@ describe('gameSlice: moveExecuted — крок 7 (нотація)', () => {
 
     expect(next.history[0].san).toBe('O-O');
   });
+
+  // buildSan вважає promotion необов'язковим, тож якщо редюсер забуде
+  // передати його з details, SAN мовчки стане 'a8' — ловимо це тут.
+  it('промоція отримує san з "=Q"', () => {
+    const state = {
+      board: { a7: 'P' },
+      selectedSquare: 'a7',
+      history: [],
+      plyCount: 0,
+      castlingRights: ALL_CASTLING,
+      enPassantTarget: null,
+    };
+
+    const next = gameReducer(state, moveExecuted({ from: 'a7', to: 'a8', piece: 'P' }));
+
+    expect(next.history[0].san).toBe('a8=Q');
+  });
 });
 
 // docs/clock-and-game-record.md, крок 1: годинник на глобальному відліку

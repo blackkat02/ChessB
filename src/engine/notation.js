@@ -29,8 +29,12 @@ function getDisambiguation(gameStateBeforeMove, move) {
 
   if (otherLegalMoves.length === 0) return '';
 
-  const sameFile = otherLegalMoves.some((candidate) => fileOf(candidate.from) === fileOf(from));
-  const sameRank = otherLegalMoves.some((candidate) => rankOf(candidate.from) === rankOf(from));
+  const sameFile = otherLegalMoves.some(
+    (candidate) => fileOf(candidate.from) === fileOf(from)
+  );
+  const sameRank = otherLegalMoves.some(
+    (candidate) => rankOf(candidate.from) === rankOf(from)
+  );
 
   if (!sameFile) return fileOf(from); // досить літери файлу, щоб розрізнити
   if (!sameRank) return rankOf(from); // файли збігаються — досить рангу
@@ -42,12 +46,21 @@ function getDisambiguation(gameStateBeforeMove, move) {
  *
  * @param {{board: Record<string,string>, castlingRights: object, enPassantTarget: string|null}} gameStateBeforeMove
  *   Позиція ДО ходу — потрібна для дизамбігуації (розділ 3.1, docs/move-validation.md).
- * @param {{from: string, to: string, piece: string, captured: string|null, castling: 'K'|'Q'|null, promotion: string|null}} move
+ * @param {{from: string, to: string, piece: string, captured?: string|null, castling?: 'K'|'Q'|null, promotion?: string|null}} move
+ *   captured / castling / promotion — модифікатори запису; без них хід тихий.
+ *   gameSlice завжди передає всі три з details від applyMove.
  * @param {{isCheck?: boolean, isCheckmate?: boolean}} [status] - статус СУПЕРНИКА ПІСЛЯ ходу
  * @returns {string}
  */
 export function buildSan(gameStateBeforeMove, move, status = {}) {
-  const { from, to, piece, captured, castling, promotion } = move;
+  const {
+    from,
+    to,
+    piece,
+    captured = null,
+    castling = null,
+    promotion = null,
+  } = move;
   const { isCheck = false, isCheckmate = false } = status;
 
   let san;

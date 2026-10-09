@@ -70,7 +70,7 @@ export const NO_CASTLING = Object.freeze({ whiteShort: false, whiteLong: false, 
 ### 3.4 Ходи
 
 - `MOVES` — типові ходи: `WHITE_SHORT_CASTLE = { piece: 'K', from: 'e1', to: 'g1' }`, `WHITE_LONG_CASTLE`, `BLACK_SHORT_CASTLE`, `BLACK_LONG_CASTLE`, `E2_E4`, `D7_D5`.
-- `makeMove(partial)` → `{ captured: null, castling: null, promotion: null, ...partial }`. Прибирає повтор у notation.test.
+- `makeMove` не потрібен. Повтор `{ captured: null, castling: null, promotion: null }` у notation.test прибрано в самому `buildSan`: ці три поля необов'язкові й за замовчуванням `null`. Мінімальний хід для SAN — `{ from, to, piece }`, решта — модифікатори запису. JSDoc у проєкті не перевіряється (немає TS чи `checkJs`), тож «обов'язкові» поля й раніше нічого не гарантували. Те, що `gameSlice` передає всі три поля з `details`, перевіряють тести SAN у gameSlice.test (`exd5`, `O-O`, `a8=Q`).
 
 ### 3.5 Послідовності (партії)
 
@@ -114,7 +114,7 @@ src/test/
     castling.js       ALL_CASTLING, NO_CASTLING
     state.js          makeGameState, makeSliceState, createTestStore
     boards.js         withKings, POSITIONS
-    moves.js          MOVES, makeMove
+    moves.js          MOVES
     games.js          GAMES (UCI), uciToMove, playMoves
     index.js          реекспорт
 ```
@@ -238,16 +238,22 @@ src/test/
 копію, але кожне використання — виклик функції. Обери й обґрунтуй в описі
 коміту.
 
-### Крок 6. `MOVES` і `makeMove`
+### Крок 6. Ходи: необов'язкові модифікатори в `buildSan` і `MOVES`
 
 **Мета: прибрати повтор `{ captured: null, castling: null, promotion: null }`.**
 
-1. `src/test/fixtures/moves.js`: `MOVES` (рокіровки, `E2_E4`, `D7_D5`) і
-   `makeMove(partial)`.
-2. Заміни повні об'єкти ходу в `notation.test.js` і ходи рокіровки в
-   `applyMove.test.js`.
+1. ✅ `buildSan`: `captured`, `castling`, `promotion` необов'язкові, дефолт
+   `null` (розділ 3.4). У `notation.test.js` хід — лише значущі поля.
+2. ✅ gameSlice.test: тест «промоція отримує san з "=Q"». Разом з `exd5` і `O-O`
+   він перевіряє, що редюсер передає в `buildSan` усі три поля.
+3. `src/test/fixtures/moves.js`: `MOVES` (рокіровки, `E2_E4`, `D7_D5`); заміни
+   ходи рокіровки в `applyMove.test.js`.
 
-Готово, коли: у `notation.test.js` немає жодного `castling: null`.
+Готово, коли: у `notation.test.js` немає жодного `: null`.
+
+Підказка ментора: модифікатор можна зробити необов'язковим у дитині лише тоді,
+коли кожен батько гарантовано його передає. Цю гарантію фіксує тест батька,
+а не JSDoc дитини.
 
 ### Крок 7. Партії в UCI і `playMoves`
 
@@ -306,7 +312,7 @@ src/test/
 - [x] Крок 3: `makeGameState` (дефолт `ALL_CASTLING`), gameStatus і notation перевірені
 - [ ] Крок 4: один `createTestStore` на основі редюсера
 - [ ] Крок 5: `withKings`, `POSITIONS`; відкрите питання вирішене
-- [ ] Крок 6: `MOVES`, `makeMove`
+- [ ] Крок 6: ✅ модифікатори в `buildSan`; `MOVES` для applyMove.test
 - [ ] Крок 7: `GAMES` в UCI, `playMoves`, інтеграційні тести
 - [ ] Крок 8: FEN-позиції й round-trip (після кроку A)
 - [ ] Крок 9: README і `next-steps.md` оновлені

@@ -337,7 +337,7 @@ PGN"/"Завантажити .pgn").
 1. `src/test/fixtures/`: `ALL_CASTLING` / `NO_CASTLING`, `makeGameState`,
    `makeSliceState`, `createTestStore`.
 2. `withKings`, `POSITIONS` (рокіровка, en passant, промоція, зв'язка, мат, пат),
-   `MOVES`, `makeMove`.
+   `MOVES`; модифікатори ходу в `buildSan` необов'язкові.
 3. `GAMES` (UCI-рядки) + `playMoves` для інтеграційних тестів через `attemptMove`.
 4. Після `functional-coverage.md`, крок A: повні позиції (старт, Kiwipete) у FEN.
 
