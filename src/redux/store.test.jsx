@@ -6,6 +6,7 @@ import { moveExecuted, setSelection } from './game/gameSlice';
 import { useGameState } from '../hooks/useGameState';
 import Clock from '../components/Clock/Clock';
 import { COLORS } from './game/gameConstants';
+import { NO_CASTLING } from '../test/fixtures';
 
 // store.js читає localStorage ОДИН раз, на рівні модуля, в момент імпорту
 // (docs/clock-and-game-record.md, крок 8: `const persisted = loadPersistedGame()`
@@ -121,7 +122,7 @@ describe('redux store — відновлення зі збереженого с�
           history: [],
           playerSide: 'w',
           gameId: 0,
-          castlingRights: { whiteShort: false, whiteLong: false, blackShort: false, blackLong: false },
+          castlingRights: NO_CASTLING,
           enPassantTarget: null,
         },
       })

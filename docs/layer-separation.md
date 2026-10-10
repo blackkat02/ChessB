@@ -209,6 +209,9 @@ moveExecuted({
 6. Перенеси тести "редюсер правильно рокірує" з `gameSlice.test.js` у тести
    рушія або `gameOperations.test.js`. Тести слайса перевіряють лише запис
    даних.
+   Позиції для перенесених тестів бери з `src/test/fixtures/`
+   (`makeGameState`, `ALL_CASTLING`, `createTestStore`; `docs/test-fixtures.md`),
+   а не копіюй літерали стану з `gameSlice.test.js`.
 
 Готово, коли: `gameSlice.js` не імпортує `src/engine`, `attemptMove`
 імпортує рушій лише з `engine/index.js`.
@@ -250,6 +253,9 @@ moveExecuted({
    зберігає `{ position, game, ui: { playerSide } }` (вибір клітинки
    зберігати не треба). Підніми `SCHEMA_VERSION` до 4 у `persistGame.js`:
    старі збереження просто ігноруються.
+8. **Тести.** Онови `makeSliceState` і `createTestStore` у
+   `src/test/fixtures/state.js`: `preloadedState` тепер має три ключі. Якщо
+   `turn` стає частиною `position`, додай його в `makeGameState`.
 
 Готово, коли: `state.game` не містить ні `board`, ні `selectedSquare`.
 Партія відновлюється після перезавантаження сторінки.
