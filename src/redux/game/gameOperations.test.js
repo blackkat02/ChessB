@@ -2,7 +2,7 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 import { configureStore } from '@reduxjs/toolkit';
 import gameReducer from './gameSlice';
 import { attemptMove, timeExpired } from './gameOperations';
-import { NO_CASTLING } from '../../test/fixtures';
+import { ALL_CASTLING, NO_CASTLING } from '../../test/fixtures';
 
 // Мінімальний ізольований store — без redux-persist/localStorage побічних
 // ефектів справжнього src/redux/store.js (вони тут не потрібні й лише
@@ -46,7 +46,9 @@ describe('attemptMove — промоція', () => {
   it('пішак стає обраною гравцем фігурою, якщо promotion вказано', () => {
     const store = createTestStore({ board: { a7: 'P' }, plyCount: 0 });
 
-    store.dispatch(attemptMove({ from: 'a7', to: 'a8', piece: 'P', promotion: 'n' }));
+    store.dispatch(
+      attemptMove({ from: 'a7', to: 'a8', piece: 'P', promotion: 'n' })
+    );
 
     expect(store.getState().game.board.a8).toBe('N');
   });
@@ -62,7 +64,9 @@ describe('attemptMove — промоція', () => {
   it('відхиляє хід із недійсною фігурою для промоції (напр., король) — дошка не змінюється', () => {
     const store = createTestStore({ board: { a7: 'P' }, plyCount: 0 });
 
-    store.dispatch(attemptMove({ from: 'a7', to: 'a8', piece: 'P', promotion: 'k' }));
+    store.dispatch(
+      attemptMove({ from: 'a7', to: 'a8', piece: 'P', promotion: 'k' })
+    );
 
     expect(store.getState().game.board).toEqual({ a7: 'P' });
     expect(store.getState().game.history).toEqual([]);
@@ -71,11 +75,94 @@ describe('attemptMove — промоція', () => {
   it('звичайний хід (не на останній ряд) ігнорує promotion, навіть якщо він переданий помилково', () => {
     const store = createTestStore({ board: { a6: 'P' }, plyCount: 0 });
 
-    store.dispatch(attemptMove({ from: 'a6', to: 'a7', piece: 'P', promotion: 'k' }));
+    store.dispatch(
+      attemptMove({ from: 'a6', to: 'a7', piece: 'P', promotion: 'k' })
+    );
 
     // Промоція тут не застосовна — недійсне значення `promotion` для
     // звичайного ходу не має значення й не блокує хід.
     expect(store.getState().game.board).toEqual({ a7: 'P' });
+  });
+});
+
+// SAN + isCheck/isCheckmate через повний пайплайн attemptMove -> moveExecuted.
+// Перенесено з gameSlice.test.js (крок 3, docs/layer-separation-step3.md):
+// ці тести перевіряють шахи, а не запис, тож мають проходити незалежно від
+// того, де саме рахується SAN — у редюсері чи в thunk-у. Позиції — легальні
+// (обидва королі, хід за чергою), бо attemptMove перевіряє правила.
+describe('attemptMove — нотація', () => {
+  it('записує san для звичайного тихого ходу', () => {
+    const store = createTestStore({ board: { e1: 'K', e2: 'P', e8: 'k' } });
+
+    store.dispatch(attemptMove({ from: 'e2', to: 'e4', piece: 'P' }));
+
+    const [entry] = store.getState().game.history;
+    expect(entry.san).toBe('e4');
+    expect(entry.isCheck).toBe(false);
+    expect(entry.isCheckmate).toBe(false);
+  });
+
+  it('san містить "x" для взяття', () => {
+    const store = createTestStore({
+      board: { e1: 'K', e4: 'P', d5: 'p', e8: 'k' },
+    });
+
+    store.dispatch(attemptMove({ from: 'e4', to: 'd5', piece: 'P' }));
+
+    expect(store.getState().game.history[0].san).toBe('exd5');
+  });
+
+  it('san отримує суфікс "+", якщо хід дає шах суперникові', () => {
+    // Тура йде на відкритий 8-й ряд і шахує короля по рангу; у короля є
+    // втеча на 7-й ряд, тож це шах, а не мат.
+    const store = createTestStore({ board: { e1: 'K', a1: 'R', e8: 'k' } });
+
+    store.dispatch(attemptMove({ from: 'a1', to: 'a8', piece: 'R' }));
+
+    const { history, isGameOver } = store.getState().game;
+    expect(history[0].san).toBe('Ra8+');
+    expect(history[0].isCheck).toBe(true);
+    expect(history[0].isCheckmate).toBe(false);
+    expect(isGameOver).toBe(false);
+  });
+
+  it('san отримує суфікс "#" на матовій позиції і партія завершується', () => {
+    // Back-rank mate: чорна тура a2-a1, білий король g1 замкнений власними
+    // пішаками f2/g2/h2, а f1 і h1 б'є та сама тура.
+    const store = createTestStore({
+      board: { g1: 'K', f2: 'P', g2: 'P', h2: 'P', a2: 'r', a8: 'k' },
+      plyCount: 1,
+    });
+
+    store.dispatch(attemptMove({ from: 'a2', to: 'a1', piece: 'r' }));
+
+    const { history, isGameOver, winner, reason } = store.getState().game;
+    expect(history[0].san).toBe('Ra1#');
+    expect(history[0].isCheckmate).toBe(true);
+    expect(isGameOver).toBe(true);
+    expect(winner).toBe('b');
+    expect(reason).toBe('checkmate');
+  });
+
+  it('рокіровка отримує san "O-O", а не "Kg1"', () => {
+    const store = createTestStore({
+      board: { e1: 'K', h1: 'R', e8: 'k' },
+      castlingRights: ALL_CASTLING,
+    });
+
+    store.dispatch(attemptMove({ from: 'e1', to: 'g1', piece: 'K' }));
+
+    expect(store.getState().game.history[0].san).toBe('O-O');
+  });
+
+  // buildSan вважає promotion необов'язковим: якщо details не дійдуть до
+  // SAN, запис мовчки стане 'a8' — ловимо це тут.
+  it('промоція отримує san з "=Q"', () => {
+    const store = createTestStore({ board: { e1: 'K', a7: 'P', h6: 'k' } });
+
+    store.dispatch(attemptMove({ from: 'a7', to: 'a8', piece: 'P' }));
+
+    expect(store.getState().game.history[0].san).toBe('a8=Q');
   });
 });
 
@@ -105,7 +192,11 @@ describe('timeExpired', () => {
   });
 
   it('не перезаписує вже завершену партію (напр., мат стався раніше за тік годинника)', () => {
-    const store = createTestStore({ isGameOver: true, winner: 'w', reason: 'checkmate' });
+    const store = createTestStore({
+      isGameOver: true,
+      winner: 'w',
+      reason: 'checkmate',
+    });
 
     store.dispatch(timeExpired('b'));
 

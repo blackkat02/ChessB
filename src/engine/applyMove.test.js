@@ -423,6 +423,19 @@ describe('applyMove', () => {
         expect(result.details.captured).toBe('n');
         expect(result.details.promotion).toBe('Q');
       });
+
+      it('пішак не на останній ряд → promotion = null', () => {
+        const position = makeGameState({ e1: 'K', a6: 'P', h8: 'k' });
+
+        const result = applyMove(position, {
+          piece: 'P',
+          from: 'a6',
+          to: 'a7',
+        });
+
+        expect(result.position.board.a7).toBe('P');
+        expect(result.details.promotion).toBeNull();
+      });
     });
 
     describe('рокіровка', () => {
@@ -476,6 +489,19 @@ describe('applyMove', () => {
 
         expect(result.position.board).toEqual({ e1: 'K', c8: 'k', d8: 'r' });
         expect(result.details.castling).toBe('Q');
+      });
+
+      it('звичайний хід короля на сусідню клітинку → castling = null, тура на місці', () => {
+        const position = makeGameState({ e1: 'K', h1: 'R', e8: 'k' });
+
+        const result = applyMove(position, {
+          piece: 'K',
+          from: 'e1',
+          to: 'f1',
+        });
+
+        expect(result.position.board).toEqual({ f1: 'K', h1: 'R', e8: 'k' });
+        expect(result.details.castling).toBeNull();
       });
 
       it('після рокіровки білі втрачають обидва права, чорні — ні', () => {

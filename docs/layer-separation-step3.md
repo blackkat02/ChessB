@@ -10,13 +10,10 @@
 |---|---|
 | 1. Константи | ✅ |
 | 2. `applyMove` | ✅ 235 тестів зелені |
-| 3. Товстий thunk | ⬜ цей документ |
+| 3. Товстий thunk | 🟡 3.1–3.3 ✅, далі 3.4 |
 | 4, 5 | ⬜ |
 
-У робочій копії лежать незакомічені правки Prettier у `legalMoves.js`,
-`gameOperations.js` і `gameSlice.test.js` (лише переноси рядків). **Перед
-стартом закоміть їх окремо**, наприклад `style: apply prettier`. Інакше diff
-кроку 3 змішається з форматуванням і на рев'ю його буде важко читати.
+Правки Prettier закомічено окремо (`fc288b7`), 3.1–3.2 — у `b79cc58`.
 
 ## 1. Що не так зараз
 
@@ -70,14 +67,14 @@ mat/пат → dispatch(endGame(...))
 5. `npm test` зелений, гра в браузері працює: звичайні ходи, рокіровка,
    взяття на проході, промоція, мат, пат, годинники, ходи в режимі аналізу
    після кінця партії.
-6. Жоден тест не видалено без заміни (див. таблицю в п. 3.6).
+6. Жоден тест не видалено без заміни (див. таблицю в п. 3.3).
 
 ## 3. Покроковий план
 
 Кожен підкрок нижче залишає тести зеленими. Можеш комітити їх окремо, але
 перед PR об'єднай у один коміт кроку 3 (правило "один крок — один коміт").
 
-### 3.1. Фасад: `getLegalMoves` і `isMoveLegal`
+### 3.1. Фасад: `getLegalMoves` і `isMoveLegal` ✅
 
 Контракт:
 
@@ -147,7 +144,7 @@ export function isMoveLegal(position, from, to) {
 
 </details>
 
-### 3.2. Фасад: `getStatus` і `toSan`
+### 3.2. Фасад: `getStatus` і `toSan` ✅
 
 ```js
 /**
@@ -197,7 +194,104 @@ export function getStatus(position, color) {
 
 </details>
 
-### 3.3. Новий payload `moveExecuted`
+### Чому 3.3–3.7 ідуть саме в такому порядку
+
+Payload, thunk і редюсер пов'язані одним контрактом — формою action
+`moveExecuted`. Якщо thunk почне слати новий payload раніше, ніж редюсер
+навчиться його читати, гра зламається. Якщо навпаки — теж. А ще
+`moveExecuted({ from, to, piece })` зі старою формою викликався 30 разів у
+`gameSlice.test.js` і раз у `store.test.jsx`.
+
+Тому зміна контракту — одна атомарна зміна (3.5). Але її можна зробити
+**малою**, якщо спершу прибрати з дороги все, що від контракту не залежить:
+
+```
+3.3 Перенос тестів правил   ──┐ готуємо ґрунт; старий контракт ще працює
+3.4 Фікстури                ──┘
+3.5 Перемикання payload     ──── одна атомарна зміна: thunk + редюсер + тести запису
+3.6 endGame + prepare       ──┐ доводимо до критеріїв
+3.7 Прибирання, нові тести  ──┘
+```
+
+Після кожного підкроку `npm test` зелений.
+
+### 3.3. Перенос тестів, що перевіряють шахи, а не запис ✅
+
+> Виконано. 18 файлів тестів зелені.
+
+Ідея: тести рокіровки, en passant, промоції та SAN у `gameSlice.test.js`
+перевіряли **правила** через редюсер. Якщо переписати їх через `applyMove` або
+`attemptMove`, вони проходять і **до**, і **після** перемикання payload. Тоді
+в 3.5 лишається переписати лише тести **запису**.
+
+Що зроблено з кожною групою `gameSlice.test.js`:
+
+| Група | Що зроблено | Де тепер перевірка |
+|---|---|---|
+| «крок 4» — рокіровка, права, en passant (10 `it`) | видалено | `applyMove.test.js`: «рокіровка», «права рокіровки в новій позиції», «en passant», «enPassantTarget у новій позиції», `nextCastlingRights` |
+| «крок 6» — промоція (4 `it`) | видалено | `applyMove.test.js`: «промоція» + `gameOperations.test.js`: «attemptMove — промоція» |
+| «крок 7» — SAN (6 `it`) | переписано | `gameOperations.test.js`: «attemptMove — нотація» |
+
+Для двох тестів відповідника не знайшлося, тож їх **додано** в
+`applyMove.test.js`, а не просто видалено:
+
+- «звичайний хід короля на сусідню клітинку → castling = null, тура на місці»;
+- «пішак не на останній ряд → promotion = null».
+
+Нюанс SAN-тестів через `attemptMove`: позиції мають бути **легальними**.
+Редюсер ковтав будь-яку дошку, а thunk перевіряє правила: обидва королі на
+дошці, хід за чергою (`plyCount` парний — білі), хід не лишає свого короля під
+шахом. Тест на `#` заодно перевіряє, що мат завершує партію (`reason:
+'checkmate'`, `winner: 'b'`).
+
+У `gameSlice.test.js` лишилося 12 тестів: запис (captured, analysis,
+selection/plyCount), годинник, повний запис партії, `endGame`.
+
+**Коміт:** `test: move chess-rule tests from gameSlice to engine and attemptMove`
+
+### 3.4. Фікстури: `createTestStore` і `makeMovePayload`
+
+1. **`createTestStore`** переїжджає з `gameOperations.test.js` у
+   `src/test/fixtures/state.js` і експортується через `fixtures/index.js`.
+   Сигнатура та сама: `createTestStore(gameStateOverrides)`. На кроці 4 його
+   доведеться оновити (три слайси) — краще в одному місці.
+2. **`makeMovePayload(overrides)`** — повний валідний payload нової форми для
+   тестів слайса, **без рушія**:
+
+   ```js
+   export function makeMovePayload(overrides = {}) {
+     return {
+       move: { from: 'e2', to: 'e4', piece: 'P' },
+       color: 'w',
+       position: {
+         board: { e4: 'P' },
+         castlingRights: { ...NO_CASTLING },
+         enPassantTarget: 'e3',
+       },
+       details: { captured: null, castling: null, enPassant: false, promotion: null },
+       isCheck: false,
+       isCheckmate: false,
+       san: 'e4',
+       timestamp: 1_000_000,
+       ...overrides,
+     };
+   }
+   ```
+
+   Тест слайса тепер перевіряє «редюсер записав те, що прийшло», а не
+   «редюсер правильно зіграв у шахи». Значення в payload можуть бути навіть
+   фізично неможливими — редюсеру байдуже, і саме це ми перевіряємо.
+
+Поки що `makeMovePayload` ніде не використовується — це нормально. Онови
+`docs/test-fixtures.md`.
+
+**Коміт:** `test: move createTestStore to fixtures, add makeMovePayload`
+
+### 3.5. Перемикання payload — головна частина
+
+Три зміни нижче комітяться **разом**: окремо кожна ламає гру або тести.
+
+#### 3.5.1. Новий payload
 
 ```js
 moveExecuted({
@@ -208,172 +302,198 @@ moveExecuted({
   isCheck, isCheckmate,
   san,
   timestamp,           // Date.now() у thunk-у
-  analysis,            // true — хід після завершення партії
+  analysis,            // true — хід після завершення партії (лише тоді)
 })
 ```
 
-Поле `color` — відповідь на пункт 3 з розділу 1: редюсеру потрібен колір, щоб
-зменшити правильний годинник, але викликати `getPieceColor` він більше не
-може. Thunk знає колір, тож просто передає його.
+`color` береться з фігури (`getPieceColor(piece)`), а не з `turn`: у режимі
+аналізу черга не перевіряється, і білі можуть піти двічі поспіль.
 
-**Запис у `history` має лишитися тієї самої форми, що й зараз.**
-`MoveListView`, persist і тести на нього спираються. Зараз він складається
-так: `{ ...action.payload, ...details, isCheck, isCheckmate, san, timestamp,
-moveTimeMs, clockAfter }`. Тепер — з `move` замість `action.payload`.
-Порядок важливий: `details.promotion` (вже розв'язана фігура, `'Q'`) має
-перекрити `move.promotion` (може бути `undefined`). `analysis: true`
-теж має потрапити в запис (є тест "не втрачає інші поля payload").
+#### 3.5.2. `buildMovePayload` і новий `attemptMove`
 
-### 3.4. Thunk `attemptMove`
+Локальна функція в `gameOperations.js`, не експортується. Потрібна обом
+гілкам: звичайному ходу й аналізу.
 
-Новий порядок:
-
-1. Партія завершена → **гілка аналізу** (див. нижче).
-2. Час вичерпано → `timeExpired`, вихід. *(без змін)*
-3. Хід не за чергою → вихід. *(без змін)*
-4. `from === to` → вихід. *(без змін)*
-5. `!isMoveLegal(position, from, to)` → вихід. Замінює перевірки №3, №4, №5
-   (friendly fire, геометрія, безпека короля) одним викликом.
-6. Промоція з явно вказаною недійсною фігурою → вихід. *(без змін)*
-7. `applyMove` → `getStatus(суперник)` → `toSan` → `Date.now()`.
-8. Один `dispatch(moveExecuted(...))`.
-9. Якщо `status.isCheckmate` → `endGame` з перемогою того, хто ходив; якщо
-   `status.isStalemate` → нічия. **Не читай `getState()` після диспатчу**:
-   статус уже порахований у кроці 7.
-
-Позицію бери одним рядком. Додай у `gameSelectors.js`:
+<details>
+<summary>Розв'язок: <code>buildMovePayload</code></summary>
 
 ```js
-export const selectPosition = createSelector(
-  [selectBoard, (s) => s.game.castlingRights, (s) => s.game.enPassantTarget],
-  (board, castlingRights, enPassantTarget) => ({ board, castlingRights, enPassantTarget })
-);
+function buildMovePayload(position, moveData, extra = {}) {
+  const { from, to, piece, promotion } = moveData;
+  const move = { from, to, piece, promotion };
+  const color = getPieceColor(piece);
+
+  const { position: after, details } = applyMove(position, move);
+  const status = getStatus(after, getOpponentColor(color));
+  const san = toSan(position, { ...move, ...details }, status);
+
+  const payload = {
+    move,
+    color,
+    position: after,
+    details,
+    isCheck: status.isCheck,
+    isCheckmate: status.isCheckmate,
+    san,
+    timestamp: Date.now(),
+    ...extra,
+  };
+
+  return { payload, status };
+}
 ```
 
-На кроці 4 зміниться лише його тіло (`state.position`), а thunk не
-зміниться взагалі.
+</details>
 
-**Гілка аналізу** (п. 3 у таску з `layer-separation.md`). Зараз там валідації
-немає, а редюсер усе одно застосовує хід і рахує SAN. Тож тепер ця гілка
-мусить сама зробити `applyMove` + `getStatus` + `toSan` + `timestamp`, і лише
-без перевірок легальності та без `endGame`. Щоб не дублювати пункти 7–8,
-винеси їх у локальну функцію `buildMovePayload(position, moveData, extra)`
-у `gameOperations.js` і клич її з обох гілок.
+**Чому `{ payload, status }`, а не `status` усередині payload.** Action
+містить лише те, що записується в стан. `isStalemate` редюсеру не потрібен —
+лише thunk-у, щоб вирішити, чи диспатчити `endGame`. Зайве поле в action
+рано чи пізно хтось почне читати в редюсері, і логіка знову попливе туди.
+
+Новий порядок `attemptMove`:
+
+1. `position = selectPosition(state)` — **до** гілки аналізу, бо там вона теж
+   потрібна.
+2. Партія завершена → `buildMovePayload(position, moveData, { analysis: true })`,
+   `dispatch`, вихід. Без перевірок і без `endGame`.
+3. Час, черга, `from === to`, `isMoveLegal`, промоція — без змін.
+4. `const { payload, status } = buildMovePayload(position, moveData)`.
+5. `dispatch(moveExecuted(payload))`.
+6. `status.isCheckmate` → `endGame` з перемогою `turn`; `status.isStalemate` →
+   нічия. **Без `getState()` після диспатчу**: нову позицію thunk порахував
+   сам, перечитувати її з Redux — питати те, що ми щойно самі сказали.
+7. Невикористаний `time` з деструктуризації — геть.
 
 Помітиш, що в режимі аналізу редюсер ставить `turnStartedAt = timestamp`,
 хоча партія вже закінчена. Це поточна поведінка, годинники не йдуть завдяки
 `isGameOver` у `selectClockRemaining`. **Не виправляй**, запиши в
 `docs/next-steps.md`.
 
-Також прибери з `gameSelectors.js` прямий імпорт `engine/chessHelpers`:
-`getPieceColor` тепер є у фасаді.
+#### 3.5.3. Тонкий `moveExecuted`
 
-<details>
-<summary>Розв'язок: скелет <code>attemptMove</code></summary>
-
-```js
-import {
-  isMoveLegal, applyMove, getStatus, toSan,
-  getPieceColor, getOpponentColor, requiresPromotion, isValidPromotionPiece,
-} from '../../engine';
-
-function buildMovePayload(position, moveData, extra = {}) {
-  const { from, to, piece, promotion } = moveData;
-  const color = getPieceColor(piece);
-  const result = applyMove(position, { from, to, piece, promotion });
-  const status = getStatus(result.position, getOpponentColor(color));
-  const san = toSan(
-    position,
-    { from, to, piece, ...result.details },
-    status
-  );
-
-  return {
-    move: { from, to, piece, promotion },
-    color,
-    position: result.position,
-    details: result.details,
-    isCheck: status.isCheck,
-    isCheckmate: status.isCheckmate,
-    san,
-    timestamp: Date.now(),
-    ...extra,
-    status, // для thunk-а; редюсер це поле ігнорує
-  };
-}
-```
-
-Подумай, чи хочеш, щоб `status` (з `isStalemate`) їхав у payload, чи краще
-повертати його з `buildMovePayload` окремо: `{ payload, status }`. Другий
-варіант чистіший: action містить лише те, що записується.
-
-</details>
-
-### 3.5. Тонкий редюсер і `endGame` з `prepare`
-
-`moveExecuted` тепер лише:
+Редюсер тепер лише:
 
 - присвоює `board`, `castlingRights`, `enPassantTarget` з `payload.position`;
 - рахує `moveTimeMs = timestamp - turnStartedAt` (якщо годинник ішов) і
   зменшує годинник `payload.color`;
 - `turnStartedAt = timestamp`;
-- додає запис у `history` (форма з п. 3.3);
+- додає запис у `history`;
 - `plyCount += 1`, `selectedSquare = null`.
 
-`endGame` також використовує `Date.now()` для таймауту. Тут thunk-а може не
-бути (`resignGame`, `offerDraw`, `timeExpired` — усі thunk-и, але action
-можна диспатчити й напряму). Тому використай `prepare`-колбек:
+**Запис у `history` має лишитися тієї самої форми**, що й зараз:
+`MoveListView`, persist і тести на нього спираються. Три пастки:
+
+1. **Порядок `...move, ...details`.** `move.promotion` може бути `undefined`,
+   а `details.promotion` — уже розв'язана `'Q'`. `details` іде **другим**,
+   щоб перекрити. Інакше в записі не буде промоції, хоча SAN буде `e8=Q`.
+2. **`...(analysis && { analysis })`.** Раніше `analysis` потрапляв у запис
+   через `...action.payload` лише тоді, коли був переданий. Просте
+   `analysis,` додасть `analysis: undefined` кожному ходу — новий ключ у
+   persist і зламані `toEqual`.
+3. **Імпорти.** Після зміни `grep -n engine src/redux/game/gameSlice.js` має
+   бути порожнім.
+
+<details>
+<summary>Розв'язок: <code>moveExecuted</code></summary>
+
+```js
+moveExecuted: (state, action) => {
+  const { move, color, position, details, isCheck, isCheckmate, san, timestamp, analysis } =
+    action.payload;
+
+  state.board = position.board;
+  state.castlingRights = position.castlingRights;
+  state.enPassantTarget = position.enPassantTarget;
+
+  let moveTimeMs = 0;
+  if (typeof state.turnStartedAt === 'number') {
+    moveTimeMs = timestamp - state.turnStartedAt;
+    if (color === COLORS.WHITE) {
+      state.whiteTime = Math.max(0, state.whiteTime - moveTimeMs);
+    } else {
+      state.blackTime = Math.max(0, state.blackTime - moveTimeMs);
+    }
+  }
+  state.turnStartedAt = timestamp;
+
+  state.selectedSquare = null;
+  state.history.push({
+    ...move,
+    ...details,
+    isCheck,
+    isCheckmate,
+    san,
+    timestamp,
+    moveTimeMs,
+    clockAfter: { w: state.whiteTime, b: state.blackTime },
+    ...(analysis && { analysis }),
+  });
+  state.plyCount += 1;
+},
+```
+
+</details>
+
+#### 3.5.4. Тести запису на `makeMovePayload`
+
+12 тестів, що лишились у `gameSlice.test.js`, переводяться на
+`moveExecuted(makeMovePayload({...}))`:
+
+- **Запис** (captured, analysis, selection/plyCount) — потрібні поля
+  підміняються через `overrides`, наприклад
+  `details: { ...,  captured: 'p' }` або `analysis: true`.
+- **Годинник і повний запис партії** — `vi.setSystemTime` більше не потрібен:
+  час приходить у `payload.timestamp`. Тест «`timestamp` елемента дорівнює
+  новому `turnStartedAt`» стає тривіальним — і це доказ чистоти редюсера:
+  однаковий action дає однаковий стан без жодного мокання часу.
+- **`endGame`** — не чіпаєш до 3.6.
+
+І `store.test.jsx`: `moveExecuted({ from: 'e2', to: 'e4', piece: 'P' })` →
+`moveExecuted(makeMovePayload())`.
+
+**Коміт:** `refactor(redux): compute move in attemptMove, make moveExecuted record-only`
+
+### 3.6. `endGame` через `prepare`
+
+`endGame` диспатчать чотири thunk-и (`attemptMove`, `timeExpired`,
+`resignGame`, `offerDraw`). Дописувати `timestamp: Date.now()` у кожен виклик
+— повторення, яке рано чи пізно десь забудуть. `prepare` робить це в одному
+місці, в action creator:
 
 ```js
 endGame: {
-  reducer(state, action) { /* використовує action.payload.timestamp */ },
+  reducer(state, action) {
+    const { winner, reason, timedOutColor, timestamp } = action.payload;
+    // ...як було, але elapsed = timestamp - state.turnStartedAt
+  },
   prepare(payload) {
     return { payload: { ...payload, timestamp: Date.now() } };
   },
 },
 ```
 
-`prepare` викликається в action creator, а не в редюсері. Тож редюсер
-залишається чистим, а виклик `endGame({...})` для решти коду не змінюється.
+Виклики `endGame({ winner, reason })` у коді не змінюються. Тести `endGame` з
+`vi.setSystemTime` теж: `prepare` спрацьовує в момент виклику `endGame(...)`
+у тесті. `grep -n "Date.now" src/redux/game/gameSlice.js` має знаходити
+рівно один рядок — у `prepare`.
 
-Перевір: `gameSlice.js` імпортує лише `createSlice`,
-`initialBoardPiecesObject` і `gameConstants`.
+**Коміт:** `refactor(redux): move Date.now out of endGame reducer via prepare`
 
-### 3.6. Тести
+### 3.7. Прибирання і нові тести
 
-Спершу винеси `createTestStore` з `gameOperations.test.js` у
-`src/test/fixtures/state.js` і експортуй через `fixtures/index.js`.
-`layer-separation.md` уже на нього посилається, а на кроці 4 його треба буде
-оновлювати в одному місці. Онови `docs/test-fixtures.md`.
-
-Додай у фікстури `makeMovePayload(overrides)`: збирає повний валідний
-payload для тестів слайса (тихий хід `e2→e4`, `timestamp: 1_000_000`), а
-`overrides` дозволяє підмінити поля. Тести слайса більше не мають залежати
-від рушія.
-
-Куди переїжджають тести з `gameSlice.test.js`:
-
-| Група в `gameSlice.test.js` | Куди | Як |
-|---|---|---|
-| `moveExecuted` (captured, analysis, plyCount, selection) | лишається | на `makeMovePayload` |
-| "крок 4" — рокіровка, права, en passant | `applyMove.test.js` | вже покрито → видалити, звіривши кожен `it` з `applyMove.test.js` |
-| "крок 6" — промоція | `applyMove.test.js` + `gameOperations.test.js` | вже покрито → видалити |
-| "крок 7" — SAN (`x`, `+`, `#`, `O-O`, `=Q`) | `gameOperations.test.js` | через `attemptMove`, перевіряти `history[0].san` |
-| годинник, повний запис партії | лишається | `timestamp` у payload замість `vi.setSystemTime` |
-| `endGame` — таймаут | лишається | `vi.setSystemTime` ще потрібен (через `prepare`) |
-
-Правило "не видаляй без заміни": для кожного `it`, який видаляєш, має існувати
-тест з тією ж перевіркою деінде. Якщо не знаходиш — переноси, а не видаляй.
-
-Нові тести в `gameOperations.test.js`:
-
-- нелегальний хід (фігура у зв'язці) нічого не диспатчить;
-- рокіровка через `attemptMove` рухає і короля, і туру;
-- мат завершує партію (`winner`, `reason: 'checkmate'`);
-- пат завершує партію нічиєю;
-- після кінця партії хід в аналізі застосовується без перевірок і має `san`;
-- `history[0].timestamp` дорівнює `Date.now()` у момент thunk-а
-  (`vi.setSystemTime`).
+- `gameSelectors.js`: `getPieceColor` з `'../../engine'`, не з
+  `engine/chessHelpers`.
+- `gameConstants.js`: `COLORS` з `'../../engine'`.
+- Після цього `grep -rn "engine/" src/redux` порожній.
+- Нові тести в `gameOperations.test.js`:
+  - нелегальний хід (фігура у зв'язці) → `history` порожній;
+  - пат → `winner: 'draw'`, `reason: 'stalemate'`;
+  - хід після мату → застосовано, `analysis: true`, є `san`, `endGame` вдруге
+    не диспатчиться;
+  - `vi.setSystemTime(5000)` → `history[0].timestamp === 5000`.
+- Тести `getLegalMoves` і `getStatus` в `src/engine/index.test.js` (таблиці
+  з 3.1 і 3.2).
+- `docs/next-steps.md`: рядок про `turnStartedAt` у режимі аналізу.
 
 ## 4. Перевірка перед комітом
 
