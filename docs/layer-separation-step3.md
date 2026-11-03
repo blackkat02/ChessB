@@ -135,8 +135,9 @@ export function getLegalMoves(position, from) {
   return [...safe, ...castling];
 }
 
-export const isMoveLegal = (position, from, to) =>
-  getLegalMoves(position, from).includes(to);
+export function isMoveLegal(position, from, to) {
+  return getLegalMoves(position, from).includes(to);
+}
 ```
 
 І `getAllLegalMoves` у `gameStatus.js` стає циклом по фігурах кольору з

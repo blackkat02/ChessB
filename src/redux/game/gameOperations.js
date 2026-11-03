@@ -1,14 +1,14 @@
 import { moveExecuted, endGame } from './gameSlice';
 import * as selectors from './gameSelectors';
-import { getPieceColor, getOpponentColor } from '../../engine/chessHelpers';
 import { COLORS } from './gameConstants';
-import { getPseudoLegalMoves } from '../../engine/pseudoMoves';
-import { filterByKingSafety, getCastlingMoves } from '../../engine/legalMoves';
-import { isCheckmate, isStalemate } from '../../engine/gameStatus';
 import {
+  isMoveLegal,
+  getStatus,
+  getPieceColor,
+  getOpponentColor,
   requiresPromotion,
   isValidPromotionPiece,
-} from '../../engine/promotion';
+} from '../../engine';
 
 export const attemptMove = (moveData) => (dispatch, getState) => {
   const { from, to, piece, time } = moveData;
@@ -44,52 +44,12 @@ export const attemptMove = (moveData) => (dispatch, getState) => {
     return;
   }
 
-  // 4. ПЕРЕВІРКА №3: Чи пуста клітина to та не своєго кольору?
-  const isFriendlyFire = selectors.selectIsFriendlyFire(state, to);
-
-  if (isFriendlyFire) {
-    console.warn('[OP] Спроба удару своєї фігури, ігноруємо.');
+  // 4. ПЕРЕВІРКА №3: легальність ходу (docs/layer-separation-step3.md, 3.1).
+  // Один виклик фасаду замість трьох окремих перевірок: своя фігура на
+  // цілі, геометрія, безпека короля (рокіровка — зі своєю перевіркою).
+  if (!isMoveLegal(selectors.selectPosition(state), from, to)) {
+    console.warn('🚨 Нелегальний хід.');
     return;
-  }
-
-  // 5. ПЕРЕВІРКА №4: чи хід відповідає геометрії фігури (крок 1, docs/move-validation.md).
-  // Це псевдолегальність — без урахування, чи хід залишає власного короля
-  // під шахом (це кроки 3+). Знімає головний баг: без цієї перевірки будь-яка
-  // фігура могла "ходити" на будь-яку не свою клітинку дошки.
-  const { board, enPassantTarget, castlingRights } = state.game;
-  const pseudoLegalMoves = getPseudoLegalMoves(board, from, enPassantTarget);
-
-  // Рокіровка — окремий вид ходу, не "геометрія" (король ходить на 2
-  // клітинки лише в цьому випадку). Рахуємо її окремо й додаємо до
-  // кандидатів лише для короля (крок 4, docs/move-validation.md, розділ 3.4).
-  const castlingMoves =
-    getPieceColor(piece) === turn && piece.toUpperCase() === 'K'
-      ? getCastlingMoves(board, turn, castlingRights)
-      : [];
-
-  if (![...pseudoLegalMoves, ...castlingMoves].includes(to)) {
-    console.warn('🚨 Хід не відповідає геометрії фігури.');
-    return;
-  }
-
-  // 6. ПЕРЕВІРКА №5: чи хід не залишає власного короля під шахом (крок 3,
-  // docs/move-validation.md). Рокіровку сюди НЕ пускаємо — getCastlingMoves
-  // уже перевірив і шах, і прохід короля через атаковані клітинки власною,
-  // ширшою логікою (filterByKingSafety симулює рух лише ОДНІЄЇ фігури, а
-  // рокіровка рухає короля й туру одночасно).
-  const isCastlingMove = castlingMoves.includes(to);
-  if (!isCastlingMove) {
-    const legalMoves = filterByKingSafety(
-      board,
-      from,
-      pseudoLegalMoves,
-      turn,
-      enPassantTarget
-    );
-    if (!legalMoves.includes(to)) {
-      console.warn('🚨 Хід залишає власного короля під шахом.');
-      return;
-    }
   }
 
   // 6.5. ПЕРЕВІРКА №6: якщо це промоція і гравець ЯВНО вказав фігуру —
@@ -112,11 +72,11 @@ export const attemptMove = (moveData) => (dispatch, getState) => {
   // хто щойно ходив. moveExecuted уже оновив board/plyCount, тому читаємо
   // стан заново через getState(), а не використовуємо застарілий `state`.
   const nextTurn = getOpponentColor(turn);
-  const gameStateAfterMove = getState().game;
+  const status = getStatus(selectors.selectPosition(getState()), nextTurn);
 
-  if (isCheckmate(gameStateAfterMove, nextTurn)) {
+  if (status.isCheckmate) {
     dispatch(endGame({ winner: turn, reason: 'checkmate' }));
-  } else if (isStalemate(gameStateAfterMove, nextTurn)) {
+  } else if (status.isStalemate) {
     dispatch(endGame({ winner: 'draw', reason: 'stalemate' }));
   }
 };

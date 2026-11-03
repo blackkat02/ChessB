@@ -4,12 +4,44 @@
 // розділ 5 (кроки 3-4).
 
 import { algebraicToCoords, coordsToAlgebraic } from './boardUtils';
-import { getOpponentColor } from './chessHelpers';
+import { getPieceColor, getOpponentColor } from './chessHelpers';
+import { getPseudoLegalMoves } from './pseudoMoves';
 import { COLORS } from './constants';
 import { isSquareAttacked } from './attacks';
 
 const KING_SYMBOLS = { w: 'K', b: 'k' };
 const ROOK_SYMBOLS = { w: 'R', b: 'r' };
+
+/**
+ * Легальні цільові клітинки для фігури на `from`:
+ * геометрія + безпека короля + рокіровка.
+ * Колір береться з фігури; чия черга — рушій не знає.
+ *
+ * @param {{ board, castlingRights, enPassantTarget }} position
+ * @param {string} from
+ * @returns {string[]}
+ */
+export function getLegalMoves(position, from) {
+  const { board, castlingRights, enPassantTarget } = position;
+  const piece = board[from];
+  if (!piece) return [];
+
+  const color = getPieceColor(piece);
+  const pseudo = getPseudoLegalMoves(board, from, enPassantTarget);
+  const safe = filterByKingSafety(board, from, pseudo, color, enPassantTarget);
+
+  // Рокіровку не фільтруємо: getCastlingMoves сам перевіряє шах і прохід.
+  const castling =
+    piece.toUpperCase() === 'K'
+      ? getCastlingMoves(board, color, castlingRights)
+      : [];
+
+  return [...safe, ...castling];
+}
+
+export function isMoveLegal(position, from, to) {
+  return getLegalMoves(position, from).includes(to);
+}
 
 // Публічна — потрібна й gameStatus.js (крок 5) для isCheck. Немає сенсу
 // тримати позицію короля в Redux-стані (`kingPositions`, розділ 4.1

@@ -3,8 +3,7 @@
 // Див. docs/move-validation.md, розділ 3.5 та розділ 5 (крок 5).
 
 import { getPieceColor, getOpponentColor } from './chessHelpers';
-import { getPseudoLegalMoves } from './pseudoMoves';
-import { filterByKingSafety, getCastlingMoves, findKingSquare } from './legalMoves';
+import { findKingSquare, getLegalMoves } from './legalMoves';
 import { isSquareAttacked } from './attacks';
 
 /**
@@ -21,33 +20,44 @@ export function isCheck(board, color) {
 
 /**
  * Усі легальні ходи всіх фігур кольору `color` у поточній позиції гри.
- * Єдине місце, де "легальність" рахується по-справжньому повністю —
- * геометрія (крок 1) + безпека короля (крок 3) + рокіровка (крок 4) для
- * КОЖНОЇ фігури цього кольору одночасно, а не для однієї, як у
- * filterByKingSafety.
+ * Для кожної фігури — getLegalMoves (геометрія + безпека короля +
+ * рокіровка), тож правила легальності живуть в одному місці.
  *
- * @param {object} gameState - зріз стану гри (board, castlingRights, enPassantTarget)
+ * @param {{ board, castlingRights, enPassantTarget }} gameState
  * @param {'w'|'b'} color
  * @returns {Array<{ from: string, to: string }>}
  */
 export function getAllLegalMoves(gameState, color) {
-  const { board, enPassantTarget, castlingRights } = gameState;
   const moves = [];
 
-  for (const [square, piece] of Object.entries(board)) {
+  for (const [square, piece] of Object.entries(gameState.board)) {
     if (getPieceColor(piece) !== color) continue;
 
-    const pseudoMoves = getPseudoLegalMoves(board, square, enPassantTarget);
-    const legalMoves = filterByKingSafety(board, square, pseudoMoves, color, enPassantTarget);
-    legalMoves.forEach((to) => moves.push({ from: square, to }));
-
-    if (piece.toUpperCase() === 'K') {
-      const castlingMoves = getCastlingMoves(board, color, castlingRights);
-      castlingMoves.forEach((to) => moves.push({ from: square, to }));
-    }
+    getLegalMoves(gameState, square).forEach((to) =>
+      moves.push({ from: square, to })
+    );
   }
 
   return moves;
+}
+
+/**
+ * Статус сторони `color` у позиції. Легальні ходи рахуються ОДИН раз.
+ * Мат завжди має і isCheck: true; мат і пат взаємовиключні.
+ *
+ * @param {{ board, castlingRights, enPassantTarget }} position
+ * @param {'w'|'b'} color
+ * @returns {{ isCheck: boolean, isCheckmate: boolean, isStalemate: boolean }}
+ */
+export function getStatus(position, color) {
+  const inCheck = isCheck(position.board, color);
+  const hasMoves = getAllLegalMoves(position, color).length > 0;
+
+  return {
+    isCheck: inCheck,
+    isCheckmate: inCheck && !hasMoves,
+    isStalemate: !inCheck && !hasMoves,
+  };
 }
 
 /**
@@ -56,7 +66,7 @@ export function getAllLegalMoves(gameState, color) {
  * @returns {boolean}
  */
 export function isCheckmate(gameState, color) {
-  return isCheck(gameState.board, color) && getAllLegalMoves(gameState, color).length === 0;
+  return getStatus(gameState, color).isCheckmate;
 }
 
 /**
@@ -65,5 +75,5 @@ export function isCheckmate(gameState, color) {
  * @returns {boolean}
  */
 export function isStalemate(gameState, color) {
-  return !isCheck(gameState.board, color) && getAllLegalMoves(gameState, color).length === 0;
+  return getStatus(gameState, color).isStalemate;
 }
