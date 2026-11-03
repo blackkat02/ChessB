@@ -12,6 +12,22 @@ export const selectPlayerSide = (state) => state.game.playerSide;
 export const selectGameId = (state) => state.game.gameId;
 export const selectMoveHistory = (state) => state.game.history;
 
+// Позиція для рушія одним об'єктом. Мемоізована: той самий об'єкт, поки
+// board/castlingRights/enPassantTarget не змінились. На кроці 4 зміниться
+// лише шлях (state.position), а виклики в thunk-у — ні.
+export const selectPosition = createSelector(
+  [
+    selectBoard,
+    (state) => state.game.castlingRights,
+    (state) => state.game.enPassantTarget,
+  ],
+  (board, castlingRights, enPassantTarget) => ({
+    board,
+    castlingRights,
+    enPassantTarget,
+  })
+);
+
 export const selectMovePairs = createSelector(
   (state) => state.game.history,
   (history) =>

@@ -4,19 +4,53 @@
 // розділ 5 (кроки 3-4).
 
 import { algebraicToCoords, coordsToAlgebraic } from './boardUtils';
-import { getOpponentColor } from './chessHelpers';
+import { getPieceColor, getOpponentColor } from './chessHelpers';
+import { getPseudoLegalMoves } from './pseudoMoves';
 import { COLORS } from './constants';
 import { isSquareAttacked } from './attacks';
 
 const KING_SYMBOLS = { w: 'K', b: 'k' };
 const ROOK_SYMBOLS = { w: 'R', b: 'r' };
 
+/**
+ * Легальні цільові клітинки для фігури на `from`:
+ * геометрія + безпека короля + рокіровка.
+ * Колір береться з фігури; чия черга — рушій не знає.
+ *
+ * @param {{ board, castlingRights, enPassantTarget }} position
+ * @param {string} from
+ * @returns {string[]}
+ */
+export function getLegalMoves(position, from) {
+  const { board, castlingRights, enPassantTarget } = position;
+  const piece = board[from];
+  if (!piece) return [];
+
+  const color = getPieceColor(piece);
+  const pseudo = getPseudoLegalMoves(board, from, enPassantTarget);
+  const safe = filterByKingSafety(board, from, pseudo, color, enPassantTarget);
+
+  // Рокіровку не фільтруємо: getCastlingMoves сам перевіряє шах і прохід.
+  const castling =
+    piece.toUpperCase() === 'K'
+      ? getCastlingMoves(board, color, castlingRights)
+      : [];
+
+  return [...safe, ...castling];
+}
+
+export function isMoveLegal(position, from, to) {
+  return getLegalMoves(position, from).includes(to);
+}
+
 // Публічна — потрібна й gameStatus.js (крок 5) для isCheck. Немає сенсу
 // тримати позицію короля в Redux-стані (`kingPositions`, розділ 4.1
 // документа) як окреме поле, поки достатньо швидкого сканування дошки.
 export function findKingSquare(board, color) {
   const kingSymbol = KING_SYMBOLS[color];
-  return Object.keys(board).find((square) => board[square] === kingSymbol) ?? null;
+  return (
+    Object.keys(board).find((square) => board[square] === kingSymbol) ?? null
+  );
 }
 
 // Хід на КОПІЇ дошки — щоб перевірити безпеку короля, не мутуючи справжній
@@ -53,7 +87,13 @@ function simulateMove(board, from, to, enPassantTarget) {
  * @param {string|null} [enPassantTarget]
  * @returns {string[]}
  */
-export function filterByKingSafety(board, from, pseudoMoves, color, enPassantTarget = null) {
+export function filterByKingSafety(
+  board,
+  from,
+  pseudoMoves,
+  color,
+  enPassantTarget = null
+) {
   return pseudoMoves.filter((to) => {
     const boardAfterMove = simulateMove(board, from, to, enPassantTarget);
     const kingSquare = findKingSquare(boardAfterMove, color);
@@ -61,7 +101,11 @@ export function filterByKingSafety(board, from, pseudoMoves, color, enPassantTar
     // Дошка без короля (тестові фікстури для кроку 1) — нема кого захищати.
     if (!kingSquare) return true;
 
-    return !isSquareAttacked(boardAfterMove, kingSquare, getOpponentColor(color));
+    return !isSquareAttacked(
+      boardAfterMove,
+      kingSquare,
+      getOpponentColor(color)
+    );
   });
 }
 
@@ -89,7 +133,10 @@ export function getCastlingMoves(board, color, castlingRights) {
   if (isSquareAttacked(board, kingStart, opponentColor)) return [];
 
   const moves = [];
-  const rightKey = color === COLORS.WHITE ? { K: 'whiteShort', Q: 'whiteLong' } : { K: 'blackShort', Q: 'blackLong' };
+  const rightKey =
+    color === COLORS.WHITE
+      ? { K: 'whiteShort', Q: 'whiteLong' }
+      : { K: 'blackShort', Q: 'blackLong' };
 
   // Коротка рокіровка (O-O): король e->g, тура h->f.
   if (castlingRights[rightKey.K]) {
@@ -115,7 +162,8 @@ export function getCastlingMoves(board, color, castlingRights) {
     const landSquare = `c${rank}`;
     const rookSquare = `a${rank}`;
 
-    const pathClear = !board[knightSquare] && !board[passSquare] && !board[landSquare];
+    const pathClear =
+      !board[knightSquare] && !board[passSquare] && !board[landSquare];
     const rookPresent = board[rookSquare] === rookSymbol;
     const pathSafe =
       !isSquareAttacked(board, passSquare, opponentColor) &&

@@ -26,7 +26,7 @@ const initialState = {
     blackShort: true,
     blackLong: true,
   },
-  enPassantTarget: null, // клітинка, легальна для взяття на проході рівно один напівхід
+  enPassantTarget: null,
 };
 
 const gameSlice = createSlice({
