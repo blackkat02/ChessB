@@ -1,4 +1,4 @@
-import { COLORS } from '../../engine/constants';
+import { COLORS } from '../../engine';
 
 export { COLORS };
 

@@ -223,6 +223,9 @@ moveExecuted({
 
 ## 7. Крок 4. Розбити стан на слайси `position`, `game`, `ui`
 
+> Детальна таска з порядком підкроків: `docs/layer-separation-step4.md`.
+> Відкрите питання нижче вирішене: `turn` — частина `position`.
+
 **Мета: кожен слайс відповідає за один вид даних, і це видно з назви
 файлу.** Саме цей крок дає візуальний поділ, з якого все почалось.
 
@@ -318,7 +321,7 @@ moveExecuted({
 
 - [ ] Крок 1: `COLORS` у `src/engine/constants.js`, рушій не імпортує `redux`
 - [ ] Крок 2: `engine/applyMove.js` + тести, редюсер викликає його
-- [ ] Крок 3: `attemptMove` рахує все, `moveExecuted` лише записує, `Date.now()` у payload
+- [x] Крок 3: `attemptMove` рахує все, `moveExecuted` лише записує, `Date.now()` у payload
 - [ ] Крок 4: слайси `position` / `game` / `ui`, `gameEvents.js`, `SCHEMA_VERSION = 4`
 - [ ] Крок 5: UI без імпортів рушія, ESLint `overrides` працюють
 - [ ] Кожен крок — окремий коміт, тести зелені після кожного

@@ -10,7 +10,7 @@
 |---|---|
 | 1. Константи | ✅ |
 | 2. `applyMove` | ✅ 235 тестів зелені |
-| 3. Товстий thunk | 🟡 3.1–3.6 ✅, далі 3.7 |
+| 3. Товстий thunk | ✅ 3.1–3.7 |
 | 4, 5 | ⬜ |
 
 Правки Prettier закомічено окремо (`fc288b7`), 3.1–3.2 — у `b79cc58`.
@@ -515,7 +515,7 @@ endGame: {
 
 **Коміт:** `refactor(redux): move Date.now out of endGame reducer via prepare`
 
-### 3.7. Прибирання і нові тести
+### 3.7. Прибирання і нові тести ✅
 
 - `gameSelectors.js`: `getPieceColor` з `'../../engine'`, не з
   `engine/chessHelpers`.

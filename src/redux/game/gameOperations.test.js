@@ -138,6 +138,72 @@ describe('attemptMove — нотація', () => {
   });
 });
 
+// Товстий thunk (docs/layer-separation-step3.md, 3.5–3.7): attemptMove сам
+// перевіряє легальність, рахує статус і час, а після кінця партії пропускає
+// ходи без правил (режим аналізу).
+describe('attemptMove — товстий thunk', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("нелегальний хід (фігура у зв'язці) нічого не диспатчить", () => {
+    // Слон e2 закриває білого короля від тури e8 — піти з вертикалі не може.
+    const board = { e1: 'K', e2: 'B', e8: 'r', a8: 'k' };
+    const store = createTestStore({ board });
+
+    store.dispatch(attemptMove({ from: 'e2', to: 'd3', piece: 'B' }));
+
+    const { history, plyCount } = store.getState().game;
+    expect(store.getState().game.board).toEqual(board);
+    expect(history).toEqual([]);
+    expect(plyCount).toBe(0);
+  });
+
+  it('пат завершує партію нічиєю', () => {
+    // Ферзь b1-b6: чорний король a8 не під шахом, але a7/b7/b8 під боєм.
+    const store = createTestStore({ board: { a8: 'k', b1: 'Q', e1: 'K' } });
+
+    store.dispatch(attemptMove({ from: 'b1', to: 'b6', piece: 'Q' }));
+
+    const { history, isGameOver, winner, reason } = store.getState().game;
+    expect(history[0].san).toBe('Qb6');
+    expect(isGameOver).toBe(true);
+    expect(winner).toBe('draw');
+    expect(reason).toBe('stalemate');
+  });
+
+  it('після мату хід застосовується без перевірок (аналіз) і має san', () => {
+    const store = createTestStore({
+      board: { g1: 'K', f2: 'P', g2: 'P', h2: 'P', a2: 'r', a8: 'k' },
+      plyCount: 1,
+    });
+    store.dispatch(attemptMove({ from: 'a2', to: 'a1', piece: 'r' })); // мат
+
+    // Король під бій на h1 — у звичайній грі нелегально, в аналізі можна.
+    store.dispatch(attemptMove({ from: 'g1', to: 'h1', piece: 'K' }));
+
+    const { board, history, winner, reason } = store.getState().game;
+    expect(board.h1).toBe('K');
+    expect(history).toHaveLength(2);
+    expect(history[1]).toMatchObject({ analysis: true, san: 'Kh1' });
+    // Результат партії не перезаписаний повторним endGame.
+    expect(winner).toBe('b');
+    expect(reason).toBe('checkmate');
+  });
+
+  it('timestamp ходу — мить виклику thunk-а (Date.now() у thunk-у, не в редюсері)', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(5000);
+    const store = createTestStore({ board: { e1: 'K', e2: 'P', e8: 'k' } });
+
+    store.dispatch(attemptMove({ from: 'e2', to: 'e4', piece: 'P' }));
+
+    const { history, turnStartedAt } = store.getState().game;
+    expect(history[0].timestamp).toBe(5000);
+    expect(turnStartedAt).toBe(5000);
+  });
+});
+
 // timeExpired — диспатчиться з useGameState.js, коли selectClockRemaining
 // показує 0 для активної сторони (docs/clock-and-game-record.md); єдине
 // джерело події 'timeout' для endGame (раніше тут була зламана tickTimer,
