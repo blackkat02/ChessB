@@ -16,7 +16,10 @@ describe('gameSlice: moveExecuted', () => {
       plyCount: 0,
     };
 
-    const next = gameReducer(state, moveExecuted({ from: 'e2', to: 'e4', piece: 'P' }));
+    const next = gameReducer(
+      state,
+      moveExecuted({ from: 'e2', to: 'e4', piece: 'P' })
+    );
 
     expect(next.board).toEqual({ e4: 'P' });
     expect(next.history).toHaveLength(1);
@@ -31,7 +34,10 @@ describe('gameSlice: moveExecuted', () => {
       plyCount: 0,
     };
 
-    const next = gameReducer(state, moveExecuted({ from: 'e4', to: 'd5', piece: 'P' }));
+    const next = gameReducer(
+      state,
+      moveExecuted({ from: 'e4', to: 'd5', piece: 'P' })
+    );
 
     expect(next.board).toEqual({ d5: 'P' });
     expect(next.history[0].captured).toBe('p');
@@ -61,13 +67,15 @@ describe('gameSlice: moveExecuted', () => {
       plyCount: 4,
     };
 
-    const next = gameReducer(state, moveExecuted({ from: 'e2', to: 'e4', piece: 'P' }));
+    const next = gameReducer(
+      state,
+      moveExecuted({ from: 'e2', to: 'e4', piece: 'P' })
+    );
 
     expect(next.selectedSquare).toBeNull();
     expect(next.plyCount).toBe(5);
   });
 });
-
 
 // Крок 4 (docs/move-validation.md, розділ 5): рокіровка, взяття на проході,
 // оновлення castlingRights/enPassantTarget — усе відбувається в одному й
@@ -83,7 +91,10 @@ describe('gameSlice: moveExecuted — крок 4', () => {
       enPassantTarget: null,
     };
 
-    const next = gameReducer(state, moveExecuted({ from: 'e1', to: 'g1', piece: 'K' }));
+    const next = gameReducer(
+      state,
+      moveExecuted({ from: 'e1', to: 'g1', piece: 'K' })
+    );
 
     expect(next.board).toEqual({ g1: 'K', f1: 'R' });
     expect(next.history[0].castling).toBe('K');
@@ -99,7 +110,10 @@ describe('gameSlice: moveExecuted — крок 4', () => {
       enPassantTarget: null,
     };
 
-    const next = gameReducer(state, moveExecuted({ from: 'e8', to: 'c8', piece: 'k' }));
+    const next = gameReducer(
+      state,
+      moveExecuted({ from: 'e8', to: 'c8', piece: 'k' })
+    );
 
     expect(next.board).toEqual({ c8: 'k', d8: 'r' });
     expect(next.history[0].castling).toBe('Q');
@@ -115,7 +129,10 @@ describe('gameSlice: moveExecuted — крок 4', () => {
       enPassantTarget: null,
     };
 
-    const next = gameReducer(state, moveExecuted({ from: 'e1', to: 'f1', piece: 'K' }));
+    const next = gameReducer(
+      state,
+      moveExecuted({ from: 'e1', to: 'f1', piece: 'K' })
+    );
 
     expect(next.history[0].castling).toBeNull();
   });
@@ -130,10 +147,19 @@ describe('gameSlice: moveExecuted — крок 4', () => {
       enPassantTarget: null,
     };
 
-    const next = gameReducer(state, moveExecuted({ from: 'e1', to: 'f1', piece: 'K' }));
+    const next = gameReducer(
+      state,
+      moveExecuted({ from: 'e1', to: 'f1', piece: 'K' })
+    );
 
-    expect(next.castlingRights).toMatchObject({ whiteShort: false, whiteLong: false });
-    expect(next.castlingRights).toMatchObject({ blackShort: true, blackLong: true });
+    expect(next.castlingRights).toMatchObject({
+      whiteShort: false,
+      whiteLong: false,
+    });
+    expect(next.castlingRights).toMatchObject({
+      blackShort: true,
+      blackLong: true,
+    });
   });
 
   it('хід тури зі стартової клітинки відбирає лише ВІДПОВІДНЕ право', () => {
@@ -146,9 +172,15 @@ describe('gameSlice: moveExecuted — крок 4', () => {
       enPassantTarget: null,
     };
 
-    const next = gameReducer(state, moveExecuted({ from: 'a1', to: 'a4', piece: 'R' }));
+    const next = gameReducer(
+      state,
+      moveExecuted({ from: 'a1', to: 'a4', piece: 'R' })
+    );
 
-    expect(next.castlingRights).toMatchObject({ whiteLong: false, whiteShort: true });
+    expect(next.castlingRights).toMatchObject({
+      whiteLong: false,
+      whiteShort: true,
+    });
   });
 
   it('НЕ туру, а іншу фігуру, що поїхала зі стартової клітинки тури, право не чіпає', () => {
@@ -165,7 +197,10 @@ describe('gameSlice: moveExecuted — крок 4', () => {
       enPassantTarget: null,
     };
 
-    const next = gameReducer(state, moveExecuted({ from: 'h8', to: 'h4', piece: 'Q' }));
+    const next = gameReducer(
+      state,
+      moveExecuted({ from: 'h8', to: 'h4', piece: 'Q' })
+    );
 
     expect(next.castlingRights).toMatchObject({ blackShort: true });
   });
@@ -181,9 +216,15 @@ describe('gameSlice: moveExecuted — крок 4', () => {
     };
 
     // Ферзь іде h8 -> a8, "з'їдаючи" чорну туру на її стартовій клітинці.
-    const next = gameReducer(state, moveExecuted({ from: 'h8', to: 'a8', piece: 'Q' }));
+    const next = gameReducer(
+      state,
+      moveExecuted({ from: 'h8', to: 'a8', piece: 'Q' })
+    );
 
-    expect(next.castlingRights).toMatchObject({ blackLong: false, blackShort: true });
+    expect(next.castlingRights).toMatchObject({
+      blackLong: false,
+      blackShort: true,
+    });
   });
 
   it('хід пішака на 2 клітинки встановлює enPassantTarget на клітинку позаду нього', () => {
@@ -196,7 +237,10 @@ describe('gameSlice: moveExecuted — крок 4', () => {
       enPassantTarget: null,
     };
 
-    const next = gameReducer(state, moveExecuted({ from: 'e2', to: 'e4', piece: 'P' }));
+    const next = gameReducer(
+      state,
+      moveExecuted({ from: 'e2', to: 'e4', piece: 'P' })
+    );
 
     expect(next.enPassantTarget).toBe('e3');
   });
@@ -211,7 +255,10 @@ describe('gameSlice: moveExecuted — крок 4', () => {
       enPassantTarget: 'e3', // залишок від минулого напівходу
     };
 
-    const next = gameReducer(state, moveExecuted({ from: 'a1', to: 'a4', piece: 'R' }));
+    const next = gameReducer(
+      state,
+      moveExecuted({ from: 'a1', to: 'a4', piece: 'R' })
+    );
 
     expect(next.enPassantTarget).toBeNull();
   });
@@ -227,7 +274,10 @@ describe('gameSlice: moveExecuted — крок 4', () => {
       enPassantTarget: 'd6',
     };
 
-    const next = gameReducer(state, moveExecuted({ from: 'e5', to: 'd6', piece: 'P' }));
+    const next = gameReducer(
+      state,
+      moveExecuted({ from: 'e5', to: 'd6', piece: 'P' })
+    );
 
     expect(next.board).toEqual({ d6: 'P' }); // d5 (жертва) зникла, d6 порожня клітинка зайнята
     expect(next.history[0].captured).toBe('p');
@@ -247,7 +297,10 @@ describe('gameSlice: moveExecuted — крок 6 (промоція)', () => {
       enPassantTarget: null,
     };
 
-    const next = gameReducer(state, moveExecuted({ from: 'a7', to: 'a8', piece: 'P' }));
+    const next = gameReducer(
+      state,
+      moveExecuted({ from: 'a7', to: 'a8', piece: 'P' })
+    );
 
     expect(next.board).toEqual({ a8: 'Q' });
     expect(next.history[0].promotion).toBe('Q');
@@ -282,7 +335,10 @@ describe('gameSlice: moveExecuted — крок 6 (промоція)', () => {
       enPassantTarget: null,
     };
 
-    const next = gameReducer(state, moveExecuted({ from: 'a6', to: 'a7', piece: 'P' }));
+    const next = gameReducer(
+      state,
+      moveExecuted({ from: 'a6', to: 'a7', piece: 'P' })
+    );
 
     expect(next.board).toEqual({ a7: 'P' });
     expect(next.history[0].promotion).toBeNull();
@@ -322,7 +378,10 @@ describe('gameSlice: moveExecuted — крок 7 (нотація)', () => {
       enPassantTarget: null,
     };
 
-    const next = gameReducer(state, moveExecuted({ from: 'e2', to: 'e4', piece: 'P' }));
+    const next = gameReducer(
+      state,
+      moveExecuted({ from: 'e2', to: 'e4', piece: 'P' })
+    );
 
     expect(next.history[0].san).toBe('e4');
     expect(next.history[0].isCheck).toBe(false);
@@ -339,7 +398,10 @@ describe('gameSlice: moveExecuted — крок 7 (нотація)', () => {
       enPassantTarget: null,
     };
 
-    const next = gameReducer(state, moveExecuted({ from: 'e4', to: 'd5', piece: 'P' }));
+    const next = gameReducer(
+      state,
+      moveExecuted({ from: 'e4', to: 'd5', piece: 'P' })
+    );
 
     expect(next.history[0].san).toBe('exd5');
   });
@@ -355,7 +417,10 @@ describe('gameSlice: moveExecuted — крок 7 (нотація)', () => {
       enPassantTarget: null,
     };
 
-    const next = gameReducer(state, moveExecuted({ from: 'a1', to: 'a8', piece: 'R' }));
+    const next = gameReducer(
+      state,
+      moveExecuted({ from: 'a1', to: 'a8', piece: 'R' })
+    );
 
     expect(next.history[0].san).toBe('Ra8+');
     expect(next.history[0].isCheck).toBe(true);
@@ -372,7 +437,10 @@ describe('gameSlice: moveExecuted — крок 7 (нотація)', () => {
       enPassantTarget: null,
     };
 
-    const next = gameReducer(state, moveExecuted({ from: 'a2', to: 'a1', piece: 'r' }));
+    const next = gameReducer(
+      state,
+      moveExecuted({ from: 'a2', to: 'a1', piece: 'r' })
+    );
 
     expect(next.history[0].san).toBe('Ra1#');
     expect(next.history[0].isCheckmate).toBe(true);
@@ -388,7 +456,10 @@ describe('gameSlice: moveExecuted — крок 7 (нотація)', () => {
       enPassantTarget: null,
     };
 
-    const next = gameReducer(state, moveExecuted({ from: 'e1', to: 'g1', piece: 'K' }));
+    const next = gameReducer(
+      state,
+      moveExecuted({ from: 'e1', to: 'g1', piece: 'K' })
+    );
 
     expect(next.history[0].san).toBe('O-O');
   });
@@ -405,7 +476,10 @@ describe('gameSlice: moveExecuted — крок 7 (нотація)', () => {
       enPassantTarget: null,
     };
 
-    const next = gameReducer(state, moveExecuted({ from: 'a7', to: 'a8', piece: 'P' }));
+    const next = gameReducer(
+      state,
+      moveExecuted({ from: 'a7', to: 'a8', piece: 'P' })
+    );
 
     expect(next.history[0].san).toBe('a8=Q');
   });
@@ -436,7 +510,10 @@ describe('gameSlice: moveExecuted — годинник (docs/clock-and-game-reco
       enPassantTarget: null,
     };
 
-    const next = gameReducer(state, moveExecuted({ from: 'e7', to: 'e5', piece: 'p' }));
+    const next = gameReducer(
+      state,
+      moveExecuted({ from: 'e7', to: 'e5', piece: 'p' })
+    );
 
     expect(next.blackTime).toBe(180000 - 4230);
     expect(next.whiteTime).toBe(180000); // чужий годинник хід не чіпає
@@ -456,7 +533,10 @@ describe('gameSlice: moveExecuted — годинник (docs/clock-and-game-reco
       enPassantTarget: null,
     };
 
-    const next = gameReducer(state, moveExecuted({ from: 'e2', to: 'e4', piece: 'P' }));
+    const next = gameReducer(
+      state,
+      moveExecuted({ from: 'e2', to: 'e4', piece: 'P' })
+    );
 
     expect(next.whiteTime).toBe(180000);
     expect(next.blackTime).toBe(180000);
@@ -479,7 +559,10 @@ describe('gameSlice: moveExecuted — годинник (docs/clock-and-game-reco
       enPassantTarget: null,
     };
 
-    const next = gameReducer(state, moveExecuted({ from: 'e7', to: 'e5', piece: 'p' }));
+    const next = gameReducer(
+      state,
+      moveExecuted({ from: 'e7', to: 'e5', piece: 'p' })
+    );
 
     expect(next.blackTime).toBe(0);
   });
@@ -511,7 +594,10 @@ describe('gameSlice: moveExecuted — повний запис партії (кр
       enPassantTarget: null,
     };
 
-    const next = gameReducer(state, moveExecuted({ from: 'e2', to: 'e4', piece: 'P' }));
+    const next = gameReducer(
+      state,
+      moveExecuted({ from: 'e2', to: 'e4', piece: 'P' })
+    );
 
     expect(next.history[0]).toMatchObject({
       timestamp: 1_000_000,
@@ -536,7 +622,10 @@ describe('gameSlice: moveExecuted — повний запис партії (кр
       enPassantTarget: null,
     };
 
-    const next = gameReducer(state, moveExecuted({ from: 'e7', to: 'e5', piece: 'p' }));
+    const next = gameReducer(
+      state,
+      moveExecuted({ from: 'e7', to: 'e5', piece: 'p' })
+    );
 
     expect(next.history[1]).toMatchObject({
       timestamp: 1_000_000,
@@ -561,7 +650,10 @@ describe('gameSlice: moveExecuted — повний запис партії (кр
       enPassantTarget: null,
     };
 
-    const next = gameReducer(state, moveExecuted({ from: 'e2', to: 'e4', piece: 'P' }));
+    const next = gameReducer(
+      state,
+      moveExecuted({ from: 'e2', to: 'e4', piece: 'P' })
+    );
 
     expect(next.history[0].timestamp).toBe(next.turnStartedAt);
   });
@@ -584,7 +676,11 @@ describe('gameSlice: endGame — годинник при таймауті', () =
 
     const next = gameReducer(
       state,
-      endGame({ winner: COLORS.WHITE, reason: 'timeout', timedOutColor: COLORS.BLACK })
+      endGame({
+        winner: COLORS.WHITE,
+        reason: 'timeout',
+        timedOutColor: COLORS.BLACK,
+      })
     );
 
     expect(next.blackTime).toBe(0);
@@ -600,7 +696,10 @@ describe('gameSlice: endGame — годинник при таймауті', () =
       turnStartedAt: 123456,
     };
 
-    const next = gameReducer(state, endGame({ winner: COLORS.WHITE, reason: 'checkmate' }));
+    const next = gameReducer(
+      state,
+      endGame({ winner: COLORS.WHITE, reason: 'checkmate' })
+    );
 
     expect(next.whiteTime).toBe(42000);
     expect(next.blackTime).toBe(99000);

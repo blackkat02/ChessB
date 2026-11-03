@@ -16,7 +16,9 @@ const ROOK_SYMBOLS = { w: 'R', b: 'r' };
 // документа) як окреме поле, поки достатньо швидкого сканування дошки.
 export function findKingSquare(board, color) {
   const kingSymbol = KING_SYMBOLS[color];
-  return Object.keys(board).find((square) => board[square] === kingSymbol) ?? null;
+  return (
+    Object.keys(board).find((square) => board[square] === kingSymbol) ?? null
+  );
 }
 
 // Хід на КОПІЇ дошки — щоб перевірити безпеку короля, не мутуючи справжній
@@ -53,7 +55,13 @@ function simulateMove(board, from, to, enPassantTarget) {
  * @param {string|null} [enPassantTarget]
  * @returns {string[]}
  */
-export function filterByKingSafety(board, from, pseudoMoves, color, enPassantTarget = null) {
+export function filterByKingSafety(
+  board,
+  from,
+  pseudoMoves,
+  color,
+  enPassantTarget = null
+) {
   return pseudoMoves.filter((to) => {
     const boardAfterMove = simulateMove(board, from, to, enPassantTarget);
     const kingSquare = findKingSquare(boardAfterMove, color);
@@ -61,7 +69,11 @@ export function filterByKingSafety(board, from, pseudoMoves, color, enPassantTar
     // Дошка без короля (тестові фікстури для кроку 1) — нема кого захищати.
     if (!kingSquare) return true;
 
-    return !isSquareAttacked(boardAfterMove, kingSquare, getOpponentColor(color));
+    return !isSquareAttacked(
+      boardAfterMove,
+      kingSquare,
+      getOpponentColor(color)
+    );
   });
 }
 
@@ -89,7 +101,10 @@ export function getCastlingMoves(board, color, castlingRights) {
   if (isSquareAttacked(board, kingStart, opponentColor)) return [];
 
   const moves = [];
-  const rightKey = color === COLORS.WHITE ? { K: 'whiteShort', Q: 'whiteLong' } : { K: 'blackShort', Q: 'blackLong' };
+  const rightKey =
+    color === COLORS.WHITE
+      ? { K: 'whiteShort', Q: 'whiteLong' }
+      : { K: 'blackShort', Q: 'blackLong' };
 
   // Коротка рокіровка (O-O): король e->g, тура h->f.
   if (castlingRights[rightKey.K]) {
@@ -115,7 +130,8 @@ export function getCastlingMoves(board, color, castlingRights) {
     const landSquare = `c${rank}`;
     const rookSquare = `a${rank}`;
 
-    const pathClear = !board[knightSquare] && !board[passSquare] && !board[landSquare];
+    const pathClear =
+      !board[knightSquare] && !board[passSquare] && !board[landSquare];
     const rookPresent = board[rookSquare] === rookSymbol;
     const pathSafe =
       !isSquareAttacked(board, passSquare, opponentColor) &&

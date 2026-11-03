@@ -5,7 +5,10 @@ import { COLORS } from './gameConstants';
 import { getPseudoLegalMoves } from '../../engine/pseudoMoves';
 import { filterByKingSafety, getCastlingMoves } from '../../engine/legalMoves';
 import { isCheckmate, isStalemate } from '../../engine/gameStatus';
-import { requiresPromotion, isValidPromotionPiece } from '../../engine/promotion';
+import {
+  requiresPromotion,
+  isValidPromotionPiece,
+} from '../../engine/promotion';
 
 export const attemptMove = (moveData) => (dispatch, getState) => {
   const { from, to, piece, time } = moveData;
@@ -76,7 +79,13 @@ export const attemptMove = (moveData) => (dispatch, getState) => {
   // рокіровка рухає короля й туру одночасно).
   const isCastlingMove = castlingMoves.includes(to);
   if (!isCastlingMove) {
-    const legalMoves = filterByKingSafety(board, from, pseudoLegalMoves, turn, enPassantTarget);
+    const legalMoves = filterByKingSafety(
+      board,
+      from,
+      pseudoLegalMoves,
+      turn,
+      enPassantTarget
+    );
     if (!legalMoves.includes(to)) {
       console.warn('🚨 Хід залишає власного короля під шахом.');
       return;
@@ -131,7 +140,13 @@ export const timeExpired = (color) => (dispatch, getState) => {
   // прийшло ще одне повідомлення про той самий таймаут).
   if (selectors.selectClockRemaining(state, color) > 0) return;
 
-  dispatch(endGame({ winner: getOpponentColor(color), reason: 'timeout', timedOutColor: color }));
+  dispatch(
+    endGame({
+      winner: getOpponentColor(color),
+      reason: 'timeout',
+      timedOutColor: color,
+    })
+  );
 };
 
 // Здається завжди гравець за цим пристроєм (`playerSide`), незалежно від
@@ -140,7 +155,9 @@ export const resignGame = () => (dispatch, getState) => {
   const { isGameOver, playerSide } = getState().game;
   if (isGameOver) return;
 
-  dispatch(endGame({ winner: getOpponentColor(playerSide), reason: 'resignation' }));
+  dispatch(
+    endGame({ winner: getOpponentColor(playerSide), reason: 'resignation' })
+  );
 };
 
 // Пропозиція нічиєї: обидва гравці за одним пристроєм, тому "прийняття"
