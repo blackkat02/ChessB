@@ -3,22 +3,62 @@ import * as selectors from './gameSelectors';
 import { COLORS } from './gameConstants';
 import {
   isMoveLegal,
+  applyMove,
   getStatus,
+  toSan,
   getPieceColor,
   getOpponentColor,
   requiresPromotion,
   isValidPromotionPiece,
 } from '../../engine';
 
+// Усе, що редюсер раніше рахував сам, тепер рахує thunk через фасад рушія:
+// нова позиція, details, статус суперника, SAN і мить ходу. Редюсер лише
+// записує готовий payload (docs/layer-separation-step3.md, 3.5).
+//
+// status повертається окремо від payload: isStalemate потрібен лише thunk-у
+// (вирішити, чи диспатчити endGame), а в action має бути тільки те, що
+// записується в стан.
+function buildMovePayload(position, moveData, extra = {}) {
+  const { from, to, piece, promotion } = moveData;
+  const move = { from, to, piece, promotion };
+  // Колір — з фігури, не з черги: в режимі аналізу черга не перевіряється.
+  const color = getPieceColor(piece);
+
+  const { position: after, details } = applyMove(position, move);
+  const status = getStatus(after, getOpponentColor(color));
+  // Позиція ДО ходу — для дизамбігуації SAN (Nbd2 vs Nd2).
+  const san = toSan(position, { ...move, ...details }, status);
+
+  const payload = {
+    move,
+    color,
+    position: after,
+    details,
+    isCheck: status.isCheck,
+    isCheckmate: status.isCheckmate,
+    san,
+    timestamp: Date.now(),
+    ...extra,
+  };
+
+  return { payload, status };
+}
+
 export const attemptMove = (moveData) => (dispatch, getState) => {
-  const { from, to, piece, time } = moveData;
+  const { from, to, piece } = moveData;
   const state = getState();
   const { isGameOver } = state.game;
   const turn = selectors.selectCurrentTurn(state);
+  // До гілки аналізу: buildMovePayload потрібна позиція і там.
+  const position = selectors.selectPosition(state);
 
   if (isGameOver) {
     console.log('[ANALYSIS] Вільний хід без правил.');
-    dispatch(moveExecuted({ ...moveData, analysis: true }));
+    const { payload } = buildMovePayload(position, moveData, {
+      analysis: true,
+    });
+    dispatch(moveExecuted(payload));
     return;
   }
 
@@ -47,15 +87,15 @@ export const attemptMove = (moveData) => (dispatch, getState) => {
   // 4. ПЕРЕВІРКА №3: легальність ходу (docs/layer-separation-step3.md, 3.1).
   // Один виклик фасаду замість трьох окремих перевірок: своя фігура на
   // цілі, геометрія, безпека короля (рокіровка — зі своєю перевіркою).
-  if (!isMoveLegal(selectors.selectPosition(state), from, to)) {
+  if (!isMoveLegal(position, from, to)) {
     console.warn('🚨 Нелегальний хід.');
     return;
   }
 
   // 6.5. ПЕРЕВІРКА №6: якщо це промоція і гравець ЯВНО вказав фігуру —
   // вона має бути однією з Q/R/B/N (крок 6, docs/move-validation.md).
-  // Якщо `promotion` не вказано — це не помилка, редюсер сам підставить
-  // дефолт (ферзь); UI-вибір фігури — окрема, ще не реалізована задача.
+  // Якщо `promotion` не вказано — це не помилка, applyMove сам підставить
+  // дефолт (ферзь).
   if (requiresPromotion(piece, to) && moveData.promotion !== undefined) {
     if (!isValidPromotionPiece(moveData.promotion)) {
       console.warn('🚨 Недійсна фігура для промоції.');
@@ -63,17 +103,13 @@ export const attemptMove = (moveData) => (dispatch, getState) => {
     }
   }
 
-  // 7. Якщо все ОК — даємо команду Слайсу оновити дошку
+  // 7. Хід валідний: рахуємо все одразу й диспатчимо одну подію.
   console.log('✅ Хід валідний! Диспатчимо оновлення.');
-  dispatch(moveExecuted(moveData));
+  const { payload, status } = buildMovePayload(position, moveData);
+  dispatch(moveExecuted(payload));
 
-  // 8. ПЕРЕВІРКА МАТУ/ПАТУ (крок 5, docs/move-validation.md) — дивимось на
-  // становище НАСТУПНОГО гравця (того, чия черга щойно настала), не того,
-  // хто щойно ходив. moveExecuted уже оновив board/plyCount, тому читаємо
-  // стан заново через getState(), а не використовуємо застарілий `state`.
-  const nextTurn = getOpponentColor(turn);
-  const status = getStatus(selectors.selectPosition(getState()), nextTurn);
-
+  // 8. Мат/пат НАСТУПНОГО гравця. Статус уже порахований для позиції після
+  // ходу, тож перечитувати стан через getState() не треба.
   if (status.isCheckmate) {
     dispatch(endGame({ winner: turn, reason: 'checkmate' }));
   } else if (status.isStalemate) {
