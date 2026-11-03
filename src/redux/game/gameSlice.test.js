@@ -296,3 +296,59 @@ describe('gameSlice: endGame — годинник при таймауті', () =
     expect(next.turnStartedAt).toBeNull();
   });
 });
+
+// Крок 3 шарів (docs/layer-separation-step3.md, 3.6): Date.now() переїхав з
+// редюсера в prepare-колбек action creator-а.
+describe('gameSlice: endGame — timestamp через prepare', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('редюсер бере мить з payload.timestamp, без мокання таймерів', () => {
+    const state = makeSliceState({
+      whiteTime: 180000,
+      blackTime: 1200,
+      turnStartedAt: 2_000_000 - 5000,
+    });
+
+    const next = gameReducer(
+      state,
+      endGame({
+        winner: COLORS.WHITE,
+        reason: 'timeout',
+        timedOutColor: COLORS.BLACK,
+        timestamp: 2_000_000,
+      })
+    );
+
+    expect(next.blackTime).toBe(0);
+  });
+
+  it('чистий редюсер: однаковий action двічі дає однаковий стан', () => {
+    const state = makeSliceState({
+      blackTime: 60000,
+      turnStartedAt: 2_000_000 - 5000,
+    });
+    const action = endGame({
+      winner: COLORS.WHITE,
+      reason: 'timeout',
+      timedOutColor: COLORS.BLACK,
+    });
+
+    expect(gameReducer(state, action)).toEqual(gameReducer(state, action));
+  });
+
+  it('prepare додає поточну мить, якщо timestamp не передано', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(777);
+
+    const action = endGame({ winner: COLORS.WHITE, reason: 'resignation' });
+
+    expect(action.type).toBe('game/endGame'); // PERSIST_ON у store.js не зачеплено
+    expect(action.payload).toEqual({
+      winner: COLORS.WHITE,
+      reason: 'resignation',
+      timestamp: 777,
+    });
+  });
+});

@@ -94,24 +94,29 @@ const gameSlice = createSlice({
       };
     },
 
-    endGame: (state, action) => {
-      const { winner, reason, timedOutColor } = action.payload;
+    endGame: {
+      reducer(state, action) {
+        const { winner, reason, timedOutColor, timestamp } = action.payload;
 
-      if (
-        reason === 'timeout' &&
-        timedOutColor &&
-        typeof state.turnStartedAt === 'number'
-      ) {
-        const elapsed = Date.now() - state.turnStartedAt;
-        if (timedOutColor === COLORS.WHITE)
-          state.whiteTime = Math.max(0, state.whiteTime - elapsed);
-        else state.blackTime = Math.max(0, state.blackTime - elapsed);
-      }
+        if (
+          reason === 'timeout' &&
+          timedOutColor &&
+          typeof state.turnStartedAt === 'number'
+        ) {
+          const elapsed = timestamp - state.turnStartedAt;
+          if (timedOutColor === COLORS.WHITE)
+            state.whiteTime = Math.max(0, state.whiteTime - elapsed);
+          else state.blackTime = Math.max(0, state.blackTime - elapsed);
+        }
 
-      state.winner = winner;
-      state.reason = reason;
-      state.isGameOver = true;
-      state.turnStartedAt = null; // годинники завжди зупиняються, коли партія завершена
+        state.winner = winner;
+        state.reason = reason;
+        state.isGameOver = true;
+        state.turnStartedAt = null;
+      },
+      prepare(payload) {
+        return { payload: { timestamp: Date.now(), ...payload } };
+      },
     },
   },
 });

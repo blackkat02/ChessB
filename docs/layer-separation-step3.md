@@ -10,7 +10,7 @@
 |---|---|
 | 1. Константи | ✅ |
 | 2. `applyMove` | ✅ 235 тестів зелені |
-| 3. Товстий thunk | 🟡 3.1–3.5 ✅, далі 3.6 |
+| 3. Товстий thunk | 🟡 3.1–3.6 ✅, далі 3.7 |
 | 4, 5 | ⬜ |
 
 Правки Prettier закомічено окремо (`fc288b7`), 3.1–3.2 — у `b79cc58`.
@@ -464,12 +464,13 @@ moveExecuted: (state, action) => {
 
 **Коміт:** `refactor(redux): compute move in attemptMove, make moveExecuted record-only`
 
-### 3.6. `endGame` через `prepare`
+### 3.6. `endGame` через `prepare` ✅
 
-`endGame` диспатчать чотири thunk-и (`attemptMove`, `timeExpired`,
-`resignGame`, `offerDraw`). Дописувати `timestamp: Date.now()` у кожен виклик
-— повторення, яке рано чи пізно десь забудуть. `prepare` робить це в одному
-місці, в action creator:
+`endGame` диспатчать п'ять місць у чотирьох thunk-ах (`attemptMove` — мат і
+пат, `timeExpired`, `resignGame`, `offerDraw`). Дописувати
+`timestamp: Date.now()` у кожен виклик — повторення, яке рано чи пізно десь
+забудуть (і тоді `elapsed` стане `NaN`). `prepare` робить це в одному місці,
+в action creator:
 
 ```js
 endGame: {
@@ -478,15 +479,39 @@ endGame: {
     // ...як було, але elapsed = timestamp - state.turnStartedAt
   },
   prepare(payload) {
-    return { payload: { ...payload, timestamp: Date.now() } };
+    return { payload: { timestamp: Date.now(), ...payload } };
   },
 },
 ```
 
-Виклики `endGame({ winner, reason })` у коді не змінюються. Тести `endGame` з
-`vi.setSystemTime` теж: `prepare` спрацьовує в момент виклику `endGame(...)`
-у тесті. `grep -n "Date.now" src/redux/game/gameSlice.js` має знаходити
-рівно один рядок — у `prepare`.
+Дві деталі:
+
+- **`prepare` повертає `{ payload }`**, а не сам payload. Якщо забути
+  обгортку, `action.payload` буде `undefined`, і редюсер впаде на
+  деструктуризації.
+- **Порядок `timestamp: Date.now(), ...payload`.** Явно переданий `timestamp`
+  має пріоритет над поточним часом. Звичайний код його не передає й отримує
+  `Date.now()`, а тест може передати `endGame({ ..., timestamp: 2_000_000 })`
+  і обійтись без `vi.setSystemTime` — так само, як тести `moveExecuted`.
+
+`Date.now()` у `prepare` не робить редюсер нечистим: `prepare` виконується в
+момент **створення** action (у thunk-у, до `dispatch`), а редюсер отримує вже
+готове число.
+
+Виклики `endGame({ winner, reason })` у коді не змінюються, `type` лишається
+`'game/endGame'` (`PERSIST_ON` у `store.js` не зачеплено). Старі тести
+`endGame` з `vi.setSystemTime` теж не змінюються й лишаються зеленими:
+`prepare` спрацьовує в момент виклику `endGame(...)` у тесті.
+
+Нові тести (`gameSlice: endGame — timestamp через prepare`): редюсер бере
+час з `payload.timestamp` без мокання таймерів; однаковий action двічі дає
+однаковий стан; `prepare` додає поточну мить, якщо `timestamp` не передано.
+
+`grep -n "Date.now()" src/redux/game/gameSlice.js` знаходить рівно один
+рядок коду — у `prepare` (решта збігів — коментарі).
+
+У браузері: партія на 1 хвилину, дочекатися таймауту — годинник показує
+`0:00` (не `NaN` і не від'ємне), з'являється вікно кінця партії.
 
 **Коміт:** `refactor(redux): move Date.now out of endGame reducer via prepare`
 
