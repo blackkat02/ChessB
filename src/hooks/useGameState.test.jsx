@@ -1,35 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { render, act } from '@testing-library/react';
 import { Provider } from 'react-redux';
-import { configureStore } from '@reduxjs/toolkit';
-import gameReducer from '../redux/game/gameSlice';
 import { useGameState } from './useGameState';
-import { NO_CASTLING } from '../test/fixtures';
-
-function createTestStore(gameStateOverrides) {
-  return configureStore({
-    reducer: { game: gameReducer },
-    preloadedState: {
-      game: {
-        board: {},
-        selectedSquare: null,
-        whiteTime: 180000,
-        blackTime: 180000,
-        turnStartedAt: null,
-        history: [],
-        plyCount: 0,
-        winner: null,
-        reason: null,
-        isGameOver: false,
-        playerSide: 'w',
-        gameId: 0,
-        castlingRights: NO_CASTLING,
-        enPassantTarget: null,
-        ...gameStateOverrides,
-      },
-    },
-  });
-}
+import { createTestStore } from '../test/fixtures/store';
 
 function Harness({ onState, onHandlers }) {
   const gameStateResult = useGameState();

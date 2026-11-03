@@ -254,7 +254,7 @@ moveExecuted({
    зберігати не треба). Підніми `SCHEMA_VERSION` до 4 у `persistGame.js`:
    старі збереження просто ігноруються.
 8. **Тести.** Онови `makeSliceState` і `createTestStore` у
-   `src/test/fixtures/state.js`: `preloadedState` тепер має три ключі. Якщо
+   `src/test/fixtures/store.js`: `preloadedState` тепер має три ключі. Якщо
    `turn` стає частиною `position`, додай його в `makeGameState`.
 
 Готово, коли: `state.game` не містить ні `board`, ні `selectedSquare`.

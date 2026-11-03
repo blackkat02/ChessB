@@ -1,35 +1,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { configureStore } from '@reduxjs/toolkit';
-import gameReducer from './gameSlice';
 import { attemptMove, timeExpired } from './gameOperations';
-import { ALL_CASTLING, NO_CASTLING } from '../../test/fixtures';
-
-// Мінімальний ізольований store — без redux-persist/localStorage побічних
-// ефектів справжнього src/redux/store.js (вони тут не потрібні й лише
-// забруднювали б тест).
-function createTestStore(gameStateOverrides) {
-  return configureStore({
-    reducer: { game: gameReducer },
-    preloadedState: {
-      game: {
-        board: {},
-        selectedSquare: null,
-        whiteTime: 180000,
-        blackTime: 180000,
-        history: [],
-        plyCount: 0,
-        winner: null,
-        reason: null,
-        isGameOver: false,
-        playerSide: 'w',
-        gameId: 0,
-        castlingRights: NO_CASTLING,
-        enPassantTarget: null,
-        ...gameStateOverrides,
-      },
-    },
-  });
-}
+import { ALL_CASTLING } from '../../test/fixtures';
+import { createTestStore } from '../../test/fixtures/store';
 
 // Крок 6 (docs/move-validation.md, розділ 5): промоція через повний
 // пайплайн attemptMove -> moveExecuted, не лише ізольований редюсер.

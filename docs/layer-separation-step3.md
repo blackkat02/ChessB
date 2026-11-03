@@ -10,7 +10,7 @@
 |---|---|
 | 1. Константи | ✅ |
 | 2. `applyMove` | ✅ 235 тестів зелені |
-| 3. Товстий thunk | 🟡 3.1–3.3 ✅, далі 3.4 |
+| 3. Товстий thunk | 🟡 3.1–3.4 ✅, далі 3.5 |
 | 4, 5 | ⬜ |
 
 Правки Prettier закомічено окремо (`fc288b7`), 3.1–3.2 — у `b79cc58`.
@@ -249,12 +249,24 @@ selection/plyCount), годинник, повний запис партії, `en
 
 **Коміт:** `test: move chess-rule tests from gameSlice to engine and attemptMove`
 
-### 3.4. Фікстури: `createTestStore` і `makeMovePayload`
+### 3.4. Фікстури: `createTestStore` і `makeMovePayload` ✅
 
-1. **`createTestStore`** переїжджає з `gameOperations.test.js` у
-   `src/test/fixtures/state.js` і експортується через `fixtures/index.js`.
-   Сигнатура та сама: `createTestStore(gameStateOverrides)`. На кроці 4 його
-   доведеться оновити (три слайси) — краще в одному місці.
+> Виконано в двох комітах: `d1208db` (`makeMovePayload`) і окремий коміт для
+> `createTestStore` (у `d1208db` він не потрапив, хоча є в назві).
+
+1. **`createTestStore`** — одна копія замість двох (`gameOperations.test.js`
+   і `useGameState.test.jsx`, які вже розійшлися: в першій не було
+   `turnStartedAt`). Лежить у **`src/test/fixtures/store.js`** разом із
+   `makeSliceState`, що бере стан за замовчуванням зі справжнього редюсера:
+   `gameReducer(undefined, { type: '@@INIT' })` + порожня дошка без прав
+   рокіровки. На кроці 4 його доведеться оновити (три слайси) — тепер в
+   одному місці.
+
+   **Чому не в `state.js` і не через `fixtures/index.js`.** `index.js`
+   імпортують тести рушія. Ре-експорт `createTestStore` змусив би кожен тест
+   рушія завантажувати `gameSlice` і Redux — тобто тести рушія залежали б від
+   шару вище. Тому `store.js` імпортується напряму:
+   `import { createTestStore } from '../../test/fixtures/store'`.
 2. **`makeMovePayload(overrides)`** — повний валідний payload нової форми для
    тестів слайса, **без рушія**:
 
@@ -282,10 +294,9 @@ selection/plyCount), годинник, повний запис партії, `en
    «редюсер правильно зіграв у шахи». Значення в payload можуть бути навіть
    фізично неможливими — редюсеру байдуже, і саме це ми перевіряємо.
 
-Поки що `makeMovePayload` ніде не використовується — це нормально. Онови
-`docs/test-fixtures.md`.
+Поки що `makeMovePayload` ніде не використовується — це нормально.
 
-**Коміт:** `test: move createTestStore to fixtures, add makeMovePayload`
+**Коміт:** `test: share createTestStore via fixtures/store built from reducer state`
 
 ### 3.5. Перемикання payload — головна частина
 
