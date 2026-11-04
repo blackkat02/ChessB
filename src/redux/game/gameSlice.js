@@ -1,11 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { initialBoardPiecesObject } from '../../data/positions';
-// Тимчасово, до кроку 3 (там це переїде в attemptMove):
-import { getPieceColor, getOpponentColor } from '../../engine/chessHelpers';
-import { isCheck, isCheckmate } from '../../engine/gameStatus';
-import { buildSan } from '../../engine/notation';
 import { DEFAULT_TIME, COLORS } from './gameConstants';
-import { applyMove } from '../../engine';
 
 const initialState = {
   board: initialBoardPiecesObject, // Об'єкт { a2: 'P', ... }
@@ -36,66 +31,54 @@ const gameSlice = createSlice({
     setSelection: (state, action) => {
       state.selectedSquare = action.payload;
     },
+    // Лише запис готового результату: позицію, статус, SAN і мить ходу
+    // порахував attemptMove (docs/layer-separation-step3.md, 3.5). Редюсер
+    // не знає шахових правил і не викликає Date.now() — той самий action
+    // завжди дає той самий стан.
     moveExecuted: (state, action) => {
-      const { from, to, piece } = action.payload;
-
-      // Позиція ДО ходу. Копія не потрібна: applyMove вхід не мутує,
-      // тож `before` лишається "до" і для нотації (дизамбігуація в SAN).
-      const before = {
-        board: state.board,
-        castlingRights: state.castlingRights,
-        enPassantTarget: state.enPassantTarget,
-      };
-
-      const { position, details } = applyMove(before, action.payload);
+      const {
+        move,
+        color,
+        position,
+        details,
+        isCheck,
+        isCheckmate,
+        san,
+        timestamp,
+        analysis,
+      } = action.payload;
 
       state.board = position.board;
       state.castlingRights = position.castlingRights;
       state.enPassantTarget = position.enPassantTarget;
 
-      // Тимчасово в редюсері — на кроці 3 час прийде в payload.timestamp.
-      const opponentColor = getOpponentColor(getPieceColor(piece));
-      const givesCheckmate = isCheckmate(position, opponentColor);
-      const givesCheck =
-        givesCheckmate || isCheck(position.board, opponentColor);
-      const san = buildSan(
-        before,
-        {
-          from,
-          to,
-          piece,
-          captured: details.captured,
-          castling: details.castling,
-          promotion: details.promotion,
-        },
-        { isCheck: givesCheck, isCheckmate: givesCheckmate }
-      );
-
-      const now = Date.now();
-
       let moveTimeMs = 0;
       if (typeof state.turnStartedAt === 'number') {
-        moveTimeMs = now - state.turnStartedAt;
-        const moverColor = getPieceColor(piece);
-        if (moverColor === COLORS.WHITE) {
+        moveTimeMs = timestamp - state.turnStartedAt;
+        if (color === COLORS.WHITE) {
           state.whiteTime = Math.max(0, state.whiteTime - moveTimeMs);
         } else {
           state.blackTime = Math.max(0, state.blackTime - moveTimeMs);
         }
       }
 
-      state.turnStartedAt = now; // ← годинник наступної сторони стартує з цієї миті
+      state.turnStartedAt = timestamp; // ← годинник наступної сторони стартує з цієї миті
 
       state.selectedSquare = null;
       state.history.push({
-        ...action.payload,
+        ...move,
+        // details другим: details.promotion (розв'язана 'Q') перекриває
+        // move.promotion (може бути undefined).
         ...details,
-        isCheck: givesCheck,
-        isCheckmate: givesCheckmate,
+        isCheck,
+        isCheckmate,
         san,
-        timestamp: now,
+        timestamp,
         moveTimeMs,
         clockAfter: { w: state.whiteTime, b: state.blackTime },
+        // Лише коли true — як раніше, коли прапорець приходив через
+        // ...action.payload. Інакше кожен хід отримав би analysis: undefined.
+        ...(analysis && { analysis }),
       });
       state.plyCount += 1;
     },
@@ -111,24 +94,29 @@ const gameSlice = createSlice({
       };
     },
 
-    endGame: (state, action) => {
-      const { winner, reason, timedOutColor } = action.payload;
+    endGame: {
+      reducer(state, action) {
+        const { winner, reason, timedOutColor, timestamp } = action.payload;
 
-      if (
-        reason === 'timeout' &&
-        timedOutColor &&
-        typeof state.turnStartedAt === 'number'
-      ) {
-        const elapsed = Date.now() - state.turnStartedAt;
-        if (timedOutColor === COLORS.WHITE)
-          state.whiteTime = Math.max(0, state.whiteTime - elapsed);
-        else state.blackTime = Math.max(0, state.blackTime - elapsed);
-      }
+        if (
+          reason === 'timeout' &&
+          timedOutColor &&
+          typeof state.turnStartedAt === 'number'
+        ) {
+          const elapsed = timestamp - state.turnStartedAt;
+          if (timedOutColor === COLORS.WHITE)
+            state.whiteTime = Math.max(0, state.whiteTime - elapsed);
+          else state.blackTime = Math.max(0, state.blackTime - elapsed);
+        }
 
-      state.winner = winner;
-      state.reason = reason;
-      state.isGameOver = true;
-      state.turnStartedAt = null; // годинники завжди зупиняються, коли партія завершена
+        state.winner = winner;
+        state.reason = reason;
+        state.isGameOver = true;
+        state.turnStartedAt = null;
+      },
+      prepare(payload) {
+        return { payload: { timestamp: Date.now(), ...payload } };
+      },
     },
   },
 });

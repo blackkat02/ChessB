@@ -112,7 +112,8 @@ src/test/
   setup.js            (вже є)
   fixtures/
     castling.js       ALL_CASTLING, NO_CASTLING
-    state.js          makeGameState, makeSliceState, createTestStore
+    state.js          makeGameState, makeMovePayload
+    store.js          makeSliceState, createTestStore (НЕ через index.js — див. нижче)
     boards.js         withKings, POSITIONS
     moves.js          MOVES
     games.js          GAMES (UCI), uciToMove, playMoves
@@ -120,6 +121,10 @@ src/test/
 ```
 
 `src/test/**` уже виключено з coverage у `vite.config.js`, а `include` підхоплює лише `*.test.*`, тому фікстури не запускаються як тести. Імпорт у тестах: `import { makeGameState, NO_CASTLING } from '../test/fixtures';`.
+
+`store.js` імпортує `gameSlice`, тому його немає в `index.js`: інакше кожен тест рушія, що бере фікстури з `index.js`, завантажував би Redux. Тести Redux і хуків імпортують його напряму: `import { createTestStore } from '../../test/fixtures/store';`.
+
+`makeMovePayload(overrides)` (у `state.js`) — повний payload `moveExecuted` нової форми (крок 3 шарів, `docs/layer-separation-step3.md`, розділ 3.4) для тестів слайса без рушія.
 
 ## 5. Менторський план
 

@@ -1,2 +1,2 @@
 export { ALL_CASTLING, NO_CASTLING } from './castling';
-export { makeGameState } from './state';
+export { makeGameState, makeMovePayload } from './state';

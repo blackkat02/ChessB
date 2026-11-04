@@ -1,5 +1,5 @@
 import { createSelector } from '@reduxjs/toolkit';
-import { getPieceColor } from '../../engine/chessHelpers';
+import { getPieceColor } from '../../engine';
 import { COLORS } from './gameConstants';
 
 // === 1. БАЗОВІ СЕЛЕКТОРИ (Raw Data) ===
@@ -48,14 +48,19 @@ export const selectMovePairs = createSelector(
 // turn — похідне значення, не окреме поле стану: парний plyCount = хід білих.
 export const selectCurrentTurn = (state) =>
   state.game.plyCount % 2 === 0 ? COLORS.WHITE : COLORS.BLACK;
-export const selectIsWhiteTurn = (state) => selectCurrentTurn(state) === COLORS.WHITE;
-export const selectIsClockActive = (state, color) => selectCurrentTurn(state) === color;
+export const selectIsWhiteTurn = (state) =>
+  selectCurrentTurn(state) === COLORS.WHITE;
+export const selectIsClockActive = (state, color) =>
+  selectCurrentTurn(state) === color;
 
 export const selectClockRemaining = (state, color) => {
   const g = state.game;
   const stored = color === COLORS.WHITE ? g.whiteTime : g.blackTime;
   const isRunning =
-    !g.isGameOver && g.plyCount > 0 && g.turnStartedAt !== null && selectCurrentTurn(state) === color;
+    !g.isGameOver &&
+    g.plyCount > 0 &&
+    g.turnStartedAt !== null &&
+    selectCurrentTurn(state) === color;
 
   if (!isRunning) return stored;
   return Math.max(0, stored - (Date.now() - g.turnStartedAt));

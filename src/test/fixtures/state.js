@@ -1,4 +1,4 @@
-import { ALL_CASTLING } from './castling';
+import { ALL_CASTLING, NO_CASTLING } from './castling';
 
 /**
  * @param {any} board
@@ -8,6 +8,29 @@ export function makeGameState(board, overrides = {}) {
     board,
     castlingRights: { ...ALL_CASTLING },
     enPassantTarget: null,
+    ...overrides,
+  };
+}
+
+export function makeMovePayload(overrides = {}) {
+  return {
+    move: { from: 'e2', to: 'e4', piece: 'P' },
+    color: 'w',
+    position: {
+      board: { e4: 'P' },
+      castlingRights: { ...NO_CASTLING },
+      enPassantTarget: 'e3',
+    },
+    details: {
+      captured: null,
+      castling: null,
+      enPassant: false,
+      promotion: null,
+    },
+    isCheck: false,
+    isCheckmate: false,
+    san: 'e4',
+    timestamp: 1_000_000,
     ...overrides,
   };
 }

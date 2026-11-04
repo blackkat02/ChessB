@@ -1,518 +1,132 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import gameReducer, { moveExecuted, endGame } from './gameSlice';
 import { COLORS } from './gameConstants';
-import { ALL_CASTLING, NO_CASTLING } from '../../test/fixtures';
+import { ALL_CASTLING, makeMovePayload } from '../../test/fixtures';
+import { makeSliceState } from '../../test/fixtures/store';
 
-// Крок 2 (docs/move-validation.md, розділ 5): захоплення `captured`
-// до перезапису клітинки `to`, безпосередньо в редюсері — так це
-// покриває обидва місця диспатчу moveExecuted (звичайний хід і
-// "аналіз без правил" у gameOperations.js) без дублювання логіки.
-describe('gameSlice: moveExecuted', () => {
-  it('записує captured: null для тихого ходу на порожню клітинку', () => {
-    const state = {
-      board: { e2: 'P' },
-      selectedSquare: 'e2',
-      history: [],
-      plyCount: 0,
-    };
+// Крок 3 шарів (docs/layer-separation-step3.md, 3.5): moveExecuted лише
+// записує готовий результат, який порахував attemptMove. Тому тут payload
+// збирається вручну через makeMovePayload, без рушія: перевіряємо "редюсер
+// записав те, що прийшло", а не шахи. Правила (рокіровка, en passant,
+// промоція) — у src/engine/applyMove.test.js, SAN і мат через повний
+// пайплайн — у gameOperations.test.js.
 
-    const next = gameReducer(
-      state,
-      moveExecuted({ from: 'e2', to: 'e4', piece: 'P' })
-    );
+// Хід чорних e7-e5 — для тестів годинника, де ходить друга сторона.
+const blackE5 = (overrides = {}) =>
+  makeMovePayload({
+    move: { from: 'e7', to: 'e5', piece: 'p' },
+    color: COLORS.BLACK,
+    position: {
+      board: { e5: 'p' },
+      castlingRights: { ...ALL_CASTLING },
+      enPassantTarget: 'e6',
+    },
+    san: 'e5',
+    ...overrides,
+  });
+
+describe('gameSlice: moveExecuted — запис позиції та history', () => {
+  it('бере board, castlingRights і enPassantTarget з payload.position', () => {
+    const state = makeSliceState({ board: { e2: 'P' } });
+    const payload = makeMovePayload({
+      position: {
+        board: { e4: 'P' },
+        castlingRights: { ...ALL_CASTLING, whiteShort: false },
+        enPassantTarget: 'e3',
+      },
+    });
+
+    const next = gameReducer(state, moveExecuted(payload));
 
     expect(next.board).toEqual({ e4: 'P' });
+    expect(next.castlingRights).toEqual({ ...ALL_CASTLING, whiteShort: false });
+    expect(next.enPassantTarget).toBe('e3');
+  });
+
+  it('записує в history хід, details, статус і SAN з payload', () => {
+    const payload = makeMovePayload({
+      move: { from: 'e4', to: 'd5', piece: 'P' },
+      details: {
+        captured: 'p',
+        castling: null,
+        enPassant: false,
+        promotion: null,
+      },
+      isCheck: true,
+      san: 'exd5+',
+    });
+
+    const next = gameReducer(makeSliceState(), moveExecuted(payload));
+
     expect(next.history).toHaveLength(1);
-    expect(next.history[0].captured).toBeNull();
+    expect(next.history[0]).toMatchObject({
+      from: 'e4',
+      to: 'd5',
+      piece: 'P',
+      captured: 'p',
+      isCheck: true,
+      isCheckmate: false,
+      san: 'exd5+',
+    });
   });
 
-  it('захоплює фігуру з `to` ДО того, як вона буде затерта', () => {
-    const state = {
-      board: { e4: 'P', d5: 'p' },
-      selectedSquare: 'e4',
-      history: [],
-      plyCount: 0,
-    };
+  it("details.promotion перекриває move.promotion (undefined → розв'язана Q)", () => {
+    const payload = makeMovePayload({
+      move: { from: 'a7', to: 'a8', piece: 'P', promotion: undefined },
+      details: {
+        captured: null,
+        castling: null,
+        enPassant: false,
+        promotion: 'Q',
+      },
+      san: 'a8=Q',
+    });
 
-    const next = gameReducer(
-      state,
-      moveExecuted({ from: 'e4', to: 'd5', piece: 'P' })
-    );
+    const next = gameReducer(makeSliceState(), moveExecuted(payload));
 
-    expect(next.board).toEqual({ d5: 'P' });
-    expect(next.history[0].captured).toBe('p');
+    expect(next.history[0].promotion).toBe('Q');
   });
 
-  it('не втрачає інші поля payload (наприклад, analysis-прапорець)', () => {
-    const state = {
-      board: { e4: 'P', d5: 'p' },
-      selectedSquare: null,
-      history: [],
-      plyCount: 0,
-    };
-
-    const next = gameReducer(
-      state,
-      moveExecuted({ from: 'e4', to: 'd5', piece: 'P', analysis: true })
+  it('analysis-прапорець потрапляє в запис, лише коли переданий', () => {
+    const analysed = gameReducer(
+      makeSliceState(),
+      moveExecuted(makeMovePayload({ analysis: true }))
+    );
+    const normal = gameReducer(
+      makeSliceState(),
+      moveExecuted(makeMovePayload())
     );
 
-    expect(next.history[0]).toMatchObject({ analysis: true, captured: 'p' });
+    expect(analysed.history[0].analysis).toBe(true);
+    expect(normal.history[0]).not.toHaveProperty('analysis');
   });
 
   it('знімає виділення й інкрементить plyCount', () => {
-    const state = {
-      board: { e2: 'P' },
-      selectedSquare: 'e2',
-      history: [],
-      plyCount: 4,
-    };
+    const state = makeSliceState({ selectedSquare: 'e2', plyCount: 4 });
 
-    const next = gameReducer(
-      state,
-      moveExecuted({ from: 'e2', to: 'e4', piece: 'P' })
-    );
+    const next = gameReducer(state, moveExecuted(makeMovePayload()));
 
     expect(next.selectedSquare).toBeNull();
     expect(next.plyCount).toBe(5);
   });
 });
 
-// Крок 4 (docs/move-validation.md, розділ 5): рокіровка, взяття на проході,
-// оновлення castlingRights/enPassantTarget — усе відбувається в одному й
-// тому самому редюсері moveExecuted, а не в окремих екшенах.
-describe('gameSlice: moveExecuted — крок 4', () => {
-  it('рокіровка (коротка, білі): пересуває і короля, і туру', () => {
-    const state = {
-      board: { e1: 'K', h1: 'R' },
-      selectedSquare: 'e1',
-      history: [],
-      plyCount: 0,
-      castlingRights: ALL_CASTLING,
-      enPassantTarget: null,
-    };
-
-    const next = gameReducer(
-      state,
-      moveExecuted({ from: 'e1', to: 'g1', piece: 'K' })
-    );
-
-    expect(next.board).toEqual({ g1: 'K', f1: 'R' });
-    expect(next.history[0].castling).toBe('K');
-  });
-
-  it('рокіровка (довга, чорні): пересуває і короля, і туру', () => {
-    const state = {
-      board: { e8: 'k', a8: 'r' },
-      selectedSquare: 'e8',
-      history: [],
-      plyCount: 1,
-      castlingRights: ALL_CASTLING,
-      enPassantTarget: null,
-    };
-
-    const next = gameReducer(
-      state,
-      moveExecuted({ from: 'e8', to: 'c8', piece: 'k' })
-    );
-
-    expect(next.board).toEqual({ c8: 'k', d8: 'r' });
-    expect(next.history[0].castling).toBe('Q');
-  });
-
-  it('звичайний хід короля на сусідню клітинку — це НЕ рокіровка', () => {
-    const state = {
-      board: { e1: 'K' },
-      selectedSquare: 'e1',
-      history: [],
-      plyCount: 0,
-      castlingRights: ALL_CASTLING,
-      enPassantTarget: null,
-    };
-
-    const next = gameReducer(
-      state,
-      moveExecuted({ from: 'e1', to: 'f1', piece: 'K' })
-    );
-
-    expect(next.history[0].castling).toBeNull();
-  });
-
-  it('хід короля відбирає ОБИДВА права рокіровки цього кольору', () => {
-    const state = {
-      board: { e1: 'K' },
-      selectedSquare: 'e1',
-      history: [],
-      plyCount: 0,
-      castlingRights: ALL_CASTLING,
-      enPassantTarget: null,
-    };
-
-    const next = gameReducer(
-      state,
-      moveExecuted({ from: 'e1', to: 'f1', piece: 'K' })
-    );
-
-    expect(next.castlingRights).toMatchObject({
-      whiteShort: false,
-      whiteLong: false,
-    });
-    expect(next.castlingRights).toMatchObject({
-      blackShort: true,
-      blackLong: true,
-    });
-  });
-
-  it('хід тури зі стартової клітинки відбирає лише ВІДПОВІДНЕ право', () => {
-    const state = {
-      board: { a1: 'R' },
-      selectedSquare: 'a1',
-      history: [],
-      plyCount: 0,
-      castlingRights: ALL_CASTLING,
-      enPassantTarget: null,
-    };
-
-    const next = gameReducer(
-      state,
-      moveExecuted({ from: 'a1', to: 'a4', piece: 'R' })
-    );
-
-    expect(next.castlingRights).toMatchObject({
-      whiteLong: false,
-      whiteShort: true,
-    });
-  });
-
-  it('НЕ туру, а іншу фігуру, що поїхала зі стартової клітинки тури, право не чіпає', () => {
-    // Штучний, нереальний "знімок" стану (нормальна гра ніколи так не
-    // прийде), але важливо, щоб код перевіряв ТИП фігури, а не лише
-    // клітинку — інакше ферзь, що випадково опинився на h8, забрав би
-    // чуже право blackShort, хоча чорна тура там ще стоїть.
-    const state = {
-      board: { h8: 'Q' },
-      selectedSquare: 'h8',
-      history: [],
-      plyCount: 1,
-      castlingRights: ALL_CASTLING,
-      enPassantTarget: null,
-    };
-
-    const next = gameReducer(
-      state,
-      moveExecuted({ from: 'h8', to: 'h4', piece: 'Q' })
-    );
-
-    expect(next.castlingRights).toMatchObject({ blackShort: true });
-  });
-
-  it('взяття тури суперника на її стартовій клітинці теж відбирає право', () => {
-    const state = {
-      board: { h8: 'Q', a8: 'r' },
-      selectedSquare: 'h8',
-      history: [],
-      plyCount: 1,
-      castlingRights: ALL_CASTLING,
-      enPassantTarget: null,
-    };
-
-    // Ферзь іде h8 -> a8, "з'їдаючи" чорну туру на її стартовій клітинці.
-    const next = gameReducer(
-      state,
-      moveExecuted({ from: 'h8', to: 'a8', piece: 'Q' })
-    );
-
-    expect(next.castlingRights).toMatchObject({
-      blackLong: false,
-      blackShort: true,
-    });
-  });
-
-  it('хід пішака на 2 клітинки встановлює enPassantTarget на клітинку позаду нього', () => {
-    const state = {
-      board: { e2: 'P' },
-      selectedSquare: 'e2',
-      history: [],
-      plyCount: 0,
-      castlingRights: ALL_CASTLING,
-      enPassantTarget: null,
-    };
-
-    const next = gameReducer(
-      state,
-      moveExecuted({ from: 'e2', to: 'e4', piece: 'P' })
-    );
-
-    expect(next.enPassantTarget).toBe('e3');
-  });
-
-  it('будь-який інший хід скидає enPassantTarget назад у null', () => {
-    const state = {
-      board: { a1: 'R' },
-      selectedSquare: 'a1',
-      history: [],
-      plyCount: 2,
-      castlingRights: ALL_CASTLING,
-      enPassantTarget: 'e3', // залишок від минулого напівходу
-    };
-
-    const next = gameReducer(
-      state,
-      moveExecuted({ from: 'a1', to: 'a4', piece: 'R' })
-    );
-
-    expect(next.enPassantTarget).toBeNull();
-  });
-
-  it('взяття на проході знімає пішака-жертву, а не клітинку `to`', () => {
-    // Чорний щойно пішов d7-d5 (enPassantTarget='d6'); білий пішак e5 бере на проході.
-    const state = {
-      board: { e5: 'P', d5: 'p' },
-      selectedSquare: 'e5',
-      history: [],
-      plyCount: 3,
-      castlingRights: ALL_CASTLING,
-      enPassantTarget: 'd6',
-    };
-
-    const next = gameReducer(
-      state,
-      moveExecuted({ from: 'e5', to: 'd6', piece: 'P' })
-    );
-
-    expect(next.board).toEqual({ d6: 'P' }); // d5 (жертва) зникла, d6 порожня клітинка зайнята
-    expect(next.history[0].captured).toBe('p');
-    expect(next.history[0].enPassant).toBe(true);
-  });
-});
-
-// Крок 6 (docs/move-validation.md, розділ 5): промоція пішака.
-describe('gameSlice: moveExecuted — крок 6 (промоція)', () => {
-  it('за замовчуванням промотує в ферзя, якщо promotion не вказано', () => {
-    const state = {
-      board: { a7: 'P' },
-      selectedSquare: 'a7',
-      history: [],
-      plyCount: 0,
-      castlingRights: ALL_CASTLING,
-      enPassantTarget: null,
-    };
-
-    const next = gameReducer(
-      state,
-      moveExecuted({ from: 'a7', to: 'a8', piece: 'P' })
-    );
-
-    expect(next.board).toEqual({ a8: 'Q' });
-    expect(next.history[0].promotion).toBe('Q');
-  });
-
-  it('промотує в обрану фігуру, зберігаючи регістр кольору', () => {
-    const state = {
-      board: { a2: 'p' },
-      selectedSquare: 'a2',
-      history: [],
-      plyCount: 1,
-      castlingRights: ALL_CASTLING,
-      enPassantTarget: null,
-    };
-
-    const next = gameReducer(
-      state,
-      moveExecuted({ from: 'a2', to: 'a1', piece: 'p', promotion: 'R' })
-    );
-
-    expect(next.board).toEqual({ a1: 'r' });
-    expect(next.history[0].promotion).toBe('R');
-  });
-
-  it('звичайний хід пішака (не на останній ряд) не встановлює promotion', () => {
-    const state = {
-      board: { a6: 'P' },
-      selectedSquare: 'a6',
-      history: [],
-      plyCount: 0,
-      castlingRights: ALL_CASTLING,
-      enPassantTarget: null,
-    };
-
-    const next = gameReducer(
-      state,
-      moveExecuted({ from: 'a6', to: 'a7', piece: 'P' })
-    );
-
-    expect(next.board).toEqual({ a7: 'P' });
-    expect(next.history[0].promotion).toBeNull();
-  });
-
-  it('взяття фігури на останньому ряду з одночасною промоцією записує ОБИДВА поля', () => {
-    const state = {
-      board: { b7: 'P', a8: 'n' },
-      selectedSquare: 'b7',
-      history: [],
-      plyCount: 0,
-      castlingRights: ALL_CASTLING,
-      enPassantTarget: null,
-    };
-
-    const next = gameReducer(
-      state,
-      moveExecuted({ from: 'b7', to: 'a8', piece: 'P', promotion: 'Q' })
-    );
-
-    expect(next.board).toEqual({ a8: 'Q' });
-    expect(next.history[0].captured).toBe('n');
-    expect(next.history[0].promotion).toBe('Q');
-  });
-});
-
-// Крок 7 (docs/move-validation.md, розділ 5): SAN + isCheck/isCheckmate
-// записуються прямо в history одразу під час виконання ходу.
-describe('gameSlice: moveExecuted — крок 7 (нотація)', () => {
-  it('записує san для звичайного тихого ходу', () => {
-    const state = {
-      board: { e2: 'P' },
-      selectedSquare: 'e2',
-      history: [],
-      plyCount: 0,
-      castlingRights: ALL_CASTLING,
-      enPassantTarget: null,
-    };
-
-    const next = gameReducer(
-      state,
-      moveExecuted({ from: 'e2', to: 'e4', piece: 'P' })
-    );
-
-    expect(next.history[0].san).toBe('e4');
-    expect(next.history[0].isCheck).toBe(false);
-    expect(next.history[0].isCheckmate).toBe(false);
-  });
-
-  it('san містить "x" для взяття', () => {
-    const state = {
-      board: { e4: 'P', d5: 'p' },
-      selectedSquare: 'e4',
-      history: [],
-      plyCount: 0,
-      castlingRights: ALL_CASTLING,
-      enPassantTarget: null,
-    };
-
-    const next = gameReducer(
-      state,
-      moveExecuted({ from: 'e4', to: 'd5', piece: 'P' })
-    );
-
-    expect(next.history[0].san).toBe('exd5');
-  });
-
-  it('san отримує суфікс "+", якщо хід дає шах суперникові', () => {
-    // Тура йде на відкритий 8-й ряд і одразу шахує короля по рангу.
-    const state = {
-      board: { a1: 'R', e8: 'k' },
-      selectedSquare: 'a1',
-      history: [],
-      plyCount: 0,
-      castlingRights: ALL_CASTLING,
-      enPassantTarget: null,
-    };
-
-    const next = gameReducer(
-      state,
-      moveExecuted({ from: 'a1', to: 'a8', piece: 'R' })
-    );
-
-    expect(next.history[0].san).toBe('Ra8+');
-    expect(next.history[0].isCheck).toBe(true);
-    expect(next.history[0].isCheckmate).toBe(false);
-  });
-
-  it('san отримує суфікс "#" на матовій позиції (back-rank mate)', () => {
-    const state = {
-      board: { g1: 'K', f2: 'P', g2: 'P', h2: 'P', a2: 'r' },
-      selectedSquare: 'a2',
-      history: [],
-      plyCount: 1,
-      castlingRights: NO_CASTLING,
-      enPassantTarget: null,
-    };
-
-    const next = gameReducer(
-      state,
-      moveExecuted({ from: 'a2', to: 'a1', piece: 'r' })
-    );
-
-    expect(next.history[0].san).toBe('Ra1#');
-    expect(next.history[0].isCheckmate).toBe(true);
-  });
-
-  it('рокіровка отримує san "O-O", а не "Kg1"', () => {
-    const state = {
-      board: { e1: 'K', h1: 'R' },
-      selectedSquare: 'e1',
-      history: [],
-      plyCount: 0,
-      castlingRights: ALL_CASTLING,
-      enPassantTarget: null,
-    };
-
-    const next = gameReducer(
-      state,
-      moveExecuted({ from: 'e1', to: 'g1', piece: 'K' })
-    );
-
-    expect(next.history[0].san).toBe('O-O');
-  });
-
-  // buildSan вважає promotion необов'язковим, тож якщо редюсер забуде
-  // передати його з details, SAN мовчки стане 'a8' — ловимо це тут.
-  it('промоція отримує san з "=Q"', () => {
-    const state = {
-      board: { a7: 'P' },
-      selectedSquare: 'a7',
-      history: [],
-      plyCount: 0,
-      castlingRights: ALL_CASTLING,
-      enPassantTarget: null,
-    };
-
-    const next = gameReducer(
-      state,
-      moveExecuted({ from: 'a7', to: 'a8', piece: 'P' })
-    );
-
-    expect(next.history[0].san).toBe('a8=Q');
-  });
-});
-
 // docs/clock-and-game-record.md, крок 1: годинник на глобальному відліку
 // часу — moveExecuted списує РЕАЛЬНИЙ час, що минув з turnStartedAt, а не
-// тік таймера. vi.setSystemTime дає детермінований контроль над Date.now(),
-// без якого ці тести залежали б від фактичної швидкості виконання коду.
+// тік таймера. Мить ходу приходить у payload.timestamp, тож мокати
+// Date.now() не треба: однаковий action — однаковий стан.
 describe('gameSlice: moveExecuted — годинник (docs/clock-and-game-record.md)', () => {
-  afterEach(() => {
-    vi.useRealTimers();
-  });
-
-  it('списує з активної сторони саме стільки часу, скільки реально минуло від turnStartedAt', () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(1_000_000);
-
-    const state = {
-      board: { e7: 'p' },
-      selectedSquare: 'e7',
-      history: [],
+  it('списує з активної сторони саме стільки часу, скільки минуло від turnStartedAt', () => {
+    const state = makeSliceState({
       plyCount: 1, // хід чорних — turnStartedAt належить саме їм
       whiteTime: 180000,
       blackTime: 180000,
       turnStartedAt: 1_000_000 - 4230, // чорні отримали хід 4.23с тому
-      castlingRights: ALL_CASTLING,
-      enPassantTarget: null,
-    };
+    });
 
     const next = gameReducer(
       state,
-      moveExecuted({ from: 'e7', to: 'e5', piece: 'p' })
+      moveExecuted(blackE5({ timestamp: 1_000_000 }))
     );
 
     expect(next.blackTime).toBe(180000 - 4230);
@@ -520,48 +134,53 @@ describe('gameSlice: moveExecuted — годинник (docs/clock-and-game-reco
     expect(next.turnStartedAt).toBe(1_000_000); // новий якір — для НАСТУПНОЇ сторони (білих)
   });
 
-  it('перший хід партії (turnStartedAt: null) нічого не списує', () => {
-    const state = {
-      board: { e2: 'P' },
-      selectedSquare: 'e2',
-      history: [],
-      plyCount: 0,
+  it('годинник обирається за payload.color, а не за фігурою', () => {
+    // Редюсер більше не питає рушій про колір фігури — довіряє payload.
+    const state = makeSliceState({
       whiteTime: 180000,
       blackTime: 180000,
-      turnStartedAt: null,
-      castlingRights: ALL_CASTLING,
-      enPassantTarget: null,
-    };
+      turnStartedAt: 1_000_000 - 1000,
+    });
 
     const next = gameReducer(
       state,
-      moveExecuted({ from: 'e2', to: 'e4', piece: 'P' })
+      moveExecuted(
+        makeMovePayload({ color: COLORS.BLACK, timestamp: 1_000_000 })
+      )
+    );
+
+    expect(next.blackTime).toBe(179000);
+    expect(next.whiteTime).toBe(180000);
+  });
+
+  it('перший хід партії (turnStartedAt: null) нічого не списує', () => {
+    const state = makeSliceState({
+      whiteTime: 180000,
+      blackTime: 180000,
+      turnStartedAt: null,
+    });
+
+    const next = gameReducer(
+      state,
+      moveExecuted(makeMovePayload({ timestamp: 1_000_000 }))
     );
 
     expect(next.whiteTime).toBe(180000);
     expect(next.blackTime).toBe(180000);
-    expect(next.turnStartedAt).not.toBeNull(); // але годинник тепер стартував — для чорних
+    expect(next.turnStartedAt).toBe(1_000_000); // але годинник тепер стартував — для чорних
   });
 
   it('не йде нижче нуля, навіть якщо минуло більше часу, ніж лишалось', () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(1_000_000);
-
-    const state = {
-      board: { e7: 'p' },
-      selectedSquare: 'e7',
-      history: [],
+    const state = makeSliceState({
       plyCount: 1,
       whiteTime: 180000,
       blackTime: 500, // лишалось пів секунди
       turnStartedAt: 1_000_000 - 4000, // а минуло 4с
-      castlingRights: ALL_CASTLING,
-      enPassantTarget: null,
-    };
+    });
 
     const next = gameReducer(
       state,
-      moveExecuted({ from: 'e7', to: 'e5', piece: 'p' })
+      moveExecuted(blackE5({ timestamp: 1_000_000 }))
     );
 
     expect(next.blackTime).toBe(0);
@@ -570,33 +189,18 @@ describe('gameSlice: moveExecuted — годинник (docs/clock-and-game-reco
 
 // docs/clock-and-game-record.md, крок 6: повний запис партії — timestamp,
 // moveTimeMs і clockAfter (знімок ОБОХ годинників) на кожному елементі
-// history. Той самий сценарій, який план пропонував перевірити вручну через
-// Redux DevTools ("зробити кілька ходів, подивитись на history") — тут
-// відтворений детерміновано, замість одноразового погляду в браузері.
+// history.
 describe('gameSlice: moveExecuted — повний запис партії (крок 6)', () => {
-  afterEach(() => {
-    vi.useRealTimers();
-  });
-
-  it('перший хід партії: timestamp виставлений, moveTimeMs=0, clockAfter = стартовий час обох сторін', () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(1_000_000);
-
-    const state = {
-      board: { e2: 'P' },
-      selectedSquare: 'e2',
-      history: [],
-      plyCount: 0,
+  it('перший хід партії: timestamp з payload, moveTimeMs=0, clockAfter = стартовий час обох сторін', () => {
+    const state = makeSliceState({
       whiteTime: 180000,
       blackTime: 180000,
       turnStartedAt: null, // до першого ходу годинник не йде
-      castlingRights: ALL_CASTLING,
-      enPassantTarget: null,
-    };
+    });
 
     const next = gameReducer(
       state,
-      moveExecuted({ from: 'e2', to: 'e4', piece: 'P' })
+      moveExecuted(makeMovePayload({ timestamp: 1_000_000 }))
     );
 
     expect(next.history[0]).toMatchObject({
@@ -606,25 +210,18 @@ describe('gameSlice: moveExecuted — повний запис партії (кр
     });
   });
 
-  it('другий хід (чорних): timestamp/moveTimeMs відображають реальний час, clockAfter — ОБИДВА годинники одразу після ходу', () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(1_000_000);
-
-    const state = {
-      board: { e7: 'p' },
-      selectedSquare: 'e7',
+  it('другий хід (чорних): moveTimeMs — реальний час, clockAfter — ОБИДВА годинники одразу після ходу', () => {
+    const state = makeSliceState({
       history: [{ from: 'e2', to: 'e4', piece: 'P' }],
       plyCount: 1,
       whiteTime: 180000,
       blackTime: 180000,
       turnStartedAt: 1_000_000 - 4230, // чорні думали 4.23с
-      castlingRights: ALL_CASTLING,
-      enPassantTarget: null,
-    };
+    });
 
     const next = gameReducer(
       state,
-      moveExecuted({ from: 'e7', to: 'e5', piece: 'p' })
+      moveExecuted(blackE5({ timestamp: 1_000_000 }))
     );
 
     expect(next.history[1]).toMatchObject({
@@ -634,28 +231,21 @@ describe('gameSlice: moveExecuted — повний запис партії (кр
     });
   });
 
-  it('`timestamp` елемента дорівнює новому `turnStartedAt` (та сама мить, один Date.now() на редюсер)', () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(1_234_567);
-
-    const state = {
-      board: { e2: 'P' },
-      selectedSquare: 'e2',
-      history: [],
-      plyCount: 0,
-      whiteTime: 180000,
-      blackTime: 180000,
-      turnStartedAt: null,
-      castlingRights: ALL_CASTLING,
-      enPassantTarget: null,
-    };
-
+  it('`timestamp` елемента дорівнює новому `turnStartedAt` (та сама мить з payload)', () => {
     const next = gameReducer(
-      state,
-      moveExecuted({ from: 'e2', to: 'e4', piece: 'P' })
+      makeSliceState(),
+      moveExecuted(makeMovePayload({ timestamp: 1_234_567 }))
     );
 
-    expect(next.history[0].timestamp).toBe(next.turnStartedAt);
+    expect(next.history[0].timestamp).toBe(1_234_567);
+    expect(next.turnStartedAt).toBe(1_234_567);
+  });
+
+  it('чистий редюсер: однаковий action двічі дає однаковий стан', () => {
+    const state = makeSliceState({ turnStartedAt: 999_000 });
+    const action = moveExecuted(makeMovePayload({ timestamp: 1_000_000 }));
+
+    expect(gameReducer(state, action)).toEqual(gameReducer(state, action));
   });
 });
 
@@ -704,5 +294,61 @@ describe('gameSlice: endGame — годинник при таймауті', () =
     expect(next.whiteTime).toBe(42000);
     expect(next.blackTime).toBe(99000);
     expect(next.turnStartedAt).toBeNull();
+  });
+});
+
+// Крок 3 шарів (docs/layer-separation-step3.md, 3.6): Date.now() переїхав з
+// редюсера в prepare-колбек action creator-а.
+describe('gameSlice: endGame — timestamp через prepare', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('редюсер бере мить з payload.timestamp, без мокання таймерів', () => {
+    const state = makeSliceState({
+      whiteTime: 180000,
+      blackTime: 1200,
+      turnStartedAt: 2_000_000 - 5000,
+    });
+
+    const next = gameReducer(
+      state,
+      endGame({
+        winner: COLORS.WHITE,
+        reason: 'timeout',
+        timedOutColor: COLORS.BLACK,
+        timestamp: 2_000_000,
+      })
+    );
+
+    expect(next.blackTime).toBe(0);
+  });
+
+  it('чистий редюсер: однаковий action двічі дає однаковий стан', () => {
+    const state = makeSliceState({
+      blackTime: 60000,
+      turnStartedAt: 2_000_000 - 5000,
+    });
+    const action = endGame({
+      winner: COLORS.WHITE,
+      reason: 'timeout',
+      timedOutColor: COLORS.BLACK,
+    });
+
+    expect(gameReducer(state, action)).toEqual(gameReducer(state, action));
+  });
+
+  it('prepare додає поточну мить, якщо timestamp не передано', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(777);
+
+    const action = endGame({ winner: COLORS.WHITE, reason: 'resignation' });
+
+    expect(action.type).toBe('game/endGame'); // PERSIST_ON у store.js не зачеплено
+    expect(action.payload).toEqual({
+      winner: COLORS.WHITE,
+      reason: 'resignation',
+      timestamp: 777,
+    });
   });
 });

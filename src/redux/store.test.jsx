@@ -6,7 +6,7 @@ import { moveExecuted, setSelection } from './game/gameSlice';
 import { useGameState } from '../hooks/useGameState';
 import Clock from '../components/Clock/Clock';
 import { COLORS } from './game/gameConstants';
-import { NO_CASTLING } from '../test/fixtures';
+import { NO_CASTLING, makeMovePayload } from '../test/fixtures';
 
 // store.js читає localStorage ОДИН раз, на рівні модуля, в момент імпорту
 // (docs/clock-and-game-record.md, крок 8: `const persisted = loadPersistedGame()`
@@ -187,7 +187,7 @@ describe('redux store — відновлення зі збереженого с�
     store.dispatch(setSelection('e2'));
     expect(localStorage.getItem(STORAGE_KEY)).toBeNull(); // клік по клітинці — не привід писати на диск
 
-    store.dispatch(moveExecuted({ from: 'e2', to: 'e4', piece: 'P' }));
+    store.dispatch(moveExecuted(makeMovePayload()));
 
     const raw = localStorage.getItem(STORAGE_KEY);
     expect(raw).not.toBeNull();
