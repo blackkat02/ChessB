@@ -1,7 +1,8 @@
 import { useSelector, useDispatch } from 'react-redux';
 import { useCallback, useState } from 'react';
 import * as selectors from '../redux/game/gameSelectors';
-import { setSelection, newGameStarted } from '../redux/game/gameSlice';
+import { setSelection } from '../redux/game/gameSlice';
+import { newGameStarted } from '../redux/game/gameEvents';
 import {
   attemptMove,
   timeExpired,

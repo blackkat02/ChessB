@@ -1,6 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { initialBoardPiecesObject } from '../../data/positions';
 import { DEFAULT_TIME, COLORS } from './gameConstants';
+import { moveExecuted, newGameStarted, endGame } from './gameEvents';
 
 const initialState = {
   board: initialBoardPiecesObject, // Об'єкт { a2: 'P', ... }
@@ -32,72 +33,74 @@ const gameSlice = createSlice({
     setSelection: (state, action) => {
       state.selectedSquare = action.payload;
     },
-    // Лише запис готового результату: позицію, статус, SAN і мить ходу
-    // порахував attemptMove (docs/layer-separation-step3.md, 3.5). Редюсер
-    // не знає шахових правил і не викликає Date.now() — той самий action
-    // завжди дає той самий стан.
-    moveExecuted: (state, action) => {
-      const {
-        move,
-        color,
-        position,
-        details,
-        isCheck,
-        isCheckmate,
-        san,
-        timestamp,
-        analysis,
-      } = action.payload;
+  },
+  // Події партії (gameEvents.js): слайс лише реагує на них, на ті самі
+  // події реагуватимуть і інші слайси (docs/layer-separation-step4.md, 4.2).
+  extraReducers: (builder) => {
+    builder
+      // Лише запис готового результату: позицію, статус, SAN і мить ходу
+      // порахував attemptMove (docs/layer-separation-step3.md, 3.5). Редюсер
+      // не знає шахових правил і не викликає Date.now() — той самий action
+      // завжди дає той самий стан.
+      .addCase(moveExecuted, (state, action) => {
+        const {
+          move,
+          color,
+          position,
+          details,
+          isCheck,
+          isCheckmate,
+          san,
+          timestamp,
+          analysis,
+        } = action.payload;
 
-      state.board = position.board;
-      state.castlingRights = position.castlingRights;
-      state.enPassantTarget = position.enPassantTarget;
-      state.turn = position.turn;
+        state.board = position.board;
+        state.castlingRights = position.castlingRights;
+        state.enPassantTarget = position.enPassantTarget;
+        state.turn = position.turn;
 
-      let moveTimeMs = 0;
-      if (typeof state.turnStartedAt === 'number') {
-        moveTimeMs = timestamp - state.turnStartedAt;
-        if (color === COLORS.WHITE) {
-          state.whiteTime = Math.max(0, state.whiteTime - moveTimeMs);
-        } else {
-          state.blackTime = Math.max(0, state.blackTime - moveTimeMs);
+        let moveTimeMs = 0;
+        if (typeof state.turnStartedAt === 'number') {
+          moveTimeMs = timestamp - state.turnStartedAt;
+          if (color === COLORS.WHITE) {
+            state.whiteTime = Math.max(0, state.whiteTime - moveTimeMs);
+          } else {
+            state.blackTime = Math.max(0, state.blackTime - moveTimeMs);
+          }
         }
-      }
 
-      state.turnStartedAt = timestamp; // ← годинник наступної сторони стартує з цієї миті
+        state.turnStartedAt = timestamp; // ← годинник наступної сторони стартує з цієї миті
 
-      state.selectedSquare = null;
-      state.history.push({
-        ...move,
-        // details другим: details.promotion (розв'язана 'Q') перекриває
-        // move.promotion (може бути undefined).
-        ...details,
-        isCheck,
-        isCheckmate,
-        san,
-        timestamp,
-        moveTimeMs,
-        clockAfter: { w: state.whiteTime, b: state.blackTime },
-        // Лише коли true — як раніше, коли прапорець приходив через
-        // ...action.payload. Інакше кожен хід отримав би analysis: undefined.
-        ...(analysis && { analysis }),
-      });
-      state.plyCount += 1;
-    },
-
-    newGameStarted: (state, action) => {
-      const { time, side } = action.payload;
-      return {
-        ...initialState,
-        whiteTime: time,
-        blackTime: time,
-        playerSide: side,
-        gameId: state.gameId + 1,
-      };
-    },
-
-    endGame: {
-      reducer(state, action) {
+        state.selectedSquare = null;
+        state.history.push({
+          ...move,
+          // details другим: details.promotion (розв'язана 'Q') перекриває
+          // move.promotion (може бути undefined).
+          ...details,
+          isCheck,
+          isCheckmate,
+          san,
+          timestamp,
+          moveTimeMs,
+          clockAfter: { w: state.whiteTime, b: state.blackTime },
+          // Лише коли true — як раніше, коли прапорець приходив через
+          // ...action.payload. Інакше кожен хід отримав би analysis: undefined.
+          ...(analysis && { analysis }),
+        });
+        state.plyCount += 1;
+      })
+      .addCase(newGameStarted, (state, action) => {
+        const { time, side } = action.payload;
+        return {
+          ...initialState,
+          whiteTime: time,
+          blackTime: time,
+          playerSide: side,
+          gameId: state.gameId + 1,
+        };
+      })
+      .addCase(endGame, (state, action) => {
         const { winner, reason, timedOutColor, timestamp } = action.payload;
 
         if (
@@ -115,14 +118,9 @@ const gameSlice = createSlice({
         state.reason = reason;
         state.isGameOver = true;
         state.turnStartedAt = null;
-      },
-      prepare(payload) {
-        return { payload: { timestamp: Date.now(), ...payload } };
-      },
-    },
+      });
   },
 });
 
-export const { setSelection, moveExecuted, newGameStarted, endGame } =
-  gameSlice.actions;
+export const { setSelection } = gameSlice.actions;
 export default gameSlice.reducer;

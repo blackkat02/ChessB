@@ -1,5 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit';
 import gameReducer from './game/gameSlice';
+import { moveExecuted, endGame, newGameStarted } from './game/gameEvents';
 import { savePersistedGame, loadPersistedGame } from './persistGame';
 
 // docs/clock-and-game-record.md, крок 8: пишемо ЛИШЕ на дії, що реально
@@ -8,7 +9,12 @@ import { savePersistedGame, loadPersistedGame } from './persistGame';
 // по собі більше не дисптачить жодного action (Clock.jsx рахує "живий" час
 // локально, лише форсуючи власний перерендер) — тож троттлити тут уже нема
 // що троттлити, досить писати на самі ці три типи.
-const PERSIST_ON = new Set(['game/moveExecuted', 'game/endGame', 'game/newGameStarted']);
+// Типи беремо з подій (.type), а не рядками — щоб не розійшлися.
+const PERSIST_ON = new Set([
+  moveExecuted.type,
+  endGame.type,
+  newGameStarted.type,
+]);
 
 const persistenceMiddleware = (storeApi) => (next) => (action) => {
   const result = next(action);
