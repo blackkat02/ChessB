@@ -20,11 +20,13 @@ export const selectPosition = createSelector(
     selectBoard,
     (state) => state.game.castlingRights,
     (state) => state.game.enPassantTarget,
+    (state) => state.game.turn,
   ],
-  (board, castlingRights, enPassantTarget) => ({
+  (board, castlingRights, enPassantTarget, turn) => ({
     board,
     castlingRights,
     enPassantTarget,
+    turn,
   })
 );
 
@@ -45,9 +47,7 @@ export const selectMovePairs = createSelector(
 );
 
 // === 2. СЕЛЕКТОРИ СТАНУ (Game Status) ===
-// turn — похідне значення, не окреме поле стану: парний plyCount = хід білих.
-export const selectCurrentTurn = (state) =>
-  state.game.plyCount % 2 === 0 ? COLORS.WHITE : COLORS.BLACK;
+export const selectCurrentTurn = (state) => state.game.turn;
 export const selectIsWhiteTurn = (state) =>
   selectCurrentTurn(state) === COLORS.WHITE;
 export const selectIsClockActive = (state, color) =>

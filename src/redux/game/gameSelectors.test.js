@@ -70,7 +70,8 @@ describe('selectClockRemaining', () => {
   const baseGame = {
     whiteTime: 180000,
     blackTime: 180000,
-    plyCount: 1, // хід чорних (непарний plyCount)
+    plyCount: 1,
+    turn: 'b', // хід чорних
     isGameOver: false,
     turnStartedAt: 1_000_000,
   };

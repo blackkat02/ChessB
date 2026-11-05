@@ -5,7 +5,8 @@
 export const STORAGE_KEY = 'chessb:v1:game';
 // 2 — payload містить clockAfter/timestamp в history (крок 6).
 // 3 — castlingRights перейменовано: wK/wQ/bK/bQ → whiteShort/whiteLong/blackShort/blackLong.
-export const SCHEMA_VERSION = 3;
+// 4 — turn став полем стану (раніше обчислювався з plyCount); старі збереження без turn ігноруються.
+export const SCHEMA_VERSION = 4;
 
 export function savePersistedGame(gameState) {
   try {

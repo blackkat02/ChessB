@@ -26,13 +26,14 @@ const blackE5 = (overrides = {}) =>
   });
 
 describe('gameSlice: moveExecuted — запис позиції та history', () => {
-  it('бере board, castlingRights і enPassantTarget з payload.position', () => {
+  it('бере board, castlingRights, enPassantTarget і turn з payload.position', () => {
     const state = makeSliceState({ board: { e2: 'P' } });
     const payload = makeMovePayload({
       position: {
         board: { e4: 'P' },
         castlingRights: { ...ALL_CASTLING, whiteShort: false },
         enPassantTarget: 'e3',
+        turn: 'b',
       },
     });
 
@@ -41,6 +42,11 @@ describe('gameSlice: moveExecuted — запис позиції та history', (
     expect(next.board).toEqual({ e4: 'P' });
     expect(next.castlingRights).toEqual({ ...ALL_CASTLING, whiteShort: false });
     expect(next.enPassantTarget).toBe('e3');
+    expect(next.turn).toBe('b');
+  });
+
+  it('на старті партії хід білих', () => {
+    expect(makeSliceState().turn).toBe('w');
   });
 
   it('записує в history хід, details, статус і SAN з payload', () => {

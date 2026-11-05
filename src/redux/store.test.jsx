@@ -112,7 +112,8 @@ describe('redux store — відновлення зі збереженого с�
         state: {
           board: {},
           selectedSquare: null,
-          plyCount: 1, // непарне — хід чорних, саме їхній годинник іде
+          plyCount: 1,
+          turn: 'b', // хід чорних, саме їхній годинник іде
           isGameOver: false,
           winner: null,
           reason: null,

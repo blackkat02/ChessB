@@ -9,6 +9,7 @@ const initialState = {
   blackTime: DEFAULT_TIME,
   turnStartedAt: null, // Date.now() коли почала цокати активна сторона; null = годинники не йдуть (docs/clock-and-game-record.md, розділ 5.1)
   history: [],
+  turn: COLORS.WHITE,
   plyCount: 0, // кількість зроблених напівходів (ходи = plyCount пар для запису партії)
   winner: null, // COLORS.WHITE, COLORS.BLACK, або 'draw'
   reason: null, // 'checkmate', 'timeout', 'resignation'
@@ -51,6 +52,7 @@ const gameSlice = createSlice({
       state.board = position.board;
       state.castlingRights = position.castlingRights;
       state.enPassantTarget = position.enPassantTarget;
+      state.turn = position.turn;
 
       let moveTimeMs = 0;
       if (typeof state.turnStartedAt === 'number') {
