@@ -26,7 +26,11 @@ describe('attemptMove — промоція', () => {
   });
 
   it('чорний пішак промотує на 1-му ряду в нижньому регістрі', () => {
-    const store = createTestStore({ board: { a2: 'p' }, plyCount: 1 });
+    const store = createTestStore({
+      board: { a2: 'p' },
+      plyCount: 1,
+      turn: 'b',
+    });
 
     store.dispatch(attemptMove({ from: 'a2', to: 'a1', piece: 'p' }));
 
@@ -104,6 +108,7 @@ describe('attemptMove — нотація', () => {
     const store = createTestStore({
       board: { g1: 'K', f2: 'P', g2: 'P', h2: 'P', a2: 'r', a8: 'k' },
       plyCount: 1,
+      turn: 'b',
     });
 
     store.dispatch(attemptMove({ from: 'a2', to: 'a1', piece: 'r' }));
@@ -176,6 +181,7 @@ describe('attemptMove — товстий thunk', () => {
     const store = createTestStore({
       board: { g1: 'K', f2: 'P', g2: 'P', h2: 'P', a2: 'r', a8: 'k' },
       plyCount: 1,
+      turn: 'b',
     });
     store.dispatch(attemptMove({ from: 'a2', to: 'a1', piece: 'r' })); // мат
 

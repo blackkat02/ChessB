@@ -1,5 +1,5 @@
 import { algebraicToCoords, coordsToAlgebraic } from './boardUtils';
-import { getPieceColor } from './chessHelpers';
+import { getPieceColor, getOpponentColor } from './chessHelpers';
 import { requiresPromotion, resolvePromotionPiece } from './promotion';
 import { COLORS } from './constants';
 
@@ -22,16 +22,17 @@ export const CASTLING_ROOK_MOVES = {
 };
 
 /**
- * @param {{ board, castlingRights, enPassantTarget }} position
+ * @param {{ board, castlingRights, enPassantTarget, turn }} position
  * @param {{ from, to, piece, promotion? }} move
  * @returns {{
- *   position: { board, castlingRights, enPassantTarget }, // НОВИЙ об'єкт
+ *   position: { board, castlingRights, enPassantTarget, turn }, // НОВИЙ об'єкт
  *   details:  { captured, castling, enPassant, promotion }
  * }}
  */
 export function applyMove(position, move) {
   const { from, to, piece, promotion } = move;
   const board = { ...position.board };
+  const turn = getOpponentColor(getPieceColor(piece));
 
   let captured = board[to] || null;
 
@@ -69,6 +70,7 @@ export function applyMove(position, move) {
       board,
       castlingRights: castlingRights,
       enPassantTarget: nextEnPassantTarget(move),
+      turn: turn,
     },
     details: {
       captured: captured,

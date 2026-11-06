@@ -8,6 +8,7 @@ export function makeGameState(board, overrides = {}) {
     board,
     castlingRights: { ...ALL_CASTLING },
     enPassantTarget: null,
+    turn: 'w',
     ...overrides,
   };
 }
@@ -20,6 +21,7 @@ export function makeMovePayload(overrides = {}) {
       board: { e4: 'P' },
       castlingRights: { ...NO_CASTLING },
       enPassantTarget: 'e3',
+      turn: 'b',
     },
     details: {
       captured: null,

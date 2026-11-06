@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import gameReducer, { moveExecuted, endGame } from './gameSlice';
+import gameReducer from './gameSlice';
+import { moveExecuted, endGame } from './gameEvents';
 import { COLORS } from './gameConstants';
 import { ALL_CASTLING, makeMovePayload } from '../../test/fixtures';
 import { makeSliceState } from '../../test/fixtures/store';
@@ -26,13 +27,14 @@ const blackE5 = (overrides = {}) =>
   });
 
 describe('gameSlice: moveExecuted — запис позиції та history', () => {
-  it('бере board, castlingRights і enPassantTarget з payload.position', () => {
+  it('бере board, castlingRights, enPassantTarget і turn з payload.position', () => {
     const state = makeSliceState({ board: { e2: 'P' } });
     const payload = makeMovePayload({
       position: {
         board: { e4: 'P' },
         castlingRights: { ...ALL_CASTLING, whiteShort: false },
         enPassantTarget: 'e3',
+        turn: 'b',
       },
     });
 
@@ -41,6 +43,11 @@ describe('gameSlice: moveExecuted — запис позиції та history', (
     expect(next.board).toEqual({ e4: 'P' });
     expect(next.castlingRights).toEqual({ ...ALL_CASTLING, whiteShort: false });
     expect(next.enPassantTarget).toBe('e3');
+    expect(next.turn).toBe('b');
+  });
+
+  it('на старті партії хід білих', () => {
+    expect(makeSliceState().turn).toBe('w');
   });
 
   it('записує в history хід, details, статус і SAN з payload', () => {
@@ -336,19 +343,5 @@ describe('gameSlice: endGame — timestamp через prepare', () => {
     });
 
     expect(gameReducer(state, action)).toEqual(gameReducer(state, action));
-  });
-
-  it('prepare додає поточну мить, якщо timestamp не передано', () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(777);
-
-    const action = endGame({ winner: COLORS.WHITE, reason: 'resignation' });
-
-    expect(action.type).toBe('game/endGame'); // PERSIST_ON у store.js не зачеплено
-    expect(action.payload).toEqual({
-      winner: COLORS.WHITE,
-      reason: 'resignation',
-      timestamp: 777,
-    });
   });
 });

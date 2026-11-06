@@ -2,7 +2,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, act } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { STORAGE_KEY, SCHEMA_VERSION } from './persistGame';
-import { moveExecuted, setSelection } from './game/gameSlice';
+import { setSelection } from './game/gameSlice';
+import { moveExecuted } from './game/gameEvents';
 import { useGameState } from '../hooks/useGameState';
 import Clock from '../components/Clock/Clock';
 import { COLORS } from './game/gameConstants';
@@ -112,7 +113,8 @@ describe('redux store — відновлення зі збереженого с�
         state: {
           board: {},
           selectedSquare: null,
-          plyCount: 1, // непарне — хід чорних, саме їхній годинник іде
+          plyCount: 1,
+          turn: 'b', // хід чорних, саме їхній годинник іде
           isGameOver: false,
           winner: null,
           reason: null,

@@ -1,4 +1,4 @@
-import { moveExecuted, endGame } from './gameSlice';
+import { moveExecuted, endGame } from './gameEvents';
 import * as selectors from './gameSelectors';
 import { COLORS } from './gameConstants';
 import {

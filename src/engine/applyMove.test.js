@@ -264,6 +264,48 @@ describe('applyMove', () => {
         expect(position.enPassantTarget).toBeNull();
         expect(result.position.board).not.toBe(position.board);
       });
+
+      it('після ходу білих черга переходить до чорних', () => {
+        const position = makeGameState({ e1: 'K', e2: 'P', e8: 'k' });
+
+        const result = applyMove(position, {
+          piece: 'P',
+          from: 'e2',
+          to: 'e4',
+        });
+
+        expect(result.position.turn).toBe('b');
+      });
+
+      it('після ходу чорних черга переходить до білих', () => {
+        const position = makeGameState(
+          { e1: 'K', e7: 'p', e8: 'k' },
+          { turn: 'b' }
+        );
+
+        const result = applyMove(position, {
+          piece: 'p',
+          from: 'e7',
+          to: 'e5',
+        });
+
+        expect(result.position.turn).toBe('w');
+      });
+
+      it('колір береться з фігури, а не з position.turn (аналіз: білі ходять двічі)', () => {
+        const position = makeGameState(
+          { e1: 'K', e2: 'P', e8: 'k' },
+          { turn: 'b' }
+        );
+
+        const result = applyMove(position, {
+          piece: 'P',
+          from: 'e2',
+          to: 'e4',
+        });
+
+        expect(result.position.turn).toBe('b');
+      });
     });
 
     describe('взяття', () => {
