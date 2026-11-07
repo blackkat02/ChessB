@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, act } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { STORAGE_KEY, SCHEMA_VERSION } from './persistGame';
-import { setSelection } from './game/gameSlice';
+import { setSelection } from './ui/uiSlice';
 import { moveExecuted } from './game/gameEvents';
 import { useGameState } from '../hooks/useGameState';
 import Clock from '../components/Clock/Clock';
@@ -112,7 +112,6 @@ describe('redux store — відновлення зі збереженого с�
         savedAt: T,
         state: {
           board: {},
-          selectedSquare: null,
           plyCount: 1,
           turn: 'b', // хід чорних, саме їхній годинник іде
           isGameOver: false,
@@ -122,7 +121,6 @@ describe('redux store — відновлення зі збереженого с�
           whiteTime: 180000,
           blackTime: 500, // лишалось пів секунди
           history: [],
-          playerSide: 'w',
           gameId: 0,
           castlingRights: NO_CASTLING,
           enPassantTarget: null,

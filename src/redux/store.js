@@ -1,5 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit';
 import gameReducer from './game/gameSlice';
+import uiReducer from './ui/uiSlice';
 import { moveExecuted, endGame, newGameStarted } from './game/gameEvents';
 import { savePersistedGame, loadPersistedGame } from './persistGame';
 
@@ -40,6 +41,7 @@ const preloadedState = persisted ? { game: persisted } : undefined;
 export const store = configureStore({
   reducer: {
     game: gameReducer,
+    ui: uiReducer,
   },
   preloadedState,
   // Вимикаємо перевірку на серіалізацію для спрощення MVP,

@@ -17,6 +17,7 @@ const LAYOUT_GRID_CLASSNAME = [
 const HomePage = () => {
   const {
     gameState,
+    uiState,
     startNewGame,
     handleTimeUp,
     handleResign,
@@ -58,6 +59,7 @@ const HomePage = () => {
         <div style={{ gridArea: 'info' }} className="lg:self-start">
           <GameInfoPanel
             gameState={gameState}
+            uiState={uiState}
             isWhiteTurn={isWhiteTurn}
             isWhiteClockActive={isWhiteClockActive}
             isBlackClockActive={isBlackClockActive}
@@ -76,7 +78,7 @@ const HomePage = () => {
         >
           <ChessBoardContainer
             showSquareId={showSquareId}
-            flipped={gameState.playerSide === COLORS.BLACK}
+            flipped={uiState.playerSide === COLORS.BLACK}
           />
         </div>
 

@@ -1,7 +1,11 @@
 import { useSelector, useDispatch } from 'react-redux';
 import { useCallback, useState } from 'react';
 import * as selectors from '../redux/game/gameSelectors';
-import { setSelection } from '../redux/game/gameSlice';
+import {
+  selectSelectedSquare,
+  selectPlayerSide,
+} from '../redux/ui/uiSelectors';
+import { setSelection } from '../redux/ui/uiSlice';
 import { newGameStarted } from '../redux/game/gameEvents';
 import {
   attemptMove,
@@ -17,13 +21,13 @@ export const useGameState = () => {
   const dispatch = useDispatch();
 
   const board = useSelector(selectors.selectBoard);
-  const selectedSquare = useSelector(selectors.selectSelectedSquare);
+  const selectedSquare = useSelector(selectSelectedSquare);
   const turn = useSelector(selectors.selectCurrentTurn);
   const whiteTime = useSelector(selectors.selectWhiteTime);
   const blackTime = useSelector(selectors.selectBlackTime);
   const turnStartedAt = useSelector((state) => state.game.turnStartedAt);
   const hasGameStarted = useSelector(selectors.selectHasGameStarted);
-  const playerSide = useSelector(selectors.selectPlayerSide);
+  const playerSide = useSelector(selectPlayerSide);
   const gameId = useSelector(selectors.selectGameId);
   const isGameOver = useSelector(selectors.selectIsGameOver);
   const winner = useSelector(selectors.selectWinner);
@@ -126,17 +130,19 @@ export const useGameState = () => {
   return {
     gameState: {
       boardPiecesObject: board,
-      selectedSquare,
       currentTurn: turn,
       whiteTime,
       blackTime,
       turnStartedAt,
       hasGameStarted,
-      playerSide,
       gameId,
       isGameOver,
       winner,
       reason,
+    },
+    uiState: {
+      selectedSquare,
+      playerSide,
     },
     handleSquareClick,
     startNewGame,

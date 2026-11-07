@@ -1,5 +1,6 @@
 import { moveExecuted, endGame } from './gameEvents';
 import * as selectors from './gameSelectors';
+import { selectPlayerSide } from '../ui/uiSelectors';
 import { COLORS } from './gameConstants';
 import {
   isMoveLegal,
@@ -148,11 +149,14 @@ export const timeExpired = (color) => (dispatch, getState) => {
 // Здається завжди гравець за цим пристроєм (`playerSide`), незалежно від
 // того, чия зараз черга ходити — здача не пов'язана з чергою ходу.
 export const resignGame = () => (dispatch, getState) => {
-  const { isGameOver, playerSide } = getState().game;
-  if (isGameOver) return;
+  const state = getState();
+  if (state.game.isGameOver) return;
 
   dispatch(
-    endGame({ winner: getOpponentColor(playerSide), reason: 'resignation' })
+    endGame({
+      winner: getOpponentColor(selectPlayerSide(state)),
+      reason: 'resignation',
+    })
   );
 };
 

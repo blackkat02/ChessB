@@ -5,6 +5,7 @@ import { COLORS } from '../../redux/game/gameConstants';
 
 const GameInfoPanel = ({
   gameState,
+  uiState,
   isWhiteTurn,
   isWhiteClockActive,
   isBlackClockActive,
@@ -16,7 +17,7 @@ const GameInfoPanel = ({
   onToggleSquareId,
 }) => {
   const playerSideLabel =
-    gameState.playerSide === COLORS.WHITE ? 'білими' : 'чорними';
+    uiState.playerSide === COLORS.WHITE ? 'білими' : 'чорними';
   // Здатися/запропонувати нічию має сенс лише поки партія триває.
   const canOfferGameActions = gameState.hasGameStarted && !gameState.isGameOver;
 
