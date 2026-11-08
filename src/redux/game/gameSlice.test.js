@@ -108,12 +108,11 @@ describe('gameSlice: moveExecuted — запис позиції та history', (
     expect(normal.history[0]).not.toHaveProperty('analysis');
   });
 
-  it('знімає виділення й інкрементить plyCount', () => {
-    const state = makeSliceState({ selectedSquare: 'e2', plyCount: 4 });
+  it('інкрементить plyCount', () => {
+    const state = makeSliceState({ plyCount: 4 });
 
     const next = gameReducer(state, moveExecuted(makeMovePayload()));
 
-    expect(next.selectedSquare).toBeNull();
     expect(next.plyCount).toBe(5);
   });
 });

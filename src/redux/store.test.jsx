@@ -82,13 +82,16 @@ describe('redux store — відновлення зі збереженого с�
         version: SCHEMA_VERSION,
         savedAt: T,
         state: {
-          board: {},
-          plyCount: 1,
-          isGameOver: false,
-          turnStartedAt: T,
-          whiteTime: 180000,
-          blackTime: 180000,
-          history: [],
+          game: {
+            board: {},
+            plyCount: 1,
+            isGameOver: false,
+            turnStartedAt: T,
+            whiteTime: 180000,
+            blackTime: 180000,
+            history: [],
+          },
+          ui: { playerSide: 'w' },
         },
       })
     );
@@ -111,19 +114,22 @@ describe('redux store — відновлення зі збереженого с�
         version: SCHEMA_VERSION,
         savedAt: T,
         state: {
-          board: {},
-          plyCount: 1,
-          turn: 'b', // хід чорних, саме їхній годинник іде
-          isGameOver: false,
-          winner: null,
-          reason: null,
-          turnStartedAt: T,
-          whiteTime: 180000,
-          blackTime: 500, // лишалось пів секунди
-          history: [],
-          gameId: 0,
-          castlingRights: NO_CASTLING,
-          enPassantTarget: null,
+          game: {
+            board: {},
+            plyCount: 1,
+            turn: 'b', // хід чорних, саме їхній годинник іде
+            isGameOver: false,
+            winner: null,
+            reason: null,
+            turnStartedAt: T,
+            whiteTime: 180000,
+            blackTime: 500, // лишалось пів секунди
+            history: [],
+            gameId: 0,
+            castlingRights: NO_CASTLING,
+            enPassantTarget: null,
+          },
+          ui: { playerSide: 'w' },
         },
       })
     );
@@ -161,15 +167,18 @@ describe('redux store — відновлення зі збереженого с�
         version: SCHEMA_VERSION,
         savedAt: Date.now(),
         state: {
-          board: {},
-          plyCount: 10,
-          isGameOver: true,
-          winner: 'w',
-          reason: 'checkmate',
-          turnStartedAt: null,
-          whiteTime: 100000,
-          blackTime: 50000,
-          history: [],
+          game: {
+            board: {},
+            plyCount: 10,
+            isGameOver: true,
+            winner: 'w',
+            reason: 'checkmate',
+            turnStartedAt: null,
+            whiteTime: 100000,
+            blackTime: 50000,
+            history: [],
+          },
+          ui: { playerSide: 'w' },
         },
       })
     );
@@ -191,6 +200,46 @@ describe('redux store — відновлення зі збереженого с�
 
     const raw = localStorage.getItem(STORAGE_KEY);
     expect(raw).not.toBeNull();
-    expect(JSON.parse(raw).state.plyCount).toBe(1);
+    const { state } = JSON.parse(raw);
+    expect(state.game.plyCount).toBe(1);
+    // З ui зберігається лише сторона гравця, виділення — ні.
+    expect(state.ui).toEqual({ playerSide: 'w' });
+  });
+
+  it('playerSide відновлюється після перезавантаження, selectedSquare — null, а не undefined', async () => {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        version: SCHEMA_VERSION,
+        savedAt: Date.now(),
+        state: {
+          game: { board: {}, plyCount: 1, isGameOver: false, history: [] },
+          ui: { playerSide: 'b' },
+        },
+      })
+    );
+
+    const store = await importFreshStore();
+
+    expect(store.getState().ui).toEqual({
+      selectedSquare: null,
+      playerSide: 'b',
+    });
+  });
+
+  it('збереження попередньої версії схеми ігнорується — store стартує з чистого стану', async () => {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        version: SCHEMA_VERSION - 1,
+        savedAt: Date.now(),
+        state: { board: {}, plyCount: 7, playerSide: 'b' },
+      })
+    );
+
+    const store = await importFreshStore();
+
+    expect(store.getState().game.plyCount).toBe(0);
+    expect(store.getState().ui.playerSide).toBe('w');
   });
 });

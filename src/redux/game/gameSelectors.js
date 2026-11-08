@@ -5,11 +5,9 @@ import { COLORS } from './gameConstants';
 
 // === 1. БАЗОВІ СЕЛЕКТОРИ (Raw Data) ===
 export const selectBoard = (state) => state.game.board;
-// export const selectSelectedSquare = (state) => state.ui.selectedSquare;
 export const selectWhiteTime = (state) => state.game.whiteTime;
 export const selectBlackTime = (state) => state.game.blackTime;
 export const selectPlyCount = (state) => state.game.plyCount;
-// export const selectPlayerSide = (state) => state.ui.playerSide;
 export const selectGameId = (state) => state.game.gameId;
 export const selectMoveHistory = (state) => state.game.history;
 
