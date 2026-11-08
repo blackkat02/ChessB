@@ -7,7 +7,8 @@ export const STORAGE_KEY = 'chessb:v1:game';
 // 3 — castlingRights перейменовано: wK/wQ/bK/bQ → whiteShort/whiteLong/blackShort/blackLong.
 // 4 — turn став полем стану (раніше обчислювався з plyCount); старі збереження без turn ігноруються.
 // 5 — збереження стало { game, ui: { playerSide } } (docs/layer-separation-step4.md, 4.3).
-export const SCHEMA_VERSION = 5;
+// 6 — позиція в окремому ключі: { position, game, ui: { playerSide } } (docs/layer-separation-step4.md, 4.4).
+export const SCHEMA_VERSION = 6;
 
 export function savePersistedGame(gameState) {
   try {

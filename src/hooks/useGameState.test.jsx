@@ -14,10 +14,12 @@ function Harness({ onState, onHandlers }) {
 describe('useGameState — сирі поля годинника й handleTimeUp', () => {
   it('gameState віддає whiteTime/blackTime/turnStartedAt БЕЗ обчислень — так, як у сторі', () => {
     const store = createTestStore({
-      plyCount: 1,
-      whiteTime: 111000,
-      blackTime: 222000,
-      turnStartedAt: 555,
+      game: {
+        plyCount: 1,
+        whiteTime: 111000,
+        blackTime: 222000,
+        turnStartedAt: 555,
+      },
     });
 
     let latestState;
@@ -34,9 +36,11 @@ describe('useGameState — сирі поля годинника й handleTimeUp'
 
   it('handleTimeUp(color) диспатчить timeExpired — партія завершується таймаутом', () => {
     const store = createTestStore({
-      plyCount: 2, // парне — хід білих
-      whiteTime: 0,
-      turnStartedAt: Date.now(),
+      game: {
+        plyCount: 2, // парне — хід білих
+        whiteTime: 0,
+        turnStartedAt: Date.now(),
+      },
     });
 
     let handlers;

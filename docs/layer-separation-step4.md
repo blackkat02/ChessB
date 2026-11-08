@@ -17,6 +17,24 @@
 Відкрите питання з `layer-separation.md` (чий `turn`) вирішене:
 **`turn` — частина `position`** (розділ 3 нижче).
 
+Прогрес по підкроках (станом на 2026-11-08):
+
+| Підкрок | Стан | Де |
+|---|---|---|
+| 4.0. Тести через селектори | ⬜ пропущено; тести досі читають `getState().game.*` | — |
+| 4.1. `turn` у позиції | ✅ `SCHEMA_VERSION` 3 → 4 | `5689fc6` |
+| 4.2. `gameEvents.js` | ✅ | `654a807`, `livecoding-02-game-events.md` |
+| 4.3. Слайс `ui` | ✅ разом із persist `playerSide`, `SCHEMA_VERSION` 4 → 5 | `66dfdf8`, `cf567bb`, `livecoding-03-ui-slice.md` |
+| 4.4. Слайс `position` | ⬜ | `livecoding-04-position-slice.md` |
+| 4.5. `selectLegalTargets` | ⬜ | — |
+| 4.6. Persist | 🔄 `ui` уже зберігається; лишилось додати `position`, `SCHEMA_VERSION` 5 → 6 | — |
+| 4.7. Прибирання | ⬜ | — |
+
+**Версії схеми розійшлися з початковим планом.** План розраховував на
+одне підвищення до 4 наприкінці кроку. Насправді 4 зайняв підкрок 4.1, 5 —
+підкрок 4.3, тож persist позиції (4.4/4.6) — це **6**. Нижче в тексті
+«`SCHEMA_VERSION = 4`» читай як «наступна вільна версія».
+
 ## 1. Що не так зараз
 
 Після кроку 3 редюсер `game` уже не знає шахових правил, але сам стан
@@ -42,7 +60,7 @@
 **Розбий `state.game` на три слайси за доменами — `position`, `game`, `ui` —
 і зроби `turn` полем позиції.** Поведінка гри для користувача не змінюється,
 крім одного: стара збережена партія після деплою не відновиться
-(`SCHEMA_VERSION` 3 → 4).
+(`SCHEMA_VERSION` підвищується; фактично 3 → 6 за три підкроки, див. розділ 0).
 
 Критерії готовності:
 
@@ -57,7 +75,7 @@
 5. `selectIsFriendlyFire` і `selectIsMovePossible` замінені одним
    мемоізованим `selectLegalTargets`.
 6. Persist зберігає `{ position, game, ui: { playerSide } }`,
-   `SCHEMA_VERSION = 4`. Партія відновлюється після перезавантаження.
+   `SCHEMA_VERSION = 6`. Партія відновлюється після перезавантаження.
 7. `npm test` і `npm run lint` зелені, жоден тест не видалено без заміни.
 
 ## 3. Рішення про `turn` (для опису коміту)
@@ -96,7 +114,7 @@
 4.3 Слайс ui                                            ──┐ розбиття,
 4.4 Слайс position                                      ──┘ по одному слайсу
 4.5 selectLegalTargets
-4.6 Persist + SCHEMA_VERSION 4
+4.6 Persist + SCHEMA_VERSION 6
 4.7 Прибирання, документи
 ```
 
@@ -327,13 +345,18 @@ export const selectLegalTargets = createSelector(
 
 **Коміт:** `refactor(redux): replace validation selectors with selectLegalTargets`
 
-### 4.6. Persist і `SCHEMA_VERSION = 4`
+### 4.6. Persist і `SCHEMA_VERSION = 6`
 
-1. **Що зберігаємо.** `persistenceMiddleware` зберігає не `getState().game`,
-   а `{ position, game, ui: { playerSide } }`. `selectedSquare` не
+Частково зроблено на 4.3: збереження вже має форму
+`{ game, ui: { playerSide } }`, `SCHEMA_VERSION = 5`, `preloadedState`
+доповнює `selectedSquare: null`, тести в `store.test.jsx` — нової форми.
+Лишається додати `position`.
+
+1. **Що зберігаємо.** `persistenceMiddleware` зберігає
+   `{ position, game, ui: { playerSide } }`. `selectedSquare` не
    зберігається: це клік, а не партія.
-2. **`SCHEMA_VERSION = 4`** у `persistGame.js`, з рядком у коментарі-історії
-   версій: `4 — стан розбито на position/game/ui, turn у position`.
+2. **`SCHEMA_VERSION = 6`** у `persistGame.js`, з рядком у коментарі-історії
+   версій: `6 — позиція в окремому ключі position`.
 3. **`preloadedState`.** `loadPersistedGame` повертає збережений об'єкт;
    `store.js` кладе його в `preloadedState` **з доповненням `ui`**.
 
@@ -350,17 +373,17 @@ const preloadedState = persisted
 Тести:
 
 - `persistGame.test.js`: старий тест «версія `SCHEMA_VERSION - 1`
-  ігнорується» тепер перевіряє саме збереження версії 3.
+  ігнорується» тепер перевіряє саме збереження версії 5.
 - `store.test.jsx`: збережені стани в тестах — нової форми
   (`{ position, game, ui }`); перевір, що `selectedSquare` після відновлення
   `null`, а не `undefined`; що `setSelection` досі не пише на диск.
 
 У браузері: зіграй кілька ходів, перезавантаж сторінку — партія, годинники
 й сторона гравця відновились. Потім вручну поклади в `localStorage`
-збереження версії 3 (або просто збережене до деплою) — застосунок стартує з
+збереження версії 5 (або просто збережене до деплою) — застосунок стартує з
 нової партії без помилок.
 
-**Коміт:** `refactor(redux): persist position/game/ui, bump SCHEMA_VERSION to 4`
+**Коміт:** `refactor(redux): persist position/game/ui, bump SCHEMA_VERSION to 6`
 
 ### 4.7. Прибирання і документи
 

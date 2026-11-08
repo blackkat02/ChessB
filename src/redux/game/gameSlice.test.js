@@ -26,28 +26,15 @@ const blackE5 = (overrides = {}) =>
     ...overrides,
   });
 
-describe('gameSlice: moveExecuted — запис позиції та history', () => {
-  it('бере board, castlingRights, enPassantTarget і turn з payload.position', () => {
-    const state = makeSliceState({ board: { e2: 'P' } });
-    const payload = makeMovePayload({
-      position: {
-        board: { e4: 'P' },
-        castlingRights: { ...ALL_CASTLING, whiteShort: false },
-        enPassantTarget: 'e3',
-        turn: 'b',
-      },
-    });
+// Запис позиції (board, castlingRights, enPassantTarget, turn) і хід білих на
+// старті — у position/positionSlice.test.js (docs/layer-separation-step4.md, 4.4).
+describe('gameSlice: moveExecuted — запис history', () => {
+  it('не тримає жодного поля позиції', () => {
+    const next = gameReducer(makeSliceState(), moveExecuted(makeMovePayload()));
 
-    const next = gameReducer(state, moveExecuted(payload));
-
-    expect(next.board).toEqual({ e4: 'P' });
-    expect(next.castlingRights).toEqual({ ...ALL_CASTLING, whiteShort: false });
-    expect(next.enPassantTarget).toBe('e3');
-    expect(next.turn).toBe('b');
-  });
-
-  it('на старті партії хід білих', () => {
-    expect(makeSliceState().turn).toBe('w');
+    for (const key of ['board', 'castlingRights', 'enPassantTarget', 'turn']) {
+      expect(next).not.toHaveProperty(key);
+    }
   });
 
   it('записує в history хід, details, статус і SAN з payload', () => {

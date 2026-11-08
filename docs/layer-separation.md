@@ -254,8 +254,10 @@ moveExecuted({
    похідні дані, їх не зберігають.
 7. **Store і persist.** У `store.js` — три редюсери. `persistenceMiddleware`
    зберігає `{ position, game, ui: { playerSide } }` (вибір клітинки
-   зберігати не треба). Підніми `SCHEMA_VERSION` до 4 у `persistGame.js`:
-   старі збереження просто ігноруються.
+   зберігати не треба). Підніми `SCHEMA_VERSION` у `persistGame.js` до
+   наступної вільної версії: старі збереження просто ігноруються.
+   (Фактично 4 і 5 зайняли підкроки 4.1 і 4.3, для позиції — 6; див.
+   `docs/layer-separation-step4.md`, розділ 0.)
 8. **Тести.** Онови `makeSliceState` і `createTestStore` у
    `src/test/fixtures/store.js`: `preloadedState` тепер має три ключі. Якщо
    `turn` стає частиною `position`, додай його в `makeGameState`.
@@ -322,10 +324,14 @@ moveExecuted({
 - [ ] Крок 1: `COLORS` у `src/engine/constants.js`, рушій не імпортує `redux`
 - [ ] Крок 2: `engine/applyMove.js` + тести, редюсер викликає його
 - [x] Крок 3: `attemptMove` рахує все, `moveExecuted` лише записує, `Date.now()` у payload
-- [ ] Крок 4: слайси `position` / `game` / `ui`, `gameEvents.js`, `SCHEMA_VERSION = 4`
+- [ ] Крок 4: слайси `position` / `game` / `ui`, `gameEvents.js`, `SCHEMA_VERSION = 6`
+  (у процесі: `turn` у позиції, `gameEvents.js` і слайс `ui` готові;
+  лишились `position`, `selectLegalTargets`, прибирання —
+  `docs/layer-separation-step4.md`, розділ 0)
 - [ ] Крок 5: UI без імпортів рушія, ESLint `overrides` працюють
 - [ ] Кожен крок — окремий коміт, тести зелені після кожного
-- [ ] Відкрите питання про `turn` вирішене й обґрунтоване
+- [x] Відкрите питання про `turn` вирішене й обґрунтоване (`turn` — частина
+  позиції, `docs/layer-separation-step4.md`, розділ 3)
 - [ ] `docs/next-steps.md` і `docs/move-validation.md` оновлені
 
 Питання для самоперевірки (відповідай усно на рев'ю):

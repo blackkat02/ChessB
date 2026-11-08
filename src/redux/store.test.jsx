@@ -83,7 +83,6 @@ describe('redux store — відновлення зі збереженого с�
         savedAt: T,
         state: {
           game: {
-            board: {},
             plyCount: 1,
             isGameOver: false,
             turnStartedAt: T,
@@ -114,10 +113,14 @@ describe('redux store — відновлення зі збереженого с�
         version: SCHEMA_VERSION,
         savedAt: T,
         state: {
-          game: {
+          position: {
             board: {},
-            plyCount: 1,
             turn: 'b', // хід чорних, саме їхній годинник іде
+            castlingRights: NO_CASTLING,
+            enPassantTarget: null,
+          },
+          game: {
+            plyCount: 1,
             isGameOver: false,
             winner: null,
             reason: null,
@@ -126,8 +129,6 @@ describe('redux store — відновлення зі збереженого с�
             blackTime: 500, // лишалось пів секунди
             history: [],
             gameId: 0,
-            castlingRights: NO_CASTLING,
-            enPassantTarget: null,
           },
           ui: { playerSide: 'w' },
         },
@@ -168,7 +169,6 @@ describe('redux store — відновлення зі збереженого с�
         savedAt: Date.now(),
         state: {
           game: {
-            board: {},
             plyCount: 10,
             isGameOver: true,
             winner: 'w',
@@ -196,14 +196,45 @@ describe('redux store — відновлення зі збереженого с�
     store.dispatch(setSelection('e2'));
     expect(localStorage.getItem(STORAGE_KEY)).toBeNull(); // клік по клітинці — не привід писати на диск
 
-    store.dispatch(moveExecuted(makeMovePayload()));
+    const payload = makeMovePayload();
+    store.dispatch(moveExecuted(payload));
 
     const raw = localStorage.getItem(STORAGE_KEY);
     expect(raw).not.toBeNull();
     const { state } = JSON.parse(raw);
     expect(state.game.plyCount).toBe(1);
+    expect(state.position).toEqual(payload.position);
     // З ui зберігається лише сторона гравця, виділення — ні.
     expect(state.ui).toEqual({ playerSide: 'w' });
+  });
+
+  // docs/layer-separation-step4.md, 4.4: без position у збереженні після
+  // перезавантаження відновились би історія й годинники, а дошка — стандартна,
+  // turn: 'w'.
+  it('позиція відновлюється після перезавантаження разом із записом партії', async () => {
+    const position = {
+      board: { e1: 'K', e4: 'P', e8: 'k' },
+      turn: 'b',
+      castlingRights: NO_CASTLING,
+      enPassantTarget: 'e3',
+    };
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        version: SCHEMA_VERSION,
+        savedAt: Date.now(),
+        state: {
+          position,
+          game: { plyCount: 1, isGameOver: false, history: [] },
+          ui: { playerSide: 'w' },
+        },
+      })
+    );
+
+    const store = await importFreshStore();
+
+    expect(store.getState().position).toEqual(position);
+    expect(store.getState().game.plyCount).toBe(1);
   });
 
   it('playerSide відновлюється після перезавантаження, selectedSquare — null, а не undefined', async () => {
@@ -213,7 +244,7 @@ describe('redux store — відновлення зі збереженого с�
         version: SCHEMA_VERSION,
         savedAt: Date.now(),
         state: {
-          game: { board: {}, plyCount: 1, isGameOver: false, history: [] },
+          game: { plyCount: 1, isGameOver: false, history: [] },
           ui: { playerSide: 'b' },
         },
       })

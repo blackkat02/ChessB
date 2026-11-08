@@ -2,6 +2,10 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useCallback, useState } from 'react';
 import * as selectors from '../redux/game/gameSelectors';
 import {
+  selectBoard,
+  selectCurrentTurn,
+} from '../redux/position/positionSelectors';
+import {
   selectSelectedSquare,
   selectPlayerSide,
 } from '../redux/ui/uiSelectors';
@@ -20,9 +24,9 @@ import { COLORS, SIDE_OPTIONS } from '../redux/game/gameConstants';
 export const useGameState = () => {
   const dispatch = useDispatch();
 
-  const board = useSelector(selectors.selectBoard);
+  const board = useSelector(selectBoard);
   const selectedSquare = useSelector(selectSelectedSquare);
-  const turn = useSelector(selectors.selectCurrentTurn);
+  const turn = useSelector(selectCurrentTurn);
   const whiteTime = useSelector(selectors.selectWhiteTime);
   const blackTime = useSelector(selectors.selectBlackTime);
   const turnStartedAt = useSelector((state) => state.game.turnStartedAt);
