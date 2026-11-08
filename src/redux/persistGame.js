@@ -6,11 +6,16 @@ export const STORAGE_KEY = 'chessb:v1:game';
 // 2 — payload містить clockAfter/timestamp в history (крок 6).
 // 3 — castlingRights перейменовано: wK/wQ/bK/bQ → whiteShort/whiteLong/blackShort/blackLong.
 // 4 — turn став полем стану (раніше обчислювався з plyCount); старі збереження без turn ігноруються.
-export const SCHEMA_VERSION = 4;
+// 5 — збереження стало { game, ui: { playerSide } } (docs/layer-separation-step4.md, 4.3).
+export const SCHEMA_VERSION = 5;
 
 export function savePersistedGame(gameState) {
   try {
-    const payload = { version: SCHEMA_VERSION, savedAt: Date.now(), state: gameState };
+    const payload = {
+      version: SCHEMA_VERSION,
+      savedAt: Date.now(),
+      state: gameState,
+    };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
   } catch (err) {
     console.error('Не вдалося зберегти стан:', err);

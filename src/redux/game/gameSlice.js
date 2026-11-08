@@ -5,7 +5,6 @@ import { moveExecuted, newGameStarted, endGame } from './gameEvents';
 
 const initialState = {
   board: initialBoardPiecesObject, // Об'єкт { a2: 'P', ... }
-  selectedSquare: null, // 'e2' або null
   whiteTime: DEFAULT_TIME,
   blackTime: DEFAULT_TIME,
   turnStartedAt: null, // Date.now() коли почала цокати активна сторона; null = годинники не йдуть (docs/clock-and-game-record.md, розділ 5.1)
@@ -15,7 +14,6 @@ const initialState = {
   winner: null, // COLORS.WHITE, COLORS.BLACK, або 'draw'
   reason: null, // 'checkmate', 'timeout', 'resignation'
   isGameOver: false,
-  playerSide: COLORS.WHITE, // якою стороною грає гравець за цим пристроєм (впливає лише на орієнтацію дошки)
   gameId: 0, // зростає з кожною новою партією; UI використовує це як React key, щоб примусово перемонтувати годинники
   castlingRights: {
     whiteShort: true,
@@ -29,11 +27,8 @@ const initialState = {
 const gameSlice = createSlice({
   name: 'game',
   initialState,
-  reducers: {
-    setSelection: (state, action) => {
-      state.selectedSquare = action.payload;
-    },
-  },
+  // Власних команд немає: виділення клітинки переїхало в ui/uiSlice.js.
+  reducers: {},
   // Події партії (gameEvents.js): слайс лише реагує на них, на ті самі
   // події реагуватимуть і інші слайси (docs/layer-separation-step4.md, 4.2).
   extraReducers: (builder) => {
@@ -72,7 +67,6 @@ const gameSlice = createSlice({
 
         state.turnStartedAt = timestamp; // ← годинник наступної сторони стартує з цієї миті
 
-        state.selectedSquare = null;
         state.history.push({
           ...move,
           // details другим: details.promotion (розв'язана 'Q') перекриває
@@ -91,12 +85,11 @@ const gameSlice = createSlice({
         state.plyCount += 1;
       })
       .addCase(newGameStarted, (state, action) => {
-        const { time, side } = action.payload;
+        const { time } = action.payload;
         return {
           ...initialState,
           whiteTime: time,
           blackTime: time,
-          playerSide: side,
           gameId: state.gameId + 1,
         };
       })
@@ -122,5 +115,4 @@ const gameSlice = createSlice({
   },
 });
 
-export const { setSelection } = gameSlice.actions;
 export default gameSlice.reducer;

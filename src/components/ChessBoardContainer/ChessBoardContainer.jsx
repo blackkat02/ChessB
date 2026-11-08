@@ -1,8 +1,6 @@
 import { useSelector } from 'react-redux';
-import {
-  selectBoard,
-  selectSelectedSquare,
-} from '../../redux/game/gameSelectors';
+import { selectBoard } from '../../redux/game/gameSelectors';
+import { selectSelectedSquare } from '../../redux/ui/uiSelectors';
 import { useGameState } from '../../hooks/useGameState';
 import { getPieceColor } from '../../engine/chessHelpers';
 import ChessBoardView from '../ChessBoardView/ChessBoardView';

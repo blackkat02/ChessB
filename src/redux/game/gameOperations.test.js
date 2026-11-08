@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { attemptMove, timeExpired } from './gameOperations';
+import { attemptMove, timeExpired, resignGame } from './gameOperations';
+import { newGameStarted } from './gameEvents';
 import { ALL_CASTLING } from '../../test/fixtures';
 import { createTestStore } from '../../test/fixtures/store';
 
@@ -292,5 +293,40 @@ describe('timeExpired', () => {
     store.dispatch(timeExpired('w'));
 
     expect(store.getState().game.whiteTime).toBe(0);
+  });
+});
+
+// Здається гравець за цим пристроєм (state.ui.playerSide), а не той, чия
+// черга ходу. Сторону задаємо так само, як UI: через newGameStarted.
+describe('resignGame', () => {
+  it.each([
+    ['w', 'b'],
+    ['b', 'w'],
+  ])('гравець за %s здається — перемагає %s', (side, expectedWinner) => {
+    const store = createTestStore();
+    store.dispatch(newGameStarted({ time: 180000, side }));
+
+    store.dispatch(resignGame());
+
+    expect(store.getState().game).toMatchObject({
+      isGameOver: true,
+      winner: expectedWinner,
+      reason: 'resignation',
+    });
+  });
+
+  it('не перезаписує вже завершену партію', () => {
+    const store = createTestStore({
+      isGameOver: true,
+      winner: 'w',
+      reason: 'checkmate',
+    });
+
+    store.dispatch(resignGame());
+
+    expect(store.getState().game).toMatchObject({
+      winner: 'w',
+      reason: 'checkmate',
+    });
   });
 });

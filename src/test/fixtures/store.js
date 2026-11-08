@@ -3,6 +3,7 @@
 // Імпортуй напряму: '../../test/fixtures/store'.
 import { configureStore } from '@reduxjs/toolkit';
 import gameReducer from '../../redux/game/gameSlice';
+import uiReducer from '../../redux/ui/uiSlice';
 import { NO_CASTLING } from './castling';
 
 /**
@@ -23,9 +24,15 @@ export function makeSliceState(overrides = {}) {
 
 // Мінімальний ізольований store — без persist/localStorage побічних ефектів
 // справжнього src/redux/store.js.
+/**
+ * @param {{} | undefined} gameStateOverrides
+ */
 export function createTestStore(gameStateOverrides) {
   return configureStore({
-    reducer: { game: gameReducer },
+    reducer: {
+      game: gameReducer,
+      ui: uiReducer,
+    },
     preloadedState: { game: makeSliceState(gameStateOverrides) },
   });
 }
