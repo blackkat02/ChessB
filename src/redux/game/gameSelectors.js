@@ -2,32 +2,22 @@ import { createSelector } from '@reduxjs/toolkit';
 import { selectSelectedSquare } from '../ui/uiSelectors';
 import { getPieceColor } from '../../engine';
 import { COLORS } from './gameConstants';
+import {
+  selectCurrentTurn,
+  selectPieceColorAt,
+  selectIsSquareEmpty,
+  selectIsOwnPiece,
+} from '../position/positionSelectors';
+
+// Селектори запису партії. Позиція (дошка, черга, права рокіровки, en
+// passant) — у ../position/positionSelectors.js (docs/layer-separation-step4.md, 4.4).
 
 // === 1. БАЗОВІ СЕЛЕКТОРИ (Raw Data) ===
-export const selectBoard = (state) => state.game.board;
 export const selectWhiteTime = (state) => state.game.whiteTime;
 export const selectBlackTime = (state) => state.game.blackTime;
 export const selectPlyCount = (state) => state.game.plyCount;
 export const selectGameId = (state) => state.game.gameId;
 export const selectMoveHistory = (state) => state.game.history;
-
-// Позиція для рушія одним об'єктом. Мемоізована: той самий об'єкт, поки
-// board/castlingRights/enPassantTarget не змінились. На кроці 4 зміниться
-// лише шлях (state.position), а виклики в thunk-у — ні.
-export const selectPosition = createSelector(
-  [
-    selectBoard,
-    (state) => state.game.castlingRights,
-    (state) => state.game.enPassantTarget,
-    (state) => state.game.turn,
-  ],
-  (board, castlingRights, enPassantTarget, turn) => ({
-    board,
-    castlingRights,
-    enPassantTarget,
-    turn,
-  })
-);
 
 export const selectMovePairs = createSelector(
   (state) => state.game.history,
@@ -46,9 +36,6 @@ export const selectMovePairs = createSelector(
 );
 
 // === 2. СЕЛЕКТОРИ СТАНУ (Game Status) ===
-export const selectCurrentTurn = (state) => state.game.turn;
-export const selectIsWhiteTurn = (state) =>
-  selectCurrentTurn(state) === COLORS.WHITE;
 export const selectIsClockActive = (state, color) =>
   selectCurrentTurn(state) === color;
 
@@ -70,26 +57,8 @@ export const selectIsGameOver = (state) => state.game.isGameOver;
 export const selectWinner = (state) => state.game.winner;
 export const selectReason = (state) => state.game.reason;
 
-// === 3. СЕЛЕКТОРИ ФІГУР (Piece Intelligence) ===
-export const selectPieceAtSquare = (state, squareId) =>
-  state.game.board[squareId];
-
-export const selectIsSquareEmpty = (state, squareId) =>
-  !state.game.board[squareId];
-
-export const selectPieceColorAt = (state, squareId) => {
-  const piece = state.game.board[squareId];
-  return piece ? getPieceColor(piece) : null;
-};
-
-// Чи належить фігура на клітинці поточному гравцю?
-export const selectIsOwnPiece = (state, squareId) => {
-  const pieceColor = selectPieceColorAt(state, squareId);
-  const currentTurn = selectCurrentTurn(state);
-  return pieceColor === currentTurn;
-};
-
-// === 4. ВАЛІДАЦІЙНІ СЕЛЕКТОРИ (Move Validation) ===
+// === 3. ВАЛІДАЦІЙНІ СЕЛЕКТОРИ (Move Validation) ===
+// Замінить selectLegalTargets (docs/layer-separation-step4.md, 4.5).
 
 // Перевірка: чи не б'ємо ми свого?
 export const selectIsFriendlyFire = (state, toSquareId) => {

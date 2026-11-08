@@ -71,16 +71,17 @@ describe('selectClockRemaining', () => {
     whiteTime: 180000,
     blackTime: 180000,
     plyCount: 1,
-    turn: 'b', // хід чорних
     isGameOver: false,
     turnStartedAt: 1_000_000,
   };
+  // Черга — у позиції (docs/layer-separation-step4.md, 4.4).
+  const blackToMove = { turn: 'b' };
 
   it('для НЕактивної сторони повертає сире значення без змін, незалежно від часу', () => {
     vi.useFakeTimers();
     vi.setSystemTime(1_050_000); // +50с від turnStartedAt
 
-    const state = { game: baseGame }; // хід чорних — білі зараз не активні
+    const state = { game: baseGame, position: blackToMove }; // білі зараз не активні
     expect(selectClockRemaining(state, COLORS.WHITE)).toBe(180000);
   });
 
@@ -88,7 +89,7 @@ describe('selectClockRemaining', () => {
     vi.useFakeTimers();
     vi.setSystemTime(1_000_000);
 
-    const state = { game: baseGame };
+    const state = { game: baseGame, position: blackToMove };
     vi.setSystemTime(1_004_230); // +4.23с
 
     expect(selectClockRemaining(state, COLORS.BLACK)).toBe(180000 - 4230);
@@ -98,7 +99,10 @@ describe('selectClockRemaining', () => {
     vi.useFakeTimers();
     vi.setSystemTime(1_000_000);
 
-    const state = { game: { ...baseGame, blackTime: 500 } };
+    const state = {
+      game: { ...baseGame, blackTime: 500 },
+      position: blackToMove,
+    };
     vi.setSystemTime(1_010_000); // +10с — набагато більше за залишок
 
     expect(selectClockRemaining(state, COLORS.BLACK)).toBe(0);
@@ -108,7 +112,10 @@ describe('selectClockRemaining', () => {
     vi.useFakeTimers();
     vi.setSystemTime(1_050_000);
 
-    const state = { game: { ...baseGame, plyCount: 0 } };
+    const state = {
+      game: { ...baseGame, plyCount: 0 },
+      position: blackToMove,
+    };
 
     expect(selectClockRemaining(state, COLORS.WHITE)).toBe(180000);
     expect(selectClockRemaining(state, COLORS.BLACK)).toBe(180000);
@@ -118,7 +125,10 @@ describe('selectClockRemaining', () => {
     vi.useFakeTimers();
     vi.setSystemTime(1_050_000);
 
-    const state = { game: { ...baseGame, isGameOver: true } };
+    const state = {
+      game: { ...baseGame, isGameOver: true },
+      position: blackToMove,
+    };
 
     expect(selectClockRemaining(state, COLORS.BLACK)).toBe(180000);
   });

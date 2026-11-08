@@ -1,6 +1,7 @@
 import { moveExecuted, endGame } from './gameEvents';
-import * as selectors from './gameSelectors';
+import * as gameSelectors from './gameSelectors';
 import { selectPlayerSide } from '../ui/uiSelectors';
+import * as positionSelectors from '../position/positionSelectors';
 import { COLORS } from './gameConstants';
 import {
   isMoveLegal,
@@ -50,9 +51,9 @@ export const attemptMove = (moveData) => (dispatch, getState) => {
   const { from, to, piece } = moveData;
   const state = getState();
   const { isGameOver } = state.game;
-  const turn = selectors.selectCurrentTurn(state);
+  const turn = positionSelectors.selectCurrentTurn(state);
   // До гілки аналізу: buildMovePayload потрібна позиція і там.
-  const position = selectors.selectPosition(state);
+  const position = positionSelectors.selectPosition(state);
 
   if (isGameOver) {
     console.log('[ANALYSIS] Вільний хід без правил.');
@@ -135,7 +136,7 @@ export const timeExpired = (color) => (dispatch, getState) => {
   // порахував 0 на попередньому рендері, диспатч дійшов сюди із затримкою,
   // а за цей час партія вже завершилась матом, або (гіпотетично) сюди
   // прийшло ще одне повідомлення про той самий таймаут).
-  if (selectors.selectClockRemaining(state, color) > 0) return;
+  if (gameSelectors.selectClockRemaining(state, color) > 0) return;
 
   dispatch(
     endGame({

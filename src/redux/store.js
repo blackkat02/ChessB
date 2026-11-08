@@ -1,6 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit';
 import gameReducer from './game/gameSlice';
 import uiReducer from './ui/uiSlice';
+import positionReducer from './position/positionSlice';
 import { moveExecuted, endGame, newGameStarted } from './game/gameEvents';
 import { savePersistedGame, loadPersistedGame } from './persistGame';
 
@@ -25,8 +26,8 @@ const persistenceMiddleware = (storeApi) => (next) => (action) => {
     // компенсації за час, поки застосунок був закритий/у фоні — так само,
     // як на Lichess/Chess.com). selectedSquare свідомо не зберігається —
     // виділення клітинки після перезавантаження нікому не потрібне.
-    const { game, ui } = storeApi.getState();
-    savePersistedGame({ game, ui: { playerSide: ui.playerSide } });
+    const { position, game, ui } = storeApi.getState();
+    savePersistedGame({ position, game, ui: { playerSide: ui.playerSide } });
   }
 
   return result;
@@ -40,6 +41,7 @@ const persisted = loadPersistedGame();
 // без окремого коду тут.
 const preloadedState = persisted
   ? {
+      position: persisted.position,
       game: persisted.game,
       // preloadedState замінює initialState слайсу, а не зливається з ним
       ui: { selectedSquare: null, playerSide: persisted.ui.playerSide },
@@ -48,6 +50,7 @@ const preloadedState = persisted
 
 export const store = configureStore({
   reducer: {
+    position: positionReducer,
     game: gameReducer,
     ui: uiReducer,
   },

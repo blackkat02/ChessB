@@ -1,27 +1,17 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { initialBoardPiecesObject } from '../../data/positions';
 import { DEFAULT_TIME, COLORS } from './gameConstants';
 import { moveExecuted, newGameStarted, endGame } from './gameEvents';
 
 const initialState = {
-  board: initialBoardPiecesObject, // Об'єкт { a2: 'P', ... }
   whiteTime: DEFAULT_TIME,
   blackTime: DEFAULT_TIME,
   turnStartedAt: null, // Date.now() коли почала цокати активна сторона; null = годинники не йдуть (docs/clock-and-game-record.md, розділ 5.1)
   history: [],
-  turn: COLORS.WHITE,
   plyCount: 0, // кількість зроблених напівходів (ходи = plyCount пар для запису партії)
   winner: null, // COLORS.WHITE, COLORS.BLACK, або 'draw'
   reason: null, // 'checkmate', 'timeout', 'resignation'
   isGameOver: false,
   gameId: 0, // зростає з кожною новою партією; UI використовує це як React key, щоб примусово перемонтувати годинники
-  castlingRights: {
-    whiteShort: true,
-    whiteLong: true,
-    blackShort: true,
-    blackLong: true,
-  },
-  enPassantTarget: null,
 };
 
 const gameSlice = createSlice({
@@ -33,15 +23,15 @@ const gameSlice = createSlice({
   // події реагуватимуть і інші слайси (docs/layer-separation-step4.md, 4.2).
   extraReducers: (builder) => {
     builder
-      // Лише запис готового результату: позицію, статус, SAN і мить ходу
-      // порахував attemptMove (docs/layer-separation-step3.md, 3.5). Редюсер
-      // не знає шахових правил і не викликає Date.now() — той самий action
-      // завжди дає той самий стан.
+      // Лише запис готового результату: статус, SAN і мить ходу порахував
+      // attemptMove (docs/layer-separation-step3.md, 3.5). Редюсер не знає
+      // шахових правил і не викликає Date.now() — той самий action завжди дає
+      // той самий стан. payload.position на ту саму подію записує
+      // position/positionSlice.js.
       .addCase(moveExecuted, (state, action) => {
         const {
           move,
           color,
-          position,
           details,
           isCheck,
           isCheckmate,
@@ -49,11 +39,6 @@ const gameSlice = createSlice({
           timestamp,
           analysis,
         } = action.payload;
-
-        state.board = position.board;
-        state.castlingRights = position.castlingRights;
-        state.enPassantTarget = position.enPassantTarget;
-        state.turn = position.turn;
 
         let moveTimeMs = 0;
         if (typeof state.turnStartedAt === 'number') {
