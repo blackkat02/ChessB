@@ -8,9 +8,9 @@ import {
 } from '../../redux/game/gameConstants';
 
 const SIDE_CHOICES = [
-  { label: 'Білими', value: SIDE_OPTIONS.WHITE },
-  { label: 'Випадково', value: SIDE_OPTIONS.RANDOM },
-  { label: 'Чорними', value: SIDE_OPTIONS.BLACK },
+  { label: 'White', value: SIDE_OPTIONS.WHITE },
+  { label: 'Random', value: SIDE_OPTIONS.RANDOM },
+  { label: 'Black', value: SIDE_OPTIONS.BLACK },
 ];
 
 const optionButtonClass = (isSelected) =>
@@ -33,17 +33,17 @@ const NewGameModal = ({ isOpen, onClose, onStart, hasGameStarted }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 font-ui">
       <div className="w-full max-w-sm rounded-card border border-border bg-surface p-6 shadow-btn">
-        <h2 className="text-lg font-bold text-fg">Нова гра</h2>
+        <h2 className="text-lg font-bold text-fg">New game</h2>
 
         {hasGameStarted && (
           <p className="mt-1 text-sm text-danger">
-            Поточна партія буде скинута.
+            The current game will be reset.
           </p>
         )}
 
         <div className="mt-4">
           <p className="mb-2 text-sm font-semibold text-fg-subtle">
-            Контроль часу
+            Time control
           </p>
           <div className="flex flex-wrap gap-2">
             {TIME_CONTROLS.map((control) => (
@@ -60,7 +60,7 @@ const NewGameModal = ({ isOpen, onClose, onStart, hasGameStarted }) => {
 
         <div className="mt-4">
           <p className="mb-2 text-sm font-semibold text-fg-subtle">
-            Ваша сторона
+            Your side
           </p>
           <div className="flex gap-2">
             {SIDE_CHOICES.map((choice) => (
@@ -76,9 +76,9 @@ const NewGameModal = ({ isOpen, onClose, onStart, hasGameStarted }) => {
         </div>
 
         <div className="mt-6 flex justify-end gap-3">
-          <Button onClick={onClose}>Скасувати</Button>
+          <Button onClick={onClose}>Cancel</Button>
           <Button variant="primary" onClick={handleStart}>
-            Почати
+            Start
           </Button>
         </div>
       </div>

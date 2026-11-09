@@ -21,13 +21,13 @@
 
 | Підкрок | Стан | Де |
 |---|---|---|
-| 4.0. Тести через селектори | ⬜ пропущено; тести досі читають `getState().game.*` | — |
+| 4.0. Тести через селектори | 🔄 `createTestStore({ position, game })` вкладений і кидає на пласкі ключі; тести досі читають `getState().<slice>.*` напряму, не через селектори | `766c287` |
 | 4.1. `turn` у позиції | ✅ `SCHEMA_VERSION` 3 → 4 | `5689fc6` |
 | 4.2. `gameEvents.js` | ✅ | `654a807`, `livecoding-02-game-events.md` |
 | 4.3. Слайс `ui` | ✅ разом із persist `playerSide`, `SCHEMA_VERSION` 4 → 5 | `66dfdf8`, `cf567bb`, `livecoding-03-ui-slice.md` |
-| 4.4. Слайс `position` | ⬜ | `livecoding-04-position-slice.md` |
-| 4.5. `selectLegalTargets` | ⬜ | — |
-| 4.6. Persist | 🔄 `ui` уже зберігається; лишилось додати `position`, `SCHEMA_VERSION` 5 → 6 | — |
+| 4.4. Слайс `position` | ✅ | `766c287`, `livecoding-04-position-slice.md` |
+| 4.5. `selectLegalTargets` | ⬜ | `livecoding-05-legal-targets.md` |
+| 4.6. Persist | ✅ `{ position, game, ui: { playerSide } }`, `SCHEMA_VERSION` 5 → 6 (разом з 4.4) | `766c287` |
 | 4.7. Прибирання | ⬜ | — |
 
 **Версії схеми розійшлися з початковим планом.** План розраховував на

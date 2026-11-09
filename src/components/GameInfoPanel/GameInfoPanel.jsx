@@ -1,5 +1,4 @@
 import clsx from 'clsx';
-import Clock from '../Clock/Clock';
 import Button from '../Button/Button';
 import { COLORS } from '../../redux/game/gameConstants';
 
@@ -7,18 +6,15 @@ const GameInfoPanel = ({
   gameState,
   uiState,
   isWhiteTurn,
-  isWhiteClockActive,
-  isBlackClockActive,
   onNewGame,
-  onTimeUp,
   onResign,
   onOfferDraw,
   showSquareId,
   onToggleSquareId,
 }) => {
   const playerSideLabel =
-    uiState.playerSide === COLORS.WHITE ? 'білими' : 'чорними';
-  // Здатися/запропонувати нічию має сенс лише поки партія триває.
+    uiState.playerSide === COLORS.WHITE ? 'White' : 'Black';
+  // Resign/запропонувати нічию має сенс лише поки партія триває.
   const canOfferGameActions = gameState.hasGameStarted && !gameState.isGameOver;
 
   return (
@@ -37,33 +33,12 @@ const GameInfoPanel = ({
             isWhiteTurn ? 'bg-piece-white ring-1 ring-border' : 'bg-piece-black'
           )}
         />
-        Хід {isWhiteTurn ? 'білих' : 'чорних'}
+        {isWhiteTurn ? 'White' : 'Black'} to move
       </p>
 
-      <div className="flex flex-wrap items-center justify-center gap-3 lg:flex-col lg:items-stretch">
-        <Clock
-          key={`white-${gameState.gameId}`}
-          storedMs={gameState.whiteTime}
-          turnStartedAt={gameState.turnStartedAt}
-          color={COLORS.WHITE}
-          isActive={isWhiteClockActive}
-          isGameOver={gameState.isGameOver}
-          onTimeUp={onTimeUp}
-        />
-        <Clock
-          key={`black-${gameState.gameId}`}
-          storedMs={gameState.blackTime}
-          turnStartedAt={gameState.turnStartedAt}
-          color={COLORS.BLACK}
-          isActive={isBlackClockActive}
-          isGameOver={gameState.isGameOver}
-          onTimeUp={onTimeUp}
-        />
-      </div>
-
       <div className="rounded-control bg-surface-sunk px-3 py-2 text-sm text-fg-subtle">
-        <p>Товариська партія №{gameState.gameId + 1}</p>
-        <p>Ви граєте {playerSideLabel}</p>
+        <p>Casual game #{gameState.gameId + 1}</p>
+        <p>You play as {playerSideLabel}</p>
       </div>
 
       <div className="flex flex-wrap justify-center gap-3 lg:flex-col">
@@ -74,7 +49,7 @@ const GameInfoPanel = ({
           children={undefined}
           id={undefined}
         >
-          Нова гра
+          New game
         </Button>
         {canOfferGameActions && (
           <>
@@ -84,7 +59,7 @@ const GameInfoPanel = ({
               children={undefined}
               id={undefined}
             >
-              Запропонувати нічию
+              Offer draw
             </Button>
             <Button
               variant="danger"
@@ -93,7 +68,7 @@ const GameInfoPanel = ({
               children={undefined}
               id={undefined}
             >
-              Здатися
+              Resign
             </Button>
           </>
         )}
@@ -103,7 +78,7 @@ const GameInfoPanel = ({
           children={undefined}
           id={undefined}
         >
-          {showSquareId ? 'Приховати нотації' : 'Показати нотації'}
+          {showSquareId ? 'Hide coordinates' : 'Show coordinates'}
         </Button>
       </div>
     </div>

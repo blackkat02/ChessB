@@ -16,8 +16,8 @@ describe('GameOverModal', () => {
       <GameOverModal isOpen winner="w" reason="checkmate" onNewGame={() => {}} onClose={() => {}} />
     );
 
-    expect(screen.getByText('Мат')).toBeInTheDocument();
-    expect(screen.getByText('Перемога білих')).toBeInTheDocument();
+    expect(screen.getByText('Checkmate')).toBeInTheDocument();
+    expect(screen.getByText('White wins')).toBeInTheDocument();
   });
 
   it('показує "Пат" і нічию', () => {
@@ -25,8 +25,8 @@ describe('GameOverModal', () => {
       <GameOverModal isOpen winner="draw" reason="stalemate" onNewGame={() => {}} onClose={() => {}} />
     );
 
-    expect(screen.getByText('Пат')).toBeInTheDocument();
-    expect(screen.getByText('Нічия')).toBeInTheDocument();
+    expect(screen.getByText('Stalemate')).toBeInTheDocument();
+    expect(screen.getByText('Draw')).toBeInTheDocument();
   });
 
   it('показує "Час вичерпано" і переможця чорних', () => {
@@ -34,27 +34,27 @@ describe('GameOverModal', () => {
       <GameOverModal isOpen winner="b" reason="timeout" onNewGame={() => {}} onClose={() => {}} />
     );
 
-    expect(screen.getByText('Час вичерпано')).toBeInTheDocument();
-    expect(screen.getByText('Перемога чорних')).toBeInTheDocument();
+    expect(screen.getByText('Time out')).toBeInTheDocument();
+    expect(screen.getByText('Black wins')).toBeInTheDocument();
   });
 
-  it('кнопка "Нова гра" викликає onNewGame', () => {
+  it('кнопка "New game" викликає onNewGame', () => {
     const onNewGame = vi.fn();
     render(
       <GameOverModal isOpen winner="w" reason="checkmate" onNewGame={onNewGame} onClose={() => {}} />
     );
 
-    fireEvent.click(screen.getByText('Нова гра'));
+    fireEvent.click(screen.getByText('New game'));
     expect(onNewGame).toHaveBeenCalledTimes(1);
   });
 
-  it('кнопка "Переглянути дошку" викликає onClose', () => {
+  it('кнопка "View board" викликає onClose', () => {
     const onClose = vi.fn();
     render(
       <GameOverModal isOpen winner="w" reason="checkmate" onNewGame={() => {}} onClose={onClose} />
     );
 
-    fireEvent.click(screen.getByText('Переглянути дошку'));
+    fireEvent.click(screen.getByText('View board'));
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 });
