@@ -69,11 +69,11 @@ const Clock = ({ storedMs, turnStartedAt, color, isActive, isGameOver, onTimeUp 
   return (
     <div
       className={clsx(
-        'flex w-[var(--c-clock-width)] flex-col items-center rounded-card border px-4 py-3 font-ui transition-all duration-300',
+        'flex w-40 items-center justify-between gap-3 rounded-control border-2 px-3 sm:w-44 lg:w-48 py-1.5 font-ui transition-all duration-300 sm:px-4 sm:py-2',
         isWhite
           ? 'bg-clock-white-bg text-clock-white-fg border-clock-white-border'
           : 'bg-clock-black-bg text-clock-black-fg border-clock-black-border',
-        isActive && !isGameOver && 'scale-105 border-clock-active-border shadow-clock-active',
+        isActive && !isGameOver && 'border-clock-active-border shadow-clock-active',
         isGameOver && 'opacity-60 grayscale'
       )}
     >
@@ -82,7 +82,7 @@ const Clock = ({ storedMs, turnStartedAt, color, isActive, isGameOver, onTimeUp 
       </span>
       <span
         className={clsx(
-          'font-numeric text-4xl font-bold tabular-nums',
+          'font-numeric text-2xl font-bold tabular-nums sm:text-3xl',
           isLowTime && 'animate-pulse text-clock-danger'
         )}
       >

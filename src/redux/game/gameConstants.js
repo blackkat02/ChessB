@@ -5,10 +5,10 @@ export { COLORS };
 export const DEFAULT_TIME = 180000;
 
 export const TIME_CONTROLS = [
-  { label: '1 хв', value: 60000 },
-  { label: '3 хв', value: 180000 },
-  { label: '5 хв', value: 300000 },
-  { label: '10 хв', value: 600000 },
+  { label: '1 min', value: 60000 },
+  { label: '3 min', value: 180000 },
+  { label: '5 min', value: 300000 },
+  { label: '10 min', value: 600000 },
 ];
 
 export const SIDE_OPTIONS = {

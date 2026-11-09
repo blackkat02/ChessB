@@ -11,13 +11,13 @@ const MoveListView = ({ movePairs }) => {
   return (
     <div className="flex h-full w-full flex-col overflow-hidden rounded-card border border-border bg-surface font-ui">
       <h2 className="border-b border-border px-4 py-2 text-sm font-bold text-fg">
-        Ходи
+        Moves
       </h2>
 
       <ol className="min-h-0 max-h-64 flex-1 overflow-y-auto px-2 py-1 lg:max-h-none">
         {movePairs.length === 0 && (
           <li className="px-2 py-4 text-center text-sm text-fg-subtle">
-            Партія ще не почалась
+            The game hasn't started yet
           </li>
         )}
 

@@ -3,10 +3,10 @@ import getPieceSymbol from '../../utils/getPieceSymbol';
 import { COLORS } from '../../redux/game/gameConstants';
 
 const PROMOTION_CHOICES = [
-  { piece: 'Q', label: 'Ферзь' },
-  { piece: 'R', label: 'Тура' },
-  { piece: 'B', label: 'Слон' },
-  { piece: 'N', label: 'Кінь' },
+  { piece: 'Q', label: 'Queen' },
+  { piece: 'R', label: 'Rook' },
+  { piece: 'B', label: 'Bishop' },
+  { piece: 'N', label: 'Knight' },
 ];
 
 const PromotionModal = ({ isOpen, color, onSelect, onCancel }) => {
@@ -23,7 +23,7 @@ const PromotionModal = ({ isOpen, color, onSelect, onCancel }) => {
         className="w-full max-w-xs rounded-card border border-border bg-surface p-6 shadow-btn"
         onClick={(event) => event.stopPropagation()}
       >
-        <h2 className="text-center text-lg font-bold text-fg">Оберіть фігуру</h2>
+        <h2 className="text-center text-lg font-bold text-fg">Choose a piece</h2>
 
         <div className="mt-4 grid grid-cols-4 gap-2">
           {PROMOTION_CHOICES.map(({ piece, label }) => (

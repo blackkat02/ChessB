@@ -11,7 +11,7 @@ function App() {
     <Suspense
       fallback={
         <div className="flex min-h-screen items-center justify-center font-ui text-fg-muted">
-          Завантаження сторінки...
+          Loading page...
         </div>
       }
     >

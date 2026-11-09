@@ -31,11 +31,13 @@
   --c-btn-default-bg: var(--sem-bg-surface);
   --c-btn-default-bg-hover: var(--sem-bg-surface-sunk);
   --c-btn-default-fg: var(--sem-fg-subtle);
-  --c-btn-default-border: var(--sem-border-strong);
+  --c-btn-default-border: var(--sem-accent);
   --c-btn-primary-bg: var(--sem-accent);
   --c-btn-primary-fg: var(--sem-fg-on-accent);
+  --c-btn-primary-border: var(--sem-accent-strong);
   --c-btn-danger-bg: var(--sem-danger);
   --c-btn-danger-fg: var(--sem-fg-on-accent);
+  --c-btn-danger-border: color-mix(in srgb, var(--sem-danger) 70%, black);
 
   /* ── Board (ChessBoardView) ──────────────────────────── */
   --c-board-max-width: var(--prim-dim-board-max);
@@ -68,14 +70,13 @@
   --c-piece-black-shadow: 0 1px 1px rgba(255, 255, 255, 0.25);
 
   /* ── Clock ───────────────────────────────────────────── */
-  --c-clock-width: var(--prim-dim-clock-width);
   --c-clock-radius: var(--sem-radius-card);
   --c-clock-white-bg: var(--sem-bg-surface);
   --c-clock-white-fg: var(--sem-fg);
-  --c-clock-white-border: var(--sem-border);
+  --c-clock-white-border: var(--sem-accent);
   --c-clock-black-bg: var(--sem-bg-inverse);
   --c-clock-black-fg: var(--sem-fg-on-inverse);
-  --c-clock-black-border: var(--sem-border-inverse);
+  --c-clock-black-border: var(--sem-accent);
   --c-clock-active-border: var(--sem-warning);
   --c-clock-active-glow: var(--sem-shadow-focus-glow);
   --c-clock-danger-fg: var(--sem-critical);
@@ -118,8 +119,10 @@
   --color-btn-default-border: var(--c-btn-default-border);
   --color-btn-primary: var(--c-btn-primary-bg);
   --color-btn-primary-fg: var(--c-btn-primary-fg);
+  --color-btn-primary-border: var(--c-btn-primary-border);
   --color-btn-danger: var(--c-btn-danger-bg);
   --color-btn-danger-fg: var(--c-btn-danger-fg);
+  --color-btn-danger-border: var(--c-btn-danger-border);
   --color-btn-focus: var(--c-btn-focus-ring);
 
   --color-board-frame: var(--c-board-frame-bg);

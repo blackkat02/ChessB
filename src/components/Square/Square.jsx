@@ -22,7 +22,7 @@ const Square = React.memo(
     return (
       <motion.button
         type="button"
-        aria-label={`Клітинка ${id}`}
+        aria-label={`Square ${id}`}
         onClick={() => onClick(id)}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}

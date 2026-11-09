@@ -19,7 +19,9 @@ const Navigation = () => {
           className="flex items-center gap-1.5 text-xl font-extrabold tracking-tight text-fg"
         >
           <RookIcon className="h-6 w-6 text-accent" />
-          Chess<span className="text-accent">B</span>
+          <span>
+            Chess<span className="text-accent">B</span>
+          </span>
         </Link>
         <ul className="flex gap-1">
           <li>
