@@ -61,29 +61,53 @@ export const selectReason = (state) => state.game.reason;
 // Замінить selectLegalTargets (docs/layer-separation-step4.md, 4.5).
 
 // Перевірка: чи не б'ємо ми свого?
-export const selectIsFriendlyFire = (state, toSquareId) => {
-  const fromSquareId = selectSelectedSquare(state);
+// export const selectIsFriendlyFire = (state, toSquareId) => {
+//   const fromSquareId = selectSelectedSquare(state);
 
-  console.log('selectIsFriendlyFire старт ');
-  console.log('fromSquareId: ', fromSquareId);
+//   console.log('selectIsFriendlyFire старт ');
+//   console.log('fromSquareId: ', fromSquareId);
 
-  if (!fromSquareId) return false;
+//   if (!fromSquareId) return false;
 
-  const movingPieceColor = selectPieceColorAt(state, fromSquareId);
-  const targetPieceColor = selectPieceColorAt(state, toSquareId);
+//   const movingPieceColor = selectPieceColorAt(state, fromSquareId);
+//   const targetPieceColor = selectPieceColorAt(state, toSquareId);
 
-  console.log('movingPieceColor: ', movingPieceColor);
-  console.log('targetPieceColor: ', targetPieceColor);
+//   console.log('movingPieceColor: ', movingPieceColor);
+//   console.log('targetPieceColor: ', targetPieceColor);
 
-  return targetPieceColor !== null && movingPieceColor === targetPieceColor;
-};
+//   return targetPieceColor !== null && movingPieceColor === targetPieceColor;
+// };
 
-// Головний валідатор для UI та Бота
-export const selectIsMovePossible = (state, from, to) => {
+// // Головний валідатор для UI та Бота
+// export const selectIsMovePossible = (state, from, to) => {
+//   if (selectIsSquareEmpty(state, from)) return false;
+//   if (from === to) return false;
+//   if (!selectIsOwnPiece(state, from)) return false;
+//   if (selectIsFriendlyFire(state, to)) return false;
+
+//   return true;
+// };
+
+export const selectLegalTargets(state) = (state, from, to) => {
+  // const fromSquareId = selectSelectedSquare(state);
+
+  // console.log('selectIsFriendlyFire старт ');
+  // console.log('fromSquareId: ', fromSquareId);
+
+  if (!from) return false;
+
+  const movingPieceColor = selectPieceColorAt(state, from);
+  const targetPieceColor = selectPieceColorAt(state, to);
+
+  // console.log('movingPieceColor: ', movingPieceColor);
+  // console.log('targetPieceColor: ', targetPieceColor);
+
+  // return targetPieceColor !== null && movingPieceColor === targetPieceColor;
+
   if (selectIsSquareEmpty(state, from)) return false;
   if (from === to) return false;
   if (!selectIsOwnPiece(state, from)) return false;
-  if (selectIsFriendlyFire(state, to)) return false;
+  if (targetPieceColor === null && movingPieceColor !== targetPieceColor) return false;
 
   return true;
 };
