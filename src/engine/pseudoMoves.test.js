@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { getPseudoLegalMoves } from './pseudoMoves';
 
-// Крок 1 (docs/move-validation.md, розділ 5): геометрія фігур,
+// Крок 1 (docs/archive/move-validation.md, розділ 5): геометрія фігур,
 // без урахування шаху власному королю (це крок 3).
 describe('pseudoMoves', () => {
   it('порожня клітинка не має ходів', () => {
@@ -52,7 +52,7 @@ describe('pseudoMoves', () => {
       );
     });
 
-    // Крок 4 (docs/move-validation.md, розділ 5): взяття на проході.
+    // Крок 4 (docs/archive/move-validation.md, розділ 5): взяття на проході.
     it('бере на проході, якщо цільова клітинка — enPassantTarget', () => {
       // Чорний щойно пішов d7-d5, тому enPassantTarget === 'd6'.
       const board = { e5: 'P', d5: 'p' };

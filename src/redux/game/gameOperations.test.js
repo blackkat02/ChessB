@@ -4,7 +4,7 @@ import { newGameStarted } from './gameEvents';
 import { ALL_CASTLING } from '../../test/fixtures';
 import { createTestStore } from '../../test/fixtures/store';
 
-// Крок 6 (docs/move-validation.md, розділ 5): промоція через повний
+// Крок 6 (docs/archive/move-validation.md, розділ 5): промоція через повний
 // пайплайн attemptMove -> moveExecuted, не лише ізольований редюсер.
 describe('attemptMove — промоція', () => {
   it('пішак на останньому ряду автоматично стає ферзем, якщо promotion не вказано', () => {
@@ -74,7 +74,7 @@ describe('attemptMove — промоція', () => {
 });
 
 // SAN + isCheck/isCheckmate через повний пайплайн attemptMove -> moveExecuted.
-// Перенесено з gameSlice.test.js (крок 3, docs/layer-separation-step3.md):
+// Перенесено з gameSlice.test.js (крок 3, docs/archive/layer-separation-step3.md):
 // ці тести перевіряють шахи, а не запис, тож мають проходити незалежно від
 // того, де саме рахується SAN — у редюсері чи в thunk-у. Позиції — легальні
 // (обидва королі, хід за чергою), бо attemptMove перевіряє правила.
@@ -165,7 +165,7 @@ describe('attemptMove — нотація', () => {
   });
 });
 
-// Товстий thunk (docs/layer-separation-step3.md, 3.5–3.7): attemptMove сам
+// Товстий thunk (docs/archive/layer-separation-step3.md, 3.5–3.7): attemptMove сам
 // перевіряє легальність, рахує статус і час, а після кінця партії пропускає
 // ходи без правил (режим аналізу).
 describe('attemptMove — товстий thunk', () => {
@@ -239,7 +239,7 @@ describe('attemptMove — товстий thunk', () => {
 });
 
 // timeExpired — диспатчиться з useGameState.js, коли selectClockRemaining
-// показує 0 для активної сторони (docs/clock-and-game-record.md); єдине
+// показує 0 для активної сторони (docs/archive/clock-and-game-record.md); єдине
 // джерело події 'timeout' для endGame (раніше тут була зламана tickTimer,
 // що дзвонила в неіснуючий setGameOver — див. коментар у gameOperations.js).
 describe('timeExpired', () => {
@@ -279,7 +279,7 @@ describe('timeExpired', () => {
     });
   });
 
-  // docs/clock-and-game-record.md, розділ 6, рядок "таймаут прийшов двічі":
+  // docs/archive/clock-and-game-record.md, розділ 6, рядок "таймаут прийшов двічі":
   // захист від застарілого замикання — викликач міг порахувати 0 на
   // попередньому рендері, а на момент, коли dispatch дійшов сюди, час
   // насправді ще є (наприклад, після Кроку 4 — вкладка повернулась з фону,

@@ -10,7 +10,7 @@ import { NO_CASTLING } from './castling';
 /**
  * Стан слайсу `game` для тестів. Джерело істини — справжній initialState
  * редюсера, тож нові поля (як колись turnStartedAt) підхоплюються самі.
- * Див. docs/test-fixtures.md, крок 4.
+ * Див. docs/archive/test-fixtures.md, крок 4.
  */
 export function makeSliceState(overrides = {}) {
   return {

@@ -1,8 +1,8 @@
 // src/engine/notation.js
 // Побудова алгебраїчної нотації (SAN) ходу. На відміну від "легкого"
-// алгоритму, накресленого в docs/move-notation.md (розділ 6, MVP без
+// алгоритму, накресленого в docs/archive/move-notation.md (розділ 6, MVP без
 // повної легальності), тут дизамбігуація й суфікси шаху/мату СТРОГІ —
-// побудовані на getAllLegalMoves/isCheck/isCheckmate (docs/move-validation.md,
+// побудовані на getAllLegalMoves/isCheck/isCheckmate (docs/archive/move-validation.md,
 // крок 7), бо повний генератор легальних ходів уже готовий (кроки 1-5).
 
 import { getPieceColor } from './chessHelpers';
@@ -45,7 +45,7 @@ function getDisambiguation(gameStateBeforeMove, move) {
  * Будує SAN-рядок для вже виконаного ходу.
  *
  * @param {{board: Record<string,string>, castlingRights: object, enPassantTarget: string|null}} gameStateBeforeMove
- *   Позиція ДО ходу — потрібна для дизамбігуації (розділ 3.1, docs/move-validation.md).
+ *   Позиція ДО ходу — потрібна для дизамбігуації (розділ 3.1, docs/archive/move-validation.md).
  * @param {{from: string, to: string, piece: string, captured?: string|null, castling?: 'K'|'Q'|null, promotion?: string|null}} move
  *   captured / castling / promotion — модифікатори запису; без них хід тихий.
  *   gameSlice завжди передає всі три з details від applyMove.

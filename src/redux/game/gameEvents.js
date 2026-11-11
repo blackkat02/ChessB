@@ -9,7 +9,7 @@ export const moveExecuted = createAction('game/moveExecuted');
 export const newGameStarted = createAction('game/newGameStarted');
 
 // Date.now() тут, у prepare, а не в редюсері: редюсер лишається чистим
-// (docs/layer-separation-step3.md, 3.6).
+// (docs/archive/layer-separation-step3.md, 3.6).
 export const endGame = createAction('game/endGame', (payload) => ({
   payload: { timestamp: Date.now(), ...payload },
 }));

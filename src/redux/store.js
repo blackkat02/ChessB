@@ -5,7 +5,7 @@ import positionReducer from './position/positionSlice';
 import { moveExecuted, endGame, newGameStarted } from './game/gameEvents';
 import { savePersistedGame, loadPersistedGame } from './persistGame';
 
-// docs/clock-and-game-record.md, крок 8: пишемо ЛИШЕ на дії, що реально
+// docs/archive/clock-and-game-record.md, крок 8: пишемо ЛИШЕ на дії, що реально
 // міняють щось варте збереження — не на кожен dispatch (раніше сюди
 // потрапляв і кожен тік годинника, розділ 2 того документа). Годинник сам
 // по собі більше не дисптачить жодного action (Clock.jsx рахує "живий" час

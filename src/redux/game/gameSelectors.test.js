@@ -2,8 +2,8 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 import { selectMovePairs, selectClockRemaining } from './gameSelectors';
 import { COLORS } from './gameConstants';
 
-// docs/move-notation.md, розділ 7: групування history в пари для UI списку
-// ходів (docs/move-notation.md, розділ 8).
+// docs/archive/move-notation.md, розділ 7: групування history в пари для UI списку
+// ходів (docs/archive/move-notation.md, розділ 8).
 describe('selectMovePairs', () => {
   it('порожня історія — порожній список пар', () => {
     expect(selectMovePairs({ game: { history: [] } })).toEqual([]);
@@ -34,7 +34,7 @@ describe('selectMovePairs', () => {
     // Регресія на попередження react-redux "Selector ... returned a
     // different result when called with the same parameters" — воно
     // з'явилось, поки центральний тікер годинника (перша версія
-    // docs/clock-and-game-record.md) форсував перерендер кілька разів на
+    // docs/archive/clock-and-game-record.md) форсував перерендер кілька разів на
     // секунду, а немемоізований селектор щоразу повертав новий масив через
     // .reduce(..., []).
     const state = { game: { history: [{ piece: 'P', san: 'e4' }] } };
@@ -59,7 +59,7 @@ describe('selectMovePairs', () => {
   });
 });
 
-// docs/clock-and-game-record.md, розділ 5.2 / крок 2: годинник на
+// docs/archive/clock-and-game-record.md, розділ 5.2 / крок 2: годинник на
 // глобальному відліку часу — "скільки лишилось" завжди РАХУЄТЬСЯ від
 // Date.now(), а не читається як уже готове число зі стору.
 describe('selectClockRemaining', () => {

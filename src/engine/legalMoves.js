@@ -1,6 +1,6 @@
 // src/engine/legalMoves.js
 // Фільтр псевдолегальних ходів у легальні (безпека власного короля) +
-// рокіровка та взяття на проході. Див. docs/move-validation.md,
+// рокіровка та взяття на проході. Див. docs/archive/move-validation.md,
 // розділ 5 (кроки 3-4).
 
 import { algebraicToCoords, coordsToAlgebraic } from './boardUtils';
@@ -54,7 +54,7 @@ export function findKingSquare(board, color) {
 }
 
 // Хід на КОПІЇ дошки — щоб перевірити безпеку короля, не мутуючи справжній
-// state.board (docs/move-validation.md, розділ 3.3). Взяття на проході знімає
+// state.board (docs/archive/move-validation.md, розділ 3.3). Взяття на проході знімає
 // фігуру НЕ на клітинці `to`, тому копію потрібно "довручну" підчистити і там
 // — інакше рідкісний, але реальний edge case ("відкритий шах через en
 // passant": обидва пішаки одночасно зникають з рядка й оголюють лінію для
@@ -114,7 +114,7 @@ export function filterByKingSafety(
  * Рокіровка навмисно НЕ проходить через `filterByKingSafety` — вона рухає
  * дві фігури одночасно (короля й туру) і має власну, ширшу умову безпеки
  * (король не може навіть ПЕРЕТИНАТИ атаковану клітинку, не лише приземлятись
- * на неї) — див. docs/move-validation.md, розділ 3.4.
+ * на неї) — див. docs/archive/move-validation.md, розділ 3.4.
  *
  * @param {Record<string, string>} board
  * @param {'w'|'b'} color

@@ -1,7 +1,7 @@
 # Крок 4: слайси `position`, `game`, `ui`
 
-Дата: 2026-11-03. Доповнення до `docs/layer-separation.md`, розділ 7.
-Формат: таска від ментора, як `layer-separation-step3.md`. Готові розв'язки
+Дата: 2026-11-03. Доповнення до `docs/archive/layer-separation.md`, розділ 7.
+Формат: таска від ментора, як `archive/layer-separation-step3.md`. Готові розв'язки
 сховані під спойлерами. Спершу спробуй сам.
 
 ## 0. Де ти зараз
@@ -10,25 +10,25 @@
 |---|---|
 | 1. Константи | ✅ |
 | 2. `applyMove` | ✅ |
-| 3. Товстий thunk | ✅ (`docs/layer-separation-step3.md`) |
-| 4. Слайси | ⬜ цей документ |
+| 3. Товстий thunk | ✅ (`docs/archive/layer-separation-step3.md`) |
+| 4. Слайси | 🔄 цей документ (лишились 4.0, 4.5, 4.7) |
 | 5. UI через селектори + ESLint | ⬜ |
 
-Відкрите питання з `layer-separation.md` (чий `turn`) вирішене:
+Відкрите питання з `archive/layer-separation.md` (чий `turn`) вирішене:
 **`turn` — частина `position`** (розділ 3 нижче).
 
-Прогрес по підкроках (станом на 2026-11-08):
+Прогрес по підкроках (станом на 2026-11-10; загальний статус — `docs/roadmap.md`):
 
 | Підкрок | Стан | Де |
 |---|---|---|
 | 4.0. Тести через селектори | 🔄 `createTestStore({ position, game })` вкладений і кидає на пласкі ключі; тести досі читають `getState().<slice>.*` напряму, не через селектори | `766c287` |
 | 4.1. `turn` у позиції | ✅ `SCHEMA_VERSION` 3 → 4 | `5689fc6` |
-| 4.2. `gameEvents.js` | ✅ | `654a807`, `livecoding-02-game-events.md` |
-| 4.3. Слайс `ui` | ✅ разом із persist `playerSide`, `SCHEMA_VERSION` 4 → 5 | `66dfdf8`, `cf567bb`, `livecoding-03-ui-slice.md` |
-| 4.4. Слайс `position` | ✅ | `766c287`, `livecoding-04-position-slice.md` |
-| 4.5. `selectLegalTargets` | ⬜ | `livecoding-05-legal-targets.md` |
+| 4.2. `gameEvents.js` | ✅ | `654a807`, `archive/livecoding-02-game-events.md` |
+| 4.3. Слайс `ui` | ✅ разом із persist `playerSide`, `SCHEMA_VERSION` 4 → 5 | `66dfdf8`, `cf567bb`, `archive/livecoding-03-ui-slice.md` |
+| 4.4. Слайс `position` | ✅ | `766c287`, `archive/livecoding-04-position-slice.md` |
+| 4.5. `selectLegalTargets` | 🔄 | `livecoding-05-legal-targets.md` |
 | 4.6. Persist | ✅ `{ position, game, ui: { playerSide } }`, `SCHEMA_VERSION` 5 → 6 (разом з 4.4) | `766c287` |
-| 4.7. Прибирання | ⬜ | — |
+| 4.7. Прибирання | ⬜ | `docs/roadmap.md`, R3 |
 
 **Версії схеми розійшлися з початковим планом.** План розраховував на
 одне підвищення до 4 наприкінці кроку. Насправді 4 зайняв підкрок 4.1, 5 —
@@ -86,7 +86,7 @@
   (запис). `turn` — хто ходить у цій позиції (правило). Вони збігаються лише
   при старті зі стандартної позиції й ходах строго по черзі.
 - **FEN тримає їх окремо.** Поле 2 — хто ходить, поле 6 — номер ходу. Поля
-  1–4 FEN — це рівно наш `position` (`docs/next-steps.md`, крок 9).
+  1–4 FEN — це рівно наш `position` (`docs/roadmap.md`, Q2).
 - **Рушій отримує повну позицію.** Ті самі фігури з різною чергою — різні
   позиції (пат для одного кольору — звичайна позиція для іншого).
 - **Режим аналізу.** Після двох ходів білих поспіль `plyCount % 2` рахує
@@ -315,7 +315,7 @@ payload.position» з `gameSlice.test.js` переїжджає сюди.
 
 ### 4.5. `selectLegalTargets` замість валідаційних селекторів
 
-`selectIsFriendlyFire` і `selectIsMovePossible` (`gameSelectors.js`, розділ 4)
+`selectIsFriendlyFire` і `selectIsMovePossible` (`gameSelectors.js`, розділ «3. ВАЛІДАЦІЙНІ СЕЛЕКТОРИ»)
 дублюють рушій гіршою версією: вони не знають ні геометрії, ні шаху. Після
 кроку 3 їх ніхто не викликає, тестів на них немає, а `selectIsFriendlyFire`
 ще й пише в консоль.
@@ -341,7 +341,7 @@ export const selectLegalTargets = createSelector(
 мемоізації `selectMovePairs`).
 
 Підсвітку легальних полів у UI цей підкрок **не** додає — це нова фіча, а
-крок 4 — рефакторинг. Запиши її в `docs/next-steps.md`.
+крок 4 — рефакторинг. Вона записана в `docs/roadmap.md`, F1.
 
 **Коміт:** `refactor(redux): replace validation selectors with selectLegalTargets`
 
@@ -390,14 +390,13 @@ const preloadedState = persisted
 - `gameSelectors.js` містить лише селектори запису партії: історія, пари
   ходів, годинники, результат, `gameId`, `plyCount`.
 - `src/test/fixtures/store.js`: `makeSliceState` → три білдери
-  (`makePositionState`, `makeGameSliceState`, `makeUiState`), кожен на
-  основі `initialState` свого редюсера. Онови `docs/test-fixtures.md`.
+  (`makePositionState` уже є; додати `makeGameSliceState`, `makeUiState`), кожен на
+  основі `initialState` свого редюсера. Онови `docs/architecture.md`, розділ 7.1.
 - `gameSlice.test.js` перевіряє лише запис партії; тести позиції та UI —
   у своїх файлах (4.3, 4.4).
-- `docs/layer-separation.md`: чекліст «Крок 4» і «Відкрите питання про
+- `docs/archive/layer-separation.md`: чекліст «Крок 4» і «Відкрите питання про
   `turn`» — відмічені.
-- `docs/next-steps.md`: підсвітка легальних полів через `selectLegalTargets`
-  (4.5).
+- `docs/roadmap.md`: прибрати R1/R3, у F1 — підсвітка через `selectLegalTargets`.
 
 ## 5. Перевірка перед комітом
 

@@ -2,6 +2,8 @@
 
 > **Копія.** Основна версія — `D:\Projects\SyncEvent\docs\architecture\chess-multiplayer.md` (скопійовано 2026-09-23). Правки вносити туди й копіювати сюди. Шляхи `apps/…`, `packages/…` та посилання на інші `*.md` (`booking-concurrency.md`, `scheduled-tasks-worker.md`, …) — відносно репозиторію SyncEvent; шляхи `src/…` і `docs/next-steps.md` — відносно цього репозиторію (ChessB).
 
+> **Шляхи в ChessB застаріли (2026-11-10).** Документи `next-steps.md`, `layer-separation.md`, `clock-and-game-record.md` переїхали в `docs/archive/`; поточний план — `docs/roadmap.md`, поточний стан — `docs/architecture.md`. Оновити в основній версії (SyncEvent) і скопіювати сюди.
+
 > Статус: **проєкт рішення** (draft). Соло-проєкт, автор — Borys.
 > Останнє оновлення: 2026-09-23 (аналіз, цільова архітектура, деталі WebSocket, правила нічиїх затверджено, відкрите лише питання різних N/K для контролів часу; код ще не почато).
 > Пов'язаний код: сусідній репозиторій `D:\Projects\ChessB` (`src/engine/`, `src/redux/game/`,

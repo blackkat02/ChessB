@@ -93,9 +93,10 @@ npx vitest run src/engine --coverage --coverage.include="src/engine/**"
 
 ### Тестові дані
 
-Позиції в тестах — об'єкти дошки `{ e1: 'K', e8: 'k' }` прямо в `it`. Спільні фікстури
-(права рокіровки, білдери стану, типові позиції й ходи) заплановано в `src/test/fixtures/`.
-План і правила — `docs/test-fixtures.md`.
+Маленькі позиції — об'єкти дошки `{ e1: 'K', e8: 'k' }` прямо в `it`. Спільне — у
+`src/test/fixtures/`: `ALL_CASTLING` / `NO_CASTLING`, `makeGameState`, `makeMovePayload`
+(через `index.js`) і `createTestStore` (напряму з `fixtures/store`). Правила —
+`docs/architecture.md`, розділ 7.1.
 
 ### Покриті модулі
 
@@ -109,30 +110,42 @@ npx vitest run src/engine --coverage --coverage.include="src/engine/**"
 | `engine/gameStatus.js` | `gameStatus.test.js` | `isCheck`, `getAllLegalMoves`, `isCheckmate`, `isStalemate` |
 | `engine/promotion.js` | `promotion.test.js` | `requiresPromotion`, `isValidPromotionPiece`, `resolvePromotionPiece` |
 | `engine/notation.js` | `notation.test.js` | `buildSan`: взяття, дизамбігуація, рокіровки, промоція, суфікси `+`/`#` |
-| `engine/applyMove.js` | `applyMove.test.js` | `applyMove`, `nextCastlingRights`, `nextEnPassantTarget`, `getCastlingRookMove` |
-| `redux/game/gameSlice.js` | `gameSlice.test.js` | `moveExecuted` (взяття, рокіровка, права, en passant, промоція, SAN, годинник, запис партії), `endGame` |
-| `redux/game/gameOperations.js` | `gameOperations.test.js` | Thunk-и `attemptMove` (промоція) і `timeExpired` |
+| `engine/applyMove.js` | `applyMove.test.js` | `applyMove` (зокрема `turn`), `nextCastlingRights`, `nextEnPassantTarget`, `getCastlingRookMove` |
+| `engine/index.js` | `index.test.js` | Контракт фасаду: `getLegalMoves`, `isMoveLegal`, `getStatus`, `toSan` |
+| `redux/game/gameEvents.js` | `gameEvents.test.js` | Типи подій, `timestamp` через `prepare` в `endGame` |
+| `redux/game/gameSlice.js` | `gameSlice.test.js` | Запис партії з payload `moveExecuted` (history, годинник, `analysis`), `newGameStarted`, `endGame` |
+| `redux/position/positionSlice.js` | `positionSlice.test.js` | Початкова позиція, `moveExecuted` кладе `payload.position`, `newGameStarted` |
+| `redux/ui/uiSlice.js` | `uiSlice.test.js` | `setSelection`, скидання вибору на `moveExecuted`, `playerSide` з `newGameStarted` |
+| `redux/game/gameOperations.js` | `gameOperations.test.js` | `attemptMove` через справжній store (легальність, зв'язка, промоція, SAN, мат, пат, аналіз), `timeExpired`, здача, нічия |
 | `redux/game/gameSelectors.js` | `gameSelectors.test.js` | `selectMovePairs` (зокрема мемоізація), `selectClockRemaining` |
 | `redux/persistGame.js` | `persistGame.test.js` | Збереження/читання `localStorage`: round-trip, версія схеми, битий JSON, помилки квоти |
 | `redux/store.js` | `store.test.jsx` | Відновлення стану при старті, таймаут «flag on reconnect», що саме записується в `localStorage` |
 | `hooks/useGameState.js` | `useGameState.test.jsx` | Сирі поля годинника, `handleTimeUp` |
 | `components/Clock` | `Clock.test.jsx` | Формат часу, тік, одноразовий `onTimeUp`, очищення таймера, `visibilitychange` |
-| `components/GameOverModal` | `GameOverModal.test.jsx` | Тексти для мату, пату й таймауту, кнопки «Нова гра» та «Переглянути дошку» |
+| `components/GameOverModal` | `GameOverModal.test.jsx` | Тексти для мату, пату й таймауту, кнопки «New game» та «View board» |
+
+## Документація
+
+`docs/README.md` — індекс. Головне: `docs/architecture.md` (як влаштовано),
+`docs/roadmap.md` (що далі).
 
 ## Структура
 
 Три шари, залежності йдуть лише вниз: **UI → Redux → рушій**
-(докладно — `docs/layer-separation.md`).
+(докладно — `docs/architecture.md`). Винятки, які ще треба прибрати, —
+`docs/roadmap.md`, R4.
 
 ```
 src/
-├── components/, pages/, layouts/  # UI: лише селектори й thunk-и, без імпортів рушія
+├── components/, pages/, layouts/  # UI: селектори й thunk-и
 ├── hooks/
 │   └── useGameState.js        # обробка кліків → dispatch(thunk)
 ├── redux/                     # стан застосунку
-│   ├── store.js               # store + підписка на збереження в localStorage
-│   ├── persistGame.js         # читання/запис стану гри в localStorage (з версією схеми)
-│   └── game/                  # slice, операції (thunks), селектори, константи
+│   ├── store.js               # store + middleware збереження в localStorage
+│   ├── persistGame.js         # читання/запис стану в localStorage (з версією схеми)
+│   ├── position/              # слайс позиції: board, turn, castlingRights, enPassantTarget
+│   ├── game/                  # запис партії: слайс, події, thunk-и, селектори, константи
+│   └── ui/                    # стан екрана: selectedSquare, playerSide
 ├── engine/                    # шахові правила: чисті функції, не знає про Redux/React
 │   ├── index.js               # фасад — єдині двері в рушій
 │   ├── applyMove.js           # (position, move) → { position, details }
@@ -150,7 +163,8 @@ src/
 │   ├── fenConverter.js        # FEN → об'єкт дошки { a1: 'R', ... }
 │   └── getPieceSymbol.js      # FEN-символ → юнікод-гліф фігури
 └── test/
-    └── setup.js               # налаштування тестового середовища
+    ├── setup.js               # налаштування тестового середовища
+    └── fixtures/              # спільні тестові дані: права рокіровки, позиції, store
 ```
 
 Тести (`*.test.js`, `*.test.jsx`) лежать поруч із файлами, які перевіряють.

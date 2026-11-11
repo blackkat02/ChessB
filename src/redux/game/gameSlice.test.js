@@ -5,7 +5,7 @@ import { COLORS } from './gameConstants';
 import { ALL_CASTLING, makeMovePayload } from '../../test/fixtures';
 import { makeSliceState } from '../../test/fixtures/store';
 
-// Крок 3 шарів (docs/layer-separation-step3.md, 3.5): moveExecuted лише
+// Крок 3 шарів (docs/archive/layer-separation-step3.md, 3.5): moveExecuted лише
 // записує готовий результат, який порахував attemptMove. Тому тут payload
 // збирається вручну через makeMovePayload, без рушія: перевіряємо "редюсер
 // записав те, що прийшло", а не шахи. Правила (рокіровка, en passant,
@@ -104,11 +104,11 @@ describe('gameSlice: moveExecuted — запис history', () => {
   });
 });
 
-// docs/clock-and-game-record.md, крок 1: годинник на глобальному відліку
+// docs/archive/clock-and-game-record.md, крок 1: годинник на глобальному відліку
 // часу — moveExecuted списує РЕАЛЬНИЙ час, що минув з turnStartedAt, а не
 // тік таймера. Мить ходу приходить у payload.timestamp, тож мокати
 // Date.now() не треба: однаковий action — однаковий стан.
-describe('gameSlice: moveExecuted — годинник (docs/clock-and-game-record.md)', () => {
+describe('gameSlice: moveExecuted — годинник (docs/archive/clock-and-game-record.md)', () => {
   it('списує з активної сторони саме стільки часу, скільки минуло від turnStartedAt', () => {
     const state = makeSliceState({
       plyCount: 1, // хід чорних — turnStartedAt належить саме їм
@@ -180,7 +180,7 @@ describe('gameSlice: moveExecuted — годинник (docs/clock-and-game-reco
   });
 });
 
-// docs/clock-and-game-record.md, крок 6: повний запис партії — timestamp,
+// docs/archive/clock-and-game-record.md, крок 6: повний запис партії — timestamp,
 // moveTimeMs і clockAfter (знімок ОБОХ годинників) на кожному елементі
 // history.
 describe('gameSlice: moveExecuted — повний запис партії (крок 6)', () => {
@@ -290,7 +290,7 @@ describe('gameSlice: endGame — годинник при таймауті', () =
   });
 });
 
-// Крок 3 шарів (docs/layer-separation-step3.md, 3.6): Date.now() переїхав з
+// Крок 3 шарів (docs/archive/layer-separation-step3.md, 3.6): Date.now() переїхав з
 // редюсера в prepare-колбек action creator-а.
 describe('gameSlice: endGame — timestamp через prepare', () => {
   afterEach(() => {

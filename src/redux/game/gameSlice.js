@@ -5,7 +5,7 @@ import { moveExecuted, newGameStarted, endGame } from './gameEvents';
 const initialState = {
   whiteTime: DEFAULT_TIME,
   blackTime: DEFAULT_TIME,
-  turnStartedAt: null, // Date.now() коли почала цокати активна сторона; null = годинники не йдуть (docs/clock-and-game-record.md, розділ 5.1)
+  turnStartedAt: null, // Date.now() коли почала цокати активна сторона; null = годинники не йдуть (docs/archive/clock-and-game-record.md, розділ 5.1)
   history: [],
   plyCount: 0, // кількість зроблених напівходів (ходи = plyCount пар для запису партії)
   winner: null, // COLORS.WHITE, COLORS.BLACK, або 'draw'
@@ -24,7 +24,7 @@ const gameSlice = createSlice({
   extraReducers: (builder) => {
     builder
       // Лише запис готового результату: статус, SAN і мить ходу порахував
-      // attemptMove (docs/layer-separation-step3.md, 3.5). Редюсер не знає
+      // attemptMove (docs/archive/layer-separation-step3.md, 3.5). Редюсер не знає
       // шахових правил і не викликає Date.now() — той самий action завжди дає
       // той самий стан. payload.position на ту саму подію записує
       // position/positionSlice.js.

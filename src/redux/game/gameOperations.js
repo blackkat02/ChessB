@@ -16,7 +16,7 @@ import {
 
 // Усе, що редюсер раніше рахував сам, тепер рахує thunk через фасад рушія:
 // нова позиція, details, статус суперника, SAN і мить ходу. Редюсер лише
-// записує готовий payload (docs/layer-separation-step3.md, 3.5).
+// записує готовий payload (docs/archive/layer-separation-step3.md, 3.5).
 //
 // status повертається окремо від payload: isStalemate потрібен лише thunk-у
 // (вирішити, чи диспатчити endGame), а в action має бути тільки те, що
@@ -86,7 +86,7 @@ export const attemptMove = (moveData) => (dispatch, getState) => {
     return;
   }
 
-  // 4. ПЕРЕВІРКА №3: легальність ходу (docs/layer-separation-step3.md, 3.1).
+  // 4. ПЕРЕВІРКА №3: легальність ходу (docs/archive/layer-separation-step3.md, 3.1).
   // Один виклик фасаду замість трьох окремих перевірок: своя фігура на
   // цілі, геометрія, безпека короля (рокіровка — зі своєю перевіркою).
   if (!isMoveLegal(position, from, to)) {
@@ -95,7 +95,7 @@ export const attemptMove = (moveData) => (dispatch, getState) => {
   }
 
   // 6.5. ПЕРЕВІРКА №6: якщо це промоція і гравець ЯВНО вказав фігуру —
-  // вона має бути однією з Q/R/B/N (крок 6, docs/move-validation.md).
+  // вона має бути однією з Q/R/B/N (крок 6, docs/archive/move-validation.md).
   // Якщо `promotion` не вказано — це не помилка, applyMove сам підставить
   // дефолт (ферзь).
   if (requiresPromotion(piece, to) && moveData.promotion !== undefined) {
@@ -120,7 +120,7 @@ export const attemptMove = (moveData) => (dispatch, getState) => {
 };
 
 // Диспатчиться з useGameState.js, коли selectClockRemaining показує 0 для
-// активної сторони (docs/clock-and-game-record.md, розділ 7.2) — Clock.jsx
+// активної сторони (docs/archive/clock-and-game-record.md, розділ 7.2) — Clock.jsx
 // сам по собі суто презентаційний і нічого не диспатчить (розділ 7.3).
 // Раніше тут була окрема `tickTimer`, що писала відлік секунда-за-секундою
 // назад у Redux через неіснуючий `setGameOver`, ніким не викликана й ніколи
@@ -129,7 +129,7 @@ export const timeExpired = (color) => (dispatch, getState) => {
   const state = getState();
   if (state.game.isGameOver) return; // партія вже могла завершитись матом/патом раніше
 
-  // Захист від гонки (docs/clock-and-game-record.md, розділ 6, рядок
+  // Захист від гонки (docs/archive/clock-and-game-record.md, розділ 6, рядок
   // "таймаут прийшов двічі"): перевіряємо ЩЕ РАЗ, живим селектором, а не
   // довіряємо самому факту виклику — викликач міг спиратись на застарілий
   // замикання значення `remaining` (наприклад, ефект у useGameState.js

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { isSquareAttacked } from './attacks';
 
-// Крок 3 (docs/move-validation.md, розділ 5): isSquareAttacked — базовий
+// Крок 3 (docs/archive/move-validation.md, розділ 5): isSquareAttacked — базовий
 // примітив, що перевикористовується для шаху, ходу короля й рокіровки.
 describe('isSquareAttacked', () => {
   it('порожня дошка нічого не атакує', () => {

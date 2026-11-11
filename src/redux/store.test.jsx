@@ -10,7 +10,7 @@ import { COLORS } from './game/gameConstants';
 import { NO_CASTLING, makeMovePayload } from '../test/fixtures';
 
 // store.js читає localStorage ОДИН раз, на рівні модуля, в момент імпорту
-// (docs/clock-and-game-record.md, крок 8: `const persisted = loadPersistedGame()`
+// (docs/archive/clock-and-game-record.md, крок 8: `const persisted = loadPersistedGame()`
 // виконується поза будь-якою функцією). Звичайний `import { store } from
 // './store'` нагорі файлу підхопив би це рівно один раз для ВСІХ тестів —
 // а нам потрібно кожного разу підставляти localStorage по-своєму ДО того,
@@ -25,7 +25,7 @@ async function importFreshStore() {
 }
 
 // Виявлення таймауту тепер живе в Clock.jsx, не в useGameState.js
-// (docs/clock-and-game-record.md — переробка після знахідки "повний
+// (docs/archive/clock-and-game-record.md — переробка після знахідки "повний
 // рендер сторінки"), тож для тесту "flag on reconnect" потрібен саме
 // живий Clock, не голий useGameState() — та сама розводка пропсів, що й
 // GameInfoPanel.jsx.
@@ -57,7 +57,7 @@ function Harness() {
   );
 }
 
-describe('redux store — відновлення зі збереженого стану (docs/clock-and-game-record.md, крок 9)', () => {
+describe('redux store — відновлення зі збереженого стану (docs/archive/clock-and-game-record.md, крок 9)', () => {
   beforeEach(() => {
     localStorage.clear();
   });

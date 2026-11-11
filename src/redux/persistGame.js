@@ -1,4 +1,4 @@
-// docs/clock-and-game-record.md, крок 7. Окремо від store.js навмисно —
+// docs/archive/clock-and-game-record.md, крок 7. Окремо від store.js навмисно —
 // щоб тестувати без Redux і без підключення до реального localStorage
 // браузера (jsdom у тестах дає справжній localStorage, тож навіть тут
 // нічого мокати не треба).
