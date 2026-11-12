@@ -21,16 +21,39 @@ export function findKing(board, color) {
     kingColor = 'k';
   }
 
-  const king = board.filter((piece) => board[piece] === kingColor);
-  return king !== -1 ? king : null;
+  for (const piece in board) {
+    if (board[piece] === kingColor) return piece;
+  }
+
+  return null;
 }
 
 // Задача 3
 export function piecesOf(board, color) {
-  // TODO
+  const res = [];
+  for (const piece in board) {
+    if (color === 'w') {
+      if (board[piece] === board[piece].toUpperCase()) {
+        res.push(piece);
+      }
+    } else {
+      if (board[piece] === board[piece].toLowerCase()) {
+        res.push(piece);
+      }
+    }
+  }
+
+  return res;
 }
 
 // Задача 4
 export function movePiece(board, from, to) {
-  // TODO
+  const copy = { ...board };
+
+  if (copy[from] && to !== from) {
+    copy[to] = copy[from];
+    delete copy[from];
+  }
+
+  return copy;
 }
