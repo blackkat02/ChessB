@@ -1,5 +1,9 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { selectMovePairs, selectClockRemaining } from './gameSelectors';
+import {
+  selectMovePairs,
+  selectClockRemaining,
+  selectLegalTargets,
+} from './gameSelectors';
 import { COLORS } from './gameConstants';
 
 // docs/archive/move-notation.md, розділ 7: групування history в пари для UI списку
@@ -26,7 +30,11 @@ describe('selectMovePairs', () => {
       },
     };
     expect(selectMovePairs(state)).toEqual([
-      { number: 1, white: { piece: 'P', san: 'e4' }, black: { piece: 'p', san: 'e5' } },
+      {
+        number: 1,
+        white: { piece: 'P', san: 'e4' },
+        black: { piece: 'p', san: 'e5' },
+      },
     ]);
   });
 
@@ -53,7 +61,11 @@ describe('selectMovePairs', () => {
       },
     };
     expect(selectMovePairs(state)).toEqual([
-      { number: 1, white: { piece: 'P', san: 'e4' }, black: { piece: 'p', san: 'e5' } },
+      {
+        number: 1,
+        white: { piece: 'P', san: 'e4' },
+        black: { piece: 'p', san: 'e5' },
+      },
       { number: 2, white: { piece: 'N', san: 'Nf3' }, black: null },
     ]);
   });
@@ -131,5 +143,76 @@ describe('selectClockRemaining', () => {
     };
 
     expect(selectClockRemaining(state, COLORS.BLACK)).toBe(180000);
+  });
+});
+
+describe('selectLegalTargets', () => {
+  it('нічого не вибрано — порожній список', () => {
+    const state = {
+      position: { board: {}, castlingRights: {}, enPassantTarget: null },
+      ui: { selectedSquare: null },
+    };
+
+    const targets = selectLegalTargets(state);
+
+    expect([...targets].sort()).toEqual([]);
+  });
+
+  it('вибраний кінь — повертає всі клітинки, куди він може піти', () => {
+    const state = {
+      position: {
+        board: { e1: 'K', g1: 'N', e8: 'k' },
+        castlingRights: {},
+        enPassantTarget: null,
+      },
+      ui: { selectedSquare: 'g1' },
+    };
+
+    const targets = selectLegalTargets(state);
+
+    expect([...targets].sort()).toEqual(['e2', 'f3', 'h3']);
+  });
+
+  it("слон у зв'язці з королем — жодного легального ходу", () => {
+    const state = {
+      position: {
+        board: { e1: 'K', e2: 'B', e8: 'r', b8: 'k' },
+        castlingRights: {},
+        enPassantTarget: null,
+      },
+      ui: { selectedSquare: 'e2' },
+    };
+
+    const targets = selectLegalTargets(state);
+
+    expect([...targets].sort()).toEqual([]);
+  });
+
+  it("тура у зв'язці з королем — має легальні ходи тільки по вертикалі", () => {
+    const state = {
+      position: {
+        board: { e1: 'K', e2: 'R', e5: 'r', b8: 'k' },
+        castlingRights: {},
+        enPassantTarget: null,
+      },
+      ui: { selectedSquare: 'e2' },
+    };
+
+    const targets = selectLegalTargets(state);
+
+    expect([...targets].sort()).toEqual(['e3', 'e4', 'e5']);
+  });
+
+  it('той самий стан — той самий масив (мемоізація)', () => {
+    const state = {
+      position: {
+        board: { e1: 'K', e2: 'N', c8: 'r', a8: 'k' },
+        castlingRights: {},
+        enPassantTarget: null,
+      },
+      ui: { selectedSquare: 'e2' },
+    };
+
+    expect(selectLegalTargets(state)).toBe(selectLegalTargets(state));
   });
 });

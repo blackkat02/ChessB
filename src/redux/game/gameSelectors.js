@@ -1,12 +1,10 @@
 import { createSelector } from '@reduxjs/toolkit';
+import { getLegalMoves, getPieceColor } from '../../engine';
 import { selectSelectedSquare } from '../ui/uiSelectors';
-import { getPieceColor } from '../../engine';
 import { COLORS } from './gameConstants';
 import {
   selectCurrentTurn,
-  selectPieceColorAt,
-  selectIsSquareEmpty,
-  selectIsOwnPiece,
+  selectPosition,
 } from '../position/positionSelectors';
 
 // Селектори запису партії. Позиція (дошка, черга, права рокіровки, en
@@ -57,18 +55,11 @@ export const selectIsGameOver = (state) => state.game.isGameOver;
 export const selectWinner = (state) => state.game.winner;
 export const selectReason = (state) => state.game.reason;
 
-export const selectLegalTargets = (state, from, to) => {
-  if (!from) return false;
+export const selectLegalTargets = createSelector(
+  [selectPosition, selectSelectedSquare],
+  (position, from) => {
+    if (!from) return [];
 
-  const movingPieceColor = selectPieceColorAt(state, from);
-  const targetPieceColor = selectPieceColorAt(state, to);
-
-  if (selectIsSquareEmpty(state, from)) return false;
-  if (from === to) return false;
-  if (!selectIsOwnPiece(state, from)) return false;
-  if (targetPieceColor !== null && movingPieceColor === targetPieceColor) {
-    return true;
-  } else {
-    return false;
+    return getLegalMoves(position, from);
   }
-};
+);
