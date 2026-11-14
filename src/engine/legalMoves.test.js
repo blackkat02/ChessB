@@ -3,7 +3,7 @@ import { getPseudoLegalMoves } from './pseudoMoves';
 import { filterByKingSafety, getCastlingMoves } from './legalMoves';
 import { ALL_CASTLING, NO_CASTLING } from '../test/fixtures';
 
-// Крок 3 (docs/move-validation.md, розділ 5): фільтр по безпеці короля.
+// Крок 3 (docs/archive/move-validation.md, розділ 5): фільтр по безпеці короля.
 describe('filterByKingSafety', () => {
   it('не змінює список ходів, якщо король не в небезпеці', () => {
     const board = { d4: 'N', e1: 'K' };
@@ -58,7 +58,7 @@ describe('filterByKingSafety', () => {
   });
 });
 
-// Крок 4 (docs/move-validation.md, розділ 5): рокіровка.
+// Крок 4 (docs/archive/move-validation.md, розділ 5): рокіровка.
 describe('getCastlingMoves', () => {
   it('обидві рокіровки легальні на чистій дошці з повними правами', () => {
     const board = { e1: 'K', a1: 'R', h1: 'R' };

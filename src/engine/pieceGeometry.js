@@ -1,6 +1,6 @@
 // src/engine/pieceGeometry.js
 // Геометрія фігур: зміщення "крокуючих" фігур і напрямки "ковзаючих".
-// Див. docs/move-validation.md, розділ 3.2.
+// Див. docs/archive/move-validation.md, розділ 3.2.
 
 // Кінь: 8 фіксованих зміщень (dRow, dCol), дорога не має значення.
 export const KNIGHT_OFFSETS = [

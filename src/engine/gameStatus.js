@@ -1,6 +1,6 @@
 // src/engine/gameStatus.js
 // Шах / мат / пат — усі три через один і той самий getAllLegalMoves.
-// Див. docs/move-validation.md, розділ 3.5 та розділ 5 (крок 5).
+// Див. docs/archive/move-validation.md, розділ 3.5 та розділ 5 (крок 5).
 
 import { getPieceColor, getOpponentColor } from './chessHelpers';
 import { findKingSquare, getLegalMoves } from './legalMoves';

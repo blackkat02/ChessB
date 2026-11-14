@@ -1,6 +1,6 @@
 // src/engine/attacks.js
 // isSquareAttacked — ключовий перевикористовуваний примітив для шаху,
-// легальності ходу короля й рокіровки. Див. docs/move-validation.md,
+// легальності ходу короля й рокіровки. Див. docs/archive/move-validation.md,
 // розділ 3.3 та розділ 5 (крок 3).
 
 import { algebraicToCoords, coordsToAlgebraic } from './boardUtils';

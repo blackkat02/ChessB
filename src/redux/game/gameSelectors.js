@@ -1,12 +1,10 @@
 import { createSelector } from '@reduxjs/toolkit';
+import { getLegalMoves, getPieceColor } from '../../engine';
 import { selectSelectedSquare } from '../ui/uiSelectors';
-import { getPieceColor } from '../../engine';
 import { COLORS } from './gameConstants';
 import {
   selectCurrentTurn,
-  selectPieceColorAt,
-  selectIsSquareEmpty,
-  selectIsOwnPiece,
+  selectPosition,
 } from '../position/positionSelectors';
 
 // Селектори запису партії. Позиція (дошка, черга, права рокіровки, en
@@ -57,33 +55,11 @@ export const selectIsGameOver = (state) => state.game.isGameOver;
 export const selectWinner = (state) => state.game.winner;
 export const selectReason = (state) => state.game.reason;
 
-// === 3. ВАЛІДАЦІЙНІ СЕЛЕКТОРИ (Move Validation) ===
-// Замінить selectLegalTargets (docs/layer-separation-step4.md, 4.5).
+export const selectLegalTargets = createSelector(
+  [selectPosition, selectSelectedSquare],
+  (position, from) => {
+    if (!from) return [];
 
-// Перевірка: чи не б'ємо ми свого?
-export const selectIsFriendlyFire = (state, toSquareId) => {
-  const fromSquareId = selectSelectedSquare(state);
-
-  console.log('selectIsFriendlyFire старт ');
-  console.log('fromSquareId: ', fromSquareId);
-
-  if (!fromSquareId) return false;
-
-  const movingPieceColor = selectPieceColorAt(state, fromSquareId);
-  const targetPieceColor = selectPieceColorAt(state, toSquareId);
-
-  console.log('movingPieceColor: ', movingPieceColor);
-  console.log('targetPieceColor: ', targetPieceColor);
-
-  return targetPieceColor !== null && movingPieceColor === targetPieceColor;
-};
-
-// Головний валідатор для UI та Бота
-export const selectIsMovePossible = (state, from, to) => {
-  if (selectIsSquareEmpty(state, from)) return false;
-  if (from === to) return false;
-  if (!selectIsOwnPiece(state, from)) return false;
-  if (selectIsFriendlyFire(state, to)) return false;
-
-  return true;
-};
+    return getLegalMoves(position, from);
+  }
+);

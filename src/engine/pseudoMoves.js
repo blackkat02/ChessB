@@ -1,6 +1,6 @@
 // src/engine/pseudoMoves.js
 // Генерація псевдолегальних ходів: геометрія фігури + власні/чужі фігури на
-// шляху, БЕЗ урахування шаху власному королю. Див. docs/move-validation.md,
+// шляху, БЕЗ урахування шаху власному королю. Див. docs/archive/move-validation.md,
 // розділ 3.1, 3.2 та розділ 5 (крок 1).
 
 import { algebraicToCoords, coordsToAlgebraic } from './boardUtils';
@@ -70,7 +70,7 @@ function getSlidingMoves(board, square, directions, color) {
 }
 
 // Пішак: окремий випадок, що не вкладається в "крокуючі"/"ковзаючі"
-// (docs/move-validation.md, розділ 3.2).
+// (docs/archive/move-validation.md, розділ 3.2).
 function getPawnMoves(board, square, color, enPassantTarget) {
   const { row, col } = algebraicToCoords(square);
   const moves = [];
@@ -121,7 +121,7 @@ function getPawnMoves(board, square, color, enPassantTarget) {
  * геометрично, без урахування безпеки власного короля. Не включає
  * рокіровку — це окрема функція `getCastlingMoves` (legalMoves.js), бо
  * рокіровка не вкладається в "звичайну" геометрію ходу (докладніше —
- * docs/move-validation.md, розділ 3.4).
+ * docs/archive/move-validation.md, розділ 3.4).
  *
  * @param {Record<string, string>} board - плоский об'єкт 'клітинка' -> FEN-символ
  * @param {string} square - клітинка фігури, що ходить (наприклад, 'e2')

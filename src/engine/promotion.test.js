@@ -6,7 +6,7 @@ import {
   DEFAULT_PROMOTION_PIECE,
 } from './promotion';
 
-// Крок 6 (docs/move-validation.md, розділ 5): промоція пішака.
+// Крок 6 (docs/archive/move-validation.md, розділ 5): промоція пішака.
 describe('requiresPromotion', () => {
   it('білий пішак на 8-му ряді вимагає промоції', () => {
     expect(requiresPromotion('P', 'e8')).toBe(true);
