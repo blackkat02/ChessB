@@ -6,6 +6,7 @@
 | [`roadmap.md`](roadmap.md)                                         | Що лишилось зробити, з пріоритетами, залежностями і критеріями «готово». **Єдине місце статусу задач** | Вибираючи наступну задачу                    |
 | [`layer-separation-step4.md`](layer-separation-step4.md)           | Активна задача: крок 4 рефакторингу (слайси). Лишились 4.0, 4.5, 4.7                                   | Під час кроку 4                              |
 | [`livecoding-05-legal-targets.md`](livecoding-05-legal-targets.md) | Активна live-coding сесія: `selectLegalTargets`                                                        | Під час сесії (розділ «Для ментора» — після) |
+| [`livecoding-06-move-highlight.md`](livecoding-06-move-highlight.md) | Наступна live-coding сесія: підсвітка легальних ходів (F1)                                             | Під час сесії (розділ «Для ментора» — після) |
 | [`chess-multiplayer.md`](chess-multiplayer.md)                     | Draft мультиплеєра. Копія з репозиторію SyncEvent — правити там                                        | Плануючи сервер                              |
 | [`archive/`](archive/README.md)                                    | Виконані задачі, live coding 01–04, ранні дизайн-документи                                             | Щоб зрозуміти, чому рішення саме таке        |
 

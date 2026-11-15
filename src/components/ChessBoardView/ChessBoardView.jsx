@@ -9,6 +9,7 @@ const ChessBoardView = ({
   showSquareId,
   boardPiecesObject,
   selectedSquare,
+  legalMoves,
   onClick,
   flipped,
 }) => {
@@ -34,13 +35,22 @@ const ChessBoardView = ({
             showSquareId={showSquareId}
             pieceType={getPieceAtSquareId(squareId)}
             isSelected={selectedSquare === squareId}
+            islegalMoves={legalMoves === squareId}
             onClick={onClick}
           />
         );
       }
     }
     return squares;
-  }, [files, ranks, showSquareId, selectedSquare, getPieceAtSquareId, onClick]);
+  }, [
+    files,
+    ranks,
+    showSquareId,
+    selectedSquare,
+    legalMoves,
+    getPieceAtSquareId,
+    onClick,
+  ]);
 
   return (
     <div className="w-full max-w-[var(--c-board-max-width)] select-none font-ui">
@@ -73,6 +83,7 @@ const ChessBoardView = ({
 ChessBoardView.propTypes = {
   boardPiecesObject: PropTypes.object.isRequired,
   selectedSquare: PropTypes.string,
+  legalMoves: PropTypes.arrayOf(PropTypes.string),
   onClick: PropTypes.func.isRequired,
   showSquareId: PropTypes.bool,
   flipped: PropTypes.bool,

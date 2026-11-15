@@ -12,11 +12,25 @@ const tooltipVariants = {
     x: '-50%',
     transition: { type: 'spring', stiffness: 300, damping: 20 },
   },
-  exit: { opacity: 0, y: -10, scale: 0.8, x: '-50%', transition: { duration: 0.15 } },
+  exit: {
+    opacity: 0,
+    y: -10,
+    scale: 0.8,
+    x: '-50%',
+    transition: { duration: 0.15 },
+  },
 };
 
 const Square = React.memo(
-  ({ id, isLight, showSquareId, pieceType, onClick, isSelected }) => {
+  ({
+    id,
+    isLight,
+    showSquareId,
+    isLegalMoves,
+    pieceType,
+    onClick,
+    isSelected,
+  }) => {
     const [isHovered, setIsHovered] = useState(false);
 
     return (
@@ -31,7 +45,8 @@ const Square = React.memo(
         className={clsx(
           'relative flex aspect-square w-full items-center justify-center border-0 p-0 outline-none',
           isLight ? 'bg-square-light' : 'bg-square-dark',
-          isSelected && 'bg-square-selected shadow-[var(--c-square-selected-inset)]'
+          isSelected &&
+            'bg-square-selected shadow-[var(--c-square-selected-inset)]'
         )}
       >
         <AnimatePresence>
@@ -49,6 +64,12 @@ const Square = React.memo(
         </AnimatePresence>
 
         {showSquareId && (
+          <span className="pointer-events-none absolute bottom-0.5 left-1 text-[10px] font-semibold text-square-coord">
+            {id}
+          </span>
+        )}
+
+        {isLegalMoves && (
           <span className="pointer-events-none absolute bottom-0.5 left-1 text-[10px] font-semibold text-square-coord">
             {id}
           </span>
