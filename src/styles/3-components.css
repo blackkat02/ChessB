@@ -22,7 +22,11 @@
   --c-nav-link-fg-hover: var(--sem-fg);
   --c-nav-link-bg-hover: var(--sem-bg-surface-sunk);
   --c-nav-link-fg-active: var(--sem-accent);
-  --c-nav-link-bg-active: color-mix(in srgb, var(--sem-accent) 12%, transparent);
+  --c-nav-link-bg-active: color-mix(
+    in srgb,
+    var(--sem-accent) 12%,
+    transparent
+  );
 
   /* ── Button ──────────────────────────────────────────── */
   --c-btn-radius: var(--sem-radius-control);
@@ -52,6 +56,7 @@
   --c-square-dark-bg: var(--sem-board-square-dark);
   --c-square-selected-bg: var(--sem-board-highlight);
   --c-square-selected-inset: inset 0 0 0 3px rgba(0, 0, 0, 0.25);
+  --c-square-target-bg: rgba(0, 0, 0, 0.22);
   --c-square-tooltip-bg: rgba(0, 0, 0, 0.8);
   --c-square-tooltip-fg: var(--prim-base-0);
   --c-square-coord-fg: rgba(0, 0, 0, 0.4);
@@ -62,10 +67,8 @@
   --c-piece-white-fill: var(--prim-base-0);
   --c-piece-black-fill: var(--prim-base-900);
   --c-piece-white-shadow:
-    -1px -1px 0 rgba(0, 0, 0, 0.75),
-    1px -1px 0 rgba(0, 0, 0, 0.75),
-    -1px 1px 0 rgba(0, 0, 0, 0.75),
-    1px 1px 0 rgba(0, 0, 0, 0.75),
+    -1px -1px 0 rgba(0, 0, 0, 0.75), 1px -1px 0 rgba(0, 0, 0, 0.75),
+    -1px 1px 0 rgba(0, 0, 0, 0.75), 1px 1px 0 rgba(0, 0, 0, 0.75),
     0 1px 3px rgba(0, 0, 0, 0.45);
   --c-piece-black-shadow: 0 1px 1px rgba(255, 255, 255, 0.25);
 
@@ -131,6 +134,7 @@
   --color-square-light: var(--c-square-light-bg);
   --color-square-dark: var(--c-square-dark-bg);
   --color-square-selected: var(--c-square-selected-bg);
+  --color-square-target: var(--c-square-target-bg);
   --color-square-tooltip: var(--c-square-tooltip-bg);
   --color-square-tooltip-fg: var(--c-square-tooltip-fg);
   --color-square-coord: var(--c-square-coord-fg);

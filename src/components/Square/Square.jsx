@@ -26,7 +26,7 @@ const Square = React.memo(
     id,
     isLight,
     showSquareId,
-    isLegalMoves,
+    targetMark,
     pieceType,
     onClick,
     isSelected,
@@ -69,10 +69,18 @@ const Square = React.memo(
           </span>
         )}
 
-        {isLegalMoves && (
-          <span className="pointer-events-none absolute bottom-0.5 left-1 text-[10px] font-semibold text-square-coord">
-            {id}
-          </span>
+        {targetMark === 'move' && (
+          <span
+            data-testid="move-target"
+            className="pointer-events-none absolute h-1/4 w-1/4 rounded-full bg-square-target"
+          />
+        )}
+
+        {targetMark === 'capture' && (
+          <span
+            data-testid="capture-target"
+            className="pointer-events-none absolute inset-0.5 rounded-full border-4 border-square-target"
+          />
         )}
 
         {pieceType && <Piece type={pieceType} />}

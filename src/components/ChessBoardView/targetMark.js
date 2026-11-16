@@ -4,11 +4,10 @@
  * @param {string} squareId
  */
 export function getTargetMark(legalTargets, board, squareId) {
-  console.log(board);
   const isLegal = legalTargets.includes(squareId);
   if (!isLegal) return null;
 
-  const isPiece = board[squareId];
+  const piece = board[squareId];
 
-  return isPiece ? 'capture' : 'move';
+  return piece ? 'capture' : 'move';
 }
