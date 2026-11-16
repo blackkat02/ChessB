@@ -1,6 +1,7 @@
 import React, { useMemo, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import Square from '../Square/Square';
+import { getTargetMark } from './targetMark';
 
 const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 const RANKS = ['8', '7', '6', '5', '4', '3', '2', '1'];
@@ -9,6 +10,7 @@ const ChessBoardView = ({
   showSquareId,
   boardPiecesObject,
   selectedSquare,
+  legalTargets,
   onClick,
   flipped,
 }) => {
@@ -26,6 +28,11 @@ const ChessBoardView = ({
       for (let j = 0; j < 8; j++) {
         const isLight = (i + j) % 2 === 0;
         const squareId = `${files[j]}${ranks[i]}`;
+        const targetMark = getTargetMark(
+          legalTargets,
+          boardPiecesObject,
+          squareId
+        );
         squares.push(
           <Square
             key={squareId}
@@ -34,13 +41,23 @@ const ChessBoardView = ({
             showSquareId={showSquareId}
             pieceType={getPieceAtSquareId(squareId)}
             isSelected={selectedSquare === squareId}
+            targetMark={targetMark}
             onClick={onClick}
           />
         );
       }
     }
     return squares;
-  }, [files, ranks, showSquareId, selectedSquare, getPieceAtSquareId, onClick]);
+  }, [
+    files,
+    ranks,
+    showSquareId,
+    selectedSquare,
+    legalTargets,
+    boardPiecesObject,
+    getPieceAtSquareId,
+    onClick,
+  ]);
 
   return (
     <div className="w-full max-w-[var(--c-board-max-width)] select-none font-ui">
@@ -73,6 +90,7 @@ const ChessBoardView = ({
 ChessBoardView.propTypes = {
   boardPiecesObject: PropTypes.object.isRequired,
   selectedSquare: PropTypes.string,
+  legalTargets: PropTypes.arrayOf(PropTypes.string).isRequired,
   onClick: PropTypes.func.isRequired,
   showSquareId: PropTypes.bool,
   flipped: PropTypes.bool,

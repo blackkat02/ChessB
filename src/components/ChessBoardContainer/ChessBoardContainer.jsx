@@ -1,6 +1,7 @@
 import { useSelector } from 'react-redux';
 import { selectBoard } from '../../redux/position/positionSelectors';
 import { selectSelectedSquare } from '../../redux/ui/uiSelectors';
+import { selectLegalTargets } from '../../redux/game/gameSelectors';
 import { useGameState } from '../../hooks/useGameState';
 import { getPieceColor } from '../../engine/chessHelpers';
 import ChessBoardView from '../ChessBoardView/ChessBoardView';
@@ -9,6 +10,7 @@ import PromotionModal from '../PromotionModal/PromotionModal';
 const ChessBoardContainer = ({ showSquareId, flipped }) => {
   const boardPiecesObject = useSelector(selectBoard);
   const selectedSquare = useSelector(selectSelectedSquare);
+  const legalTargets = useSelector(selectLegalTargets);
 
   const {
     handleSquareClick,
@@ -23,6 +25,7 @@ const ChessBoardContainer = ({ showSquareId, flipped }) => {
         showSquareId={showSquareId}
         boardPiecesObject={boardPiecesObject}
         selectedSquare={selectedSquare}
+        legalTargets={legalTargets}
         onClick={handleSquareClick}
         flipped={flipped}
       />
