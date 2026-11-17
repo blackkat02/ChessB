@@ -1,7 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import ChessBoardView from './ChessBoardView';
-import { getTargetMark } from './targetMark';
 
 describe('ChessBoardView — позначки ходів', () => {
   it('дві порожні легальні клітинки — дві точки, жодного кільця', () => {
