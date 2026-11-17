@@ -5,7 +5,9 @@ import { COLORS } from './gameConstants';
 import {
   selectCurrentTurn,
   selectPosition,
+  selectBoard,
 } from '../position/positionSelectors';
+import { buildTargetMarks } from '../../components/ChessBoardView/targetMark';
 
 // Селектори запису партії. Позиція (дошка, черга, права рокіровки, en
 // passant) — у ../position/positionSelectors.js (docs/layer-separation-step4.md, 4.4).
@@ -62,4 +64,9 @@ export const selectLegalTargets = createSelector(
 
     return getLegalMoves(position, from);
   }
+);
+
+export const selectTargetMarks = createSelector(
+  [selectLegalTargets, selectBoard],
+  buildTargetMarks
 );
