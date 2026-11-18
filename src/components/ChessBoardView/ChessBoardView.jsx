@@ -1,7 +1,6 @@
 import React, { useMemo, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import Square from '../Square/Square';
-import { getTargetMark } from './targetMark';
 
 const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 const RANKS = ['8', '7', '6', '5', '4', '3', '2', '1'];
@@ -10,7 +9,7 @@ const ChessBoardView = ({
   showSquareId,
   boardPiecesObject,
   selectedSquare,
-  legalTargets,
+  targetMarks,
   onClick,
   flipped,
 }) => {
@@ -28,11 +27,6 @@ const ChessBoardView = ({
       for (let j = 0; j < 8; j++) {
         const isLight = (i + j) % 2 === 0;
         const squareId = `${files[j]}${ranks[i]}`;
-        const targetMark = getTargetMark(
-          legalTargets,
-          boardPiecesObject,
-          squareId
-        );
         squares.push(
           <Square
             key={squareId}
@@ -41,7 +35,7 @@ const ChessBoardView = ({
             showSquareId={showSquareId}
             pieceType={getPieceAtSquareId(squareId)}
             isSelected={selectedSquare === squareId}
-            targetMark={targetMark}
+            targetMark={targetMarks[squareId] ?? null}
             onClick={onClick}
           />
         );
@@ -53,8 +47,7 @@ const ChessBoardView = ({
     ranks,
     showSquareId,
     selectedSquare,
-    legalTargets,
-    boardPiecesObject,
+    targetMarks,
     getPieceAtSquareId,
     onClick,
   ]);
@@ -90,7 +83,7 @@ const ChessBoardView = ({
 ChessBoardView.propTypes = {
   boardPiecesObject: PropTypes.object.isRequired,
   selectedSquare: PropTypes.string,
-  legalTargets: PropTypes.arrayOf(PropTypes.string).isRequired,
+  targetMarks: PropTypes.object.isRequired,
   onClick: PropTypes.func.isRequired,
   showSquareId: PropTypes.bool,
   flipped: PropTypes.bool,
