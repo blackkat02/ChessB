@@ -3,6 +3,7 @@ import {
   selectMovePairs,
   selectClockRemaining,
   selectLegalTargets,
+  selectTargetMarks,
 } from './gameSelectors';
 import { COLORS } from './gameConstants';
 
@@ -214,5 +215,53 @@ describe('selectLegalTargets', () => {
     };
 
     expect(selectLegalTargets(state)).toBe(selectLegalTargets(state));
+  });
+});
+
+describe('selectTargetMarks', () => {
+  it('вибраний пішак — точки на порожніх клітинках, кільце на взятті', () => {
+    const state = {
+      position: {
+        board: { e1: 'K', e2: 'P', d3: 'p', e8: 'k' },
+        castlingRights: {},
+        enPassantTarget: null,
+      },
+      ui: { selectedSquare: 'e2' },
+    };
+
+    const marks = selectTargetMarks(state);
+
+    expect(marks).toEqual({ e3: 'move', e4: 'move', d3: 'capture' });
+  });
+
+  it('нічого не вибрано', () => {
+    const state = {
+      position: {
+        board: { e1: 'K', e2: 'P', d3: 'p', e8: 'k' },
+        castlingRights: {},
+        enPassantTarget: null,
+      },
+      ui: { selectedSquare: null },
+    };
+
+    const marks = selectTargetMarks(state);
+
+    expect(marks).toEqual({});
+  });
+
+  it("той самий стан двічі → той самий об'єкт", () => {
+    const state = {
+      position: {
+        board: { e1: 'K', e2: 'P', d3: 'p', e8: 'k' },
+        castlingRights: {},
+        enPassantTarget: null,
+      },
+      ui: { selectedSquare: 'e2' },
+    };
+
+    const first = selectTargetMarks(state);
+    const second = selectTargetMarks(state);
+
+    expect(second).toBe(first);
   });
 });
