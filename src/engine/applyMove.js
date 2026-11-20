@@ -1,5 +1,5 @@
 import { algebraicToCoords, coordsToAlgebraic } from './boardUtils';
-import { getPieceColor, getOpponentColor } from './chessHelpers';
+import { getPieceColor, getPieceType, getOpponentColor } from './chessHelpers';
 import { requiresPromotion, resolvePromotionPiece } from './promotion';
 import { COLORS } from './constants';
 
@@ -37,7 +37,7 @@ export function applyMove(position, move) {
   let captured = board[to] || null;
 
   const isEnPassantCapture =
-    piece.toUpperCase() === 'P' && to === position.enPassantTarget && !captured;
+    getPieceType(piece) === 'P' && to === position.enPassantTarget && !captured;
 
   if (isEnPassantCapture) {
     const { row: fromRow } = algebraicToCoords(from);
@@ -76,7 +76,7 @@ export function applyMove(position, move) {
       captured: captured,
       castling: castlingRookMove?.side ?? null,
       enPassant: isEnPassantCapture,
-      promotion: isPromotion ? pieceToPlace.toUpperCase() : null,
+      promotion: isPromotion ? getPieceType(pieceToPlace) : null,
     },
   };
 }
@@ -84,7 +84,7 @@ export function applyMove(position, move) {
 export function nextCastlingRights(current, { from, to, piece }) {
   const rights = { ...current };
 
-  if (piece.toUpperCase() === 'K') {
+  if (getPieceType(piece) === 'K') {
     if (getPieceColor(piece) === COLORS.WHITE) {
       rights.whiteShort = false;
       rights.whiteLong = false;
@@ -92,7 +92,7 @@ export function nextCastlingRights(current, { from, to, piece }) {
       rights.blackShort = false;
       rights.blackLong = false;
     }
-  } else if (piece.toUpperCase() === 'R' && ROOK_HOME_SQUARE_RIGHT[from]) {
+  } else if (getPieceType(piece) === 'R' && ROOK_HOME_SQUARE_RIGHT[from]) {
     // Важливо перевіряти саме тип фігури: клітинка a1/h1/a8/h8 могла вже
     // давно приймати іншу фігуру (наприклад, ферзя), і її від'їзд звідти
     // не повинен відбирати право рокіровки, яке стосується самої тури.
@@ -109,7 +109,7 @@ export function nextCastlingRights(current, { from, to, piece }) {
 // enPassantTarget живе рівно один напівхід: встановлюється тільки одразу
 // після ходу пішака на 2 клітинки, інакше завжди скидається в null.
 export function nextEnPassantTarget({ piece, from, to }) {
-  if (piece.toUpperCase() !== 'P') return null;
+  if (getPieceType(piece) !== 'P') return null;
 
   const { row: fromRow, col: fromCol } = algebraicToCoords(from);
   const { row: toRow } = algebraicToCoords(to);
@@ -125,6 +125,6 @@ export function nextEnPassantTarget({ piece, from, to }) {
  * @param {string | number} to
  */
 export function getCastlingRookMove(piece, from, to) {
-  if (piece.toUpperCase() !== 'K') return null;
+  if (getPieceType(piece) !== 'K') return null;
   return CASTLING_ROOK_MOVES[from]?.[to] ?? null;
 }

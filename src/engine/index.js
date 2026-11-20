@@ -9,6 +9,6 @@ export { applyMove } from './applyMove';
 export { getLegalMoves, isMoveLegal } from './legalMoves';
 export { getStatus } from './gameStatus';
 export { buildSan as toSan } from './notation';
-export { getPieceColor, getOpponentColor } from './chessHelpers';
+export { getPieceColor, getPieceType, getOpponentColor } from './chessHelpers';
 export { requiresPromotion, isValidPromotionPiece } from './promotion';
 export { COLORS } from './constants';

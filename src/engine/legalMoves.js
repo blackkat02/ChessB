@@ -4,7 +4,7 @@
 // розділ 5 (кроки 3-4).
 
 import { algebraicToCoords, coordsToAlgebraic } from './boardUtils';
-import { getPieceColor, getOpponentColor } from './chessHelpers';
+import { getPieceColor, getPieceType, getOpponentColor } from './chessHelpers';
 import { getPseudoLegalMoves } from './pseudoMoves';
 import { COLORS } from './constants';
 import { isSquareAttacked } from './attacks';
@@ -32,7 +32,7 @@ export function getLegalMoves(position, from) {
 
   // Рокіровку не фільтруємо: getCastlingMoves сам перевіряє шах і прохід.
   const castling =
-    piece.toUpperCase() === 'K'
+    getPieceType(piece) === 'K'
       ? getCastlingMoves(board, color, castlingRights)
       : [];
 
@@ -65,7 +65,7 @@ function simulateMove(board, from, to, enPassantTarget) {
   delete boardAfterMove[from];
 
   const isEnPassantCapture =
-    piece?.toUpperCase() === 'P' && to === enPassantTarget && !board[to];
+    getPieceType(piece) === 'P' && to === enPassantTarget && !board[to];
 
   if (isEnPassantCapture) {
     const { row: fromRow } = algebraicToCoords(from);
