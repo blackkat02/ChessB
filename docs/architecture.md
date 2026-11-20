@@ -75,6 +75,7 @@ position = {
 | `getStatus(position, color)`                               | `{ isCheck, isCheckmate, isStalemate }` | легальні ходи рахуються один раз                                                                                          |
 | `toSan(positionBefore, move, status)`                      | `'Nbd2+'`                               | `buildSan`; `status` — суперника **після** ходу                                                                           |
 | `getPieceColor`, `getOpponentColor`                        | колір                                   |                                                                                                                           |
+| `getPieceType(piece)`                                      | `'P'`, `'N'`, … або `null`              | тип без кольору; порожня клітинка → `null`. Рушій перевіряє тип фігури лише через неї                                     |
 | `requiresPromotion(piece, to)`, `isValidPromotionPiece(p)` | `boolean`                               |                                                                                                                           |
 | `COLORS`                                                   | `{ WHITE: 'w', BLACK: 'b' }`            | Redux ре-експортує для UI через `gameConstants.js`                                                                        |
 
@@ -178,7 +179,7 @@ position = {
 | Файл                            | Що                                                                                                                                                 |
 | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `position/positionSelectors.js` | `selectPosition` (без `createSelector`: `state.position` уже стабільний референс), `selectBoard`, `selectCurrentTurn` та дрібні селектори клітинок |
-| `game/gameSelectors.js`         | годинники, `selectClockRemaining`, `selectMovePairs`, результат партії                                                                             |
+| `game/gameSelectors.js`         | годинники, `selectClockRemaining`, `selectMovePairs`, результат партії, `selectLegalTargets`, `selectTargetMarks` (див. §6)                        |
 | `ui/uiSelectors.js`             | `selectSelectedSquare`, `selectPlayerSide`                                                                                                         |
 
 ## 4. Годинник
@@ -230,6 +231,21 @@ position = {
 - `HomePage` — адаптивний макет (дошка, годинники поруч, панель, список ходів).
 - `ChessBoardContainer` / `ChessBoardView` / `Square` / `Piece` — дошка,
   розворот за `playerSide`, підсвітка вибраної клітинки.
+- Позначки легальних ходів: точка — хід, кільце — взяття. `selectTargetMarks`
+  один раз на всю дошку будує `{ e3: 'move', d5: 'capture' }`
+  (`buildTargetMarks(legalTargets, board, from)`), `ChessBoardView` передає
+  в кожен `Square` лише рядок або `null` — тож `React.memo` перемальовує
+  тільки клітинки, чия позначка змінилась.
+  - Рушій повертає лише клітинки, тому «це взяття» визначає UI: на клітинці
+    є фігура **або** ходить пішак і вертикаль цілі інша, ніж у `from`.
+    Пішак ходить по діагоналі лише коли б'є, тож це покриває взяття на
+    проході (ціль порожня) без `enPassantTarget`. Рокіровка — точка.
+  - Легальність UI не перевіряє: цикл іде лише по `legalTargets`.
+  - Відкладено: рушій повертає об'єкти ходів з прапорцями
+    (`{ to, capture, enPassant, castling }`, як у chess.js і python-chess).
+    Повернутись, коли інформація про хід знадобиться ще комусь (нотація,
+    звуки, анімація). Відкинуто: перевірка `enPassantTarget` в UI (третя
+    копія правила з `applyMove` і `legalMoves`) і фіктивна фігура в `board`.
 - `useGameState` — клік по клітинці: вибір своєї фігури → перевибір →
   `PromotionModal` для промоції → `attemptMove`. Поки модалка відкрита,
   дошка заблокована.
@@ -244,11 +260,11 @@ position = {
 Vitest + jsdom + Testing Library; тести лежать поруч із кодом. Як
 запускати — кореневий `README.md`.
 
-| Шар   | Файли                                                                                                                                                |
-| ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Рушій | `applyMove`, `attacks`, `boardUtils`, `gameStatus`, `legalMoves`, `notation`, `pieceGeometry`, `promotion`, `pseudoMoves`, `index` (контракт фасаду) |
-| Redux | `gameEvents`, `gameOperations` (thunk-и через справжній store), `gameSelectors`, `gameSlice`, `positionSlice`, `uiSlice`, `persistGame`, `store`     |
-| UI    | `useGameState`, `Clock`, `GameOverModal`                                                                                                             |
+| Шар   | Файли                                                                                                                                                                |
+| ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Рушій | `applyMove`, `attacks`, `boardUtils`, `chessHelpers`, `gameStatus`, `legalMoves`, `notation`, `pieceGeometry`, `promotion`, `pseudoMoves`, `index` (контракт фасаду) |
+| Redux | `gameEvents`, `gameOperations` (thunk-и через справжній store), `gameSelectors`, `gameSlice`, `positionSlice`, `uiSlice`, `persistGame`, `store`                     |
+| UI    | `useGameState`, `Clock`, `GameOverModal`, `ChessBoardView`, `buildTargetMarks`                                                                                       |
 
 Розподіл перевірок: шахові правила — у тестах рушія; «хід дійшов до стану»
 — через `attemptMove`; тести слайсів перевіряють лише запис payload
@@ -289,3 +305,4 @@ Vitest + jsdom + Testing Library; тести лежать поруч із код
 | Годинник на якорі `turnStartedAt`, без паузи                             | `archive/clock-and-game-record.md` §4, §6.1                        |
 | Власний `persistGame.js` з версією замість `redux-persist`, без міграцій | `archive/clock-and-game-record.md`, `archive/next-steps.md` крок 1 |
 | Спільні фікстури вибірково, `store.js` окремо                            | `archive/test-fixtures.md`                                         |
+| Рушій повертає клітинки; взяття для позначок визначає UI                 | §6                                                                 |

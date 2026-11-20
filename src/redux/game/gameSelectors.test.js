@@ -264,4 +264,43 @@ describe('selectTargetMarks', () => {
 
     expect(second).toBe(first);
   });
+
+  it('взяття на проході — кільце на порожній клітинці', () => {
+    const state = {
+      position: {
+        board: { e1: 'K', e5: 'P', d5: 'p', e8: 'k' },
+        castlingRights: {},
+        enPassantTarget: 'd6',
+      },
+      ui: { selectedSquare: 'e5' },
+    };
+
+    expect(selectTargetMarks(state)).toEqual({ e6: 'move', d6: 'capture' });
+  });
+
+  it('кінь на клітинку взяття на проході — звичайний хід', () => {
+    const state = {
+      position: {
+        board: { e1: 'K', c4: 'N', d5: 'p', e8: 'k' },
+        castlingRights: {},
+        enPassantTarget: 'd6',
+      },
+      ui: { selectedSquare: 'c4' },
+    };
+
+    expect(selectTargetMarks(state).d6).toBe('move');
+  });
+
+  it('рокіровка — точка на клітинці короля', () => {
+    const state = {
+      position: {
+        board: { e1: 'K', h1: 'R', e8: 'k' },
+        castlingRights: { whiteShort: true },
+        enPassantTarget: null,
+      },
+      ui: { selectedSquare: 'e1' },
+    };
+
+    expect(selectTargetMarks(state).g1).toBe('move');
+  });
 });
