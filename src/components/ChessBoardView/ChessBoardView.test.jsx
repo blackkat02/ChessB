@@ -8,7 +8,7 @@ describe('ChessBoardView — позначки ходів', () => {
       <ChessBoardView
         boardPiecesObject={{ e2: 'P' }}
         selectedSquare="e2"
-        legalTargets={['e3', 'e4']}
+        targetMarks={{ e3: 'move', e4: 'move' }}
         onClick={vi.fn()}
       />
     );
@@ -22,7 +22,7 @@ describe('ChessBoardView — позначки ходів', () => {
       <ChessBoardView
         boardPiecesObject={{ e4: 'P', d5: 'p' }}
         selectedSquare="e2"
-        legalTargets={['e5', 'd5']}
+        targetMarks={{ e5: 'move', d5: 'capture' }}
         onClick={vi.fn()}
       />
     );
@@ -33,12 +33,10 @@ describe('ChessBoardView — позначки ходів', () => {
   });
 
   it('нічого не вибрано — жодної позначки', () => {
-    // legalTargets: []
     render(
       <ChessBoardView
         boardPiecesObject={{ e2: 'P' }}
-        selectedSquare="e2"
-        legalTargets={[]}
+        targetMarks={{}}
         onClick={vi.fn()}
       />
     );
