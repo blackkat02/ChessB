@@ -84,5 +84,21 @@ export function isStalemate(gameState, color) {
  * @returns {string[]}
  */
 export function getNonKingPieces(board) {
-  return Object.values(board).filter((piece) => piece.toUpperCase() !== 'K');
+  return Object.values(board).filter((piece) => getPieceType(piece) !== 'K');
+}
+
+export function isInsufficientMaterial(board) {
+  const nonKingPiecesLength = getNonKingPieces(board).length;
+  const nonKingPiece = getPieceType(getNonKingPieces(board)[0]);
+
+  if (nonKingPiecesLength === 0) {
+    return true;
+  } else if (
+    nonKingPiecesLength === 1 &&
+    (nonKingPiece === 'B' || nonKingPiece === 'N')
+  ) {
+    return true;
+  }
+
+  return false;
 }
