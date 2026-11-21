@@ -5,7 +5,7 @@
 // дефолтом (ферзь), поки UI-вибору ще не існує. Див. docs/archive/move-validation.md,
 // розділ 3.4 та розділ 5 (крок 6).
 
-import { getPieceColor } from './chessHelpers';
+import { getPieceColor, getPieceType } from './chessHelpers';
 import { COLORS } from './constants';
 
 const LAST_RANK = { [COLORS.WHITE]: '8', [COLORS.BLACK]: '1' };
@@ -21,7 +21,7 @@ export const DEFAULT_PROMOTION_PIECE = 'Q';
  * @returns {boolean}
  */
 export function requiresPromotion(piece, to) {
-  if (!piece || piece.toUpperCase() !== 'P') return false;
+  if (getPieceType(piece) !== 'P') return false;
   return to[1] === LAST_RANK[getPieceColor(piece)];
 }
 

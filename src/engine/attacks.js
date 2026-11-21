@@ -4,7 +4,7 @@
 // розділ 3.3 та розділ 5 (крок 3).
 
 import { algebraicToCoords, coordsToAlgebraic } from './boardUtils';
-import { getPieceColor } from './chessHelpers';
+import { getPieceColor, getPieceType } from './chessHelpers';
 import { COLORS } from './constants';
 import {
   KNIGHT_OFFSETS,
@@ -74,7 +74,7 @@ export function isSquareAttacked(board, square, byColor) {
   for (const [pieceSquare, piece] of Object.entries(board)) {
     if (getPieceColor(piece) !== byColor) continue;
 
-    const pieceType = piece.toUpperCase();
+    const pieceType = getPieceType(piece);
 
     switch (pieceType) {
       case 'P':

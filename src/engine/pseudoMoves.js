@@ -4,7 +4,7 @@
 // розділ 3.1, 3.2 та розділ 5 (крок 1).
 
 import { algebraicToCoords, coordsToAlgebraic } from './boardUtils';
-import { getPieceColor } from './chessHelpers';
+import { getPieceColor, getPieceType } from './chessHelpers';
 import { COLORS } from './constants';
 import {
   KNIGHT_OFFSETS,
@@ -133,7 +133,7 @@ export function getPseudoLegalMoves(board, square, enPassantTarget = null) {
   if (!piece) return [];
 
   const color = getPieceColor(piece);
-  const pieceType = piece.toUpperCase();
+  const pieceType = getPieceType(piece);
 
   switch (pieceType) {
     case 'P':

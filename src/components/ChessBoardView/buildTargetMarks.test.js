@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildTargetMarks } from './targetMark';
+import { buildTargetMarks } from './buildTargetMarks';
 
 describe('buildTargetMarks', () => {
   it('порожні клітинки — усі move', () => {
@@ -18,5 +18,18 @@ describe('buildTargetMarks', () => {
 
   it("порожній список — порожній об'єкт", () => {
     expect(buildTargetMarks([], {})).toEqual({});
+  });
+
+  it('пішак по діагоналі на порожню клітинку (на проході) — capture', () => {
+    expect(buildTargetMarks(['e6', 'd6'], { e5: 'P', d5: 'p' }, 'e5')).toEqual({
+      e6: 'move',
+      d6: 'capture',
+    });
+  });
+
+  it('кінь на порожню клітинку — move, правило пішака не діє', () => {
+    expect(buildTargetMarks(['d6'], { c4: 'N' }, 'c4')).toEqual({
+      d6: 'move',
+    });
   });
 });

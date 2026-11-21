@@ -5,7 +5,7 @@
 // побудовані на getAllLegalMoves/isCheck/isCheckmate (docs/archive/move-validation.md,
 // крок 7), бо повний генератор легальних ходів уже готовий (кроки 1-5).
 
-import { getPieceColor } from './chessHelpers';
+import { getPieceColor, getPieceType } from './chessHelpers';
 import { getAllLegalMoves } from './gameStatus';
 
 const fileOf = (square) => square[0];
@@ -16,7 +16,7 @@ const rankOf = (square) => square[1];
 // вперед), король єдиний на дошці — дизамбігувати нема з ким.
 function getDisambiguation(gameStateBeforeMove, move) {
   const { from, to, piece } = move;
-  const pieceType = piece.toUpperCase();
+  const pieceType = getPieceType(piece);
   if (pieceType === 'P' || pieceType === 'K') return '';
 
   const color = getPieceColor(piece);
@@ -24,7 +24,7 @@ function getDisambiguation(gameStateBeforeMove, move) {
     (candidate) =>
       candidate.to === to &&
       candidate.from !== from &&
-      gameStateBeforeMove.board[candidate.from]?.toUpperCase() === pieceType
+      getPieceType(gameStateBeforeMove.board[candidate.from]) === pieceType
   );
 
   if (otherLegalMoves.length === 0) return '';
@@ -70,7 +70,7 @@ export function buildSan(gameStateBeforeMove, move, status = {}) {
   } else if (castling === 'Q') {
     san = 'O-O-O';
   } else {
-    const pieceType = piece.toUpperCase();
+    const pieceType = getPieceType(piece);
     const isCapture = Boolean(captured);
 
     if (pieceType === 'P') {
