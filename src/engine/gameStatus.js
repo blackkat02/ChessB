@@ -2,7 +2,7 @@
 // Шах / мат / пат — усі три через один і той самий getAllLegalMoves.
 // Див. docs/archive/move-validation.md, розділ 3.5 та розділ 5 (крок 5).
 
-import { getPieceColor, getOpponentColor } from './chessHelpers';
+import { getPieceColor, getOpponentColor, getPieceType } from './chessHelpers';
 import { findKingSquare, getLegalMoves } from './legalMoves';
 import { isSquareAttacked } from './attacks';
 
@@ -76,4 +76,13 @@ export function isCheckmate(gameState, color) {
  */
 export function isStalemate(gameState, color) {
   return getStatus(gameState, color).isStalemate;
+}
+
+/**
+ * Фігури без королів: { e1: 'K', c3: 'N', e8: 'k' } → ['N']
+ * @param {Record<string, string>} board
+ * @returns {string[]}
+ */
+export function getNonKingPieces(board) {
+  return Object.values(board).filter((piece) => piece.toUpperCase() !== 'K');
 }

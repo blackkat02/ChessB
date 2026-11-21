@@ -4,6 +4,7 @@ import {
   getAllLegalMoves,
   isCheckmate,
   isStalemate,
+  getNonKingPieces,
 } from './gameStatus';
 import { makeGameState, NO_CASTLING } from '../test/fixtures';
 
@@ -104,5 +105,21 @@ describe('isStalemate', () => {
     const gameState = makeGameState({ e1: 'K', a1: 'R', e8: 'k' });
     expect(isCheckmate(gameState, 'w')).toBe(false);
     expect(isStalemate(gameState, 'w')).toBe(false);
+  });
+});
+
+describe('getNonKingPieces', () => {
+  const kings = { e1: 'K', e8: 'k' };
+
+  it('лише королі — порожній масив', () => {
+    expect(getNonKingPieces(kings)).toEqual([]);
+  });
+
+  it('король і кінь — масив з одного коня', () => {
+    expect(getNonKingPieces({ ...kings, c3: 'N' })).toEqual(['N']);
+  });
+
+  it('фігури обох кольорів — усі, крім королів', () => {
+    expect(getNonKingPieces({ c3: 'N', d5: 'p', a8: 'r' })).toHaveLength(3);
   });
 });
