@@ -87,6 +87,15 @@ export function getNonKingPieces(board) {
   return Object.values(board).filter((piece) => getPieceType(piece) !== 'K');
 }
 
+/**
+ * Пари без королів: { e1: 'K', c1: 'B', e8: 'k' } → [['c1', 'B']]
+ */
+export function getNonKingEntries(board) {
+  return Object.entries(board).filter(
+    ([, piece]) => getPieceType(piece) !== 'K'
+  );
+}
+
 export function isInsufficientMaterial(board) {
   const nonKingPiecesLength = getNonKingPieces(board).length;
   const nonKingPiece = getPieceType(getNonKingPieces(board)[0]);
@@ -98,6 +107,16 @@ export function isInsufficientMaterial(board) {
     (nonKingPiece === 'B' || nonKingPiece === 'N')
   ) {
     return true;
+  }
+
+  const entries = getNonKingEntries(board);
+
+  if (entries.every(([, piece]) => getPieceType(piece) === 'B')) {
+    const squareColor = getSquareColor(entries[0][0]);
+
+    if (entries.every(([square]) => getSquareColor(square) === squareColor)) {
+      return true;
+    }
   }
 
   return false;

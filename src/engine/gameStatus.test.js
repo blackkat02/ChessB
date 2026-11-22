@@ -6,6 +6,7 @@ import {
   isStalemate,
   getNonKingPieces,
   isInsufficientMaterial,
+  getSquareColor,
 } from './gameStatus';
 import { makeGameState, NO_CASTLING } from '../test/fixtures';
 
@@ -142,6 +143,28 @@ describe('isInsufficientMaterial', () => {
     expect(isInsufficientMaterial({ ...kings, f8: 'b' })).toBe(true);
   });
 
+  it('король і 3 чорних слона з одноколірними полями — true', () => {
+    expect(
+      isInsufficientMaterial({ ...kings, f8: 'b', f6: 'b', f4: 'b' })
+    ).toBe(true);
+  });
+
+  it('слони на клітинках різного кольору — false', () => {
+    expect(isInsufficientMaterial({ ...kings, c1: 'B', c8: 'b' })).toBe(false);
+  });
+
+  it('слони одного кольору, але є пішак — false', () => {
+    expect(
+      isInsufficientMaterial({ ...kings, c1: 'B', c7: 'b', e4: 'P' })
+    ).toBe(false);
+  });
+
+  it('король і 3 чорних слона та 1 білий з одноколірними полями — true', () => {
+    expect(
+      isInsufficientMaterial({ ...kings, f8: 'b', f6: 'b', f4: 'b', f2: 'B' })
+    ).toBe(true);
+  });
+
   it('є пішак — false', () => {
     expect(isInsufficientMaterial({ ...kings, e2: 'P' })).toBe(false);
   });
@@ -156,5 +179,23 @@ describe('isInsufficientMaterial', () => {
 
   it('слон проти коня — false', () => {
     expect(isInsufficientMaterial({ ...kings, b2: 'b', f2: 'N' })).toBe(false);
+  });
+});
+
+describe('getSquareColor', () => {
+  it('a1 — dark', () => {
+    expect(getSquareColor('a1')).toBe('dark');
+  });
+
+  it('h1 — light', () => {
+    expect(getSquareColor('h1')).toBe('light');
+  });
+
+  it('d4 — dark', () => {
+    expect(getSquareColor('a1')).toBe('dark');
+  });
+
+  it('e4 — light', () => {
+    expect(getSquareColor('h1')).toBe('light');
   });
 });
