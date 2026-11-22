@@ -4,6 +4,8 @@ import {
   getAllLegalMoves,
   isCheckmate,
   isStalemate,
+  getNonKingPieces,
+  isInsufficientMaterial,
 } from './gameStatus';
 import { makeGameState, NO_CASTLING } from '../test/fixtures';
 
@@ -104,5 +106,55 @@ describe('isStalemate', () => {
     const gameState = makeGameState({ e1: 'K', a1: 'R', e8: 'k' });
     expect(isCheckmate(gameState, 'w')).toBe(false);
     expect(isStalemate(gameState, 'w')).toBe(false);
+  });
+});
+
+describe('getNonKingPieces', () => {
+  const kings = { e1: 'K', e8: 'k' };
+
+  it('лише королі — порожній масив', () => {
+    expect(getNonKingPieces(kings)).toEqual([]);
+  });
+
+  it('король і кінь — масив з одного коня', () => {
+    expect(getNonKingPieces({ ...kings, c3: 'N' })).toEqual(['N']);
+  });
+
+  it('фігури обох кольорів — усі, крім королів', () => {
+    expect(
+      getNonKingPieces({ ...kings, c3: 'N', d5: 'p', a8: 'r' })
+    ).toHaveLength(3);
+  });
+});
+
+describe('isInsufficientMaterial', () => {
+  const kings = { e1: 'K', e8: 'k' };
+
+  it('король проти короля — true', () => {
+    expect(isInsufficientMaterial(kings)).toBe(true);
+  });
+
+  it('король і кінь — true', () => {
+    expect(isInsufficientMaterial({ ...kings, c3: 'N' })).toBe(true);
+  });
+
+  it('король і чорний слон — true', () => {
+    expect(isInsufficientMaterial({ ...kings, f8: 'b' })).toBe(true);
+  });
+
+  it('є пішак — false', () => {
+    expect(isInsufficientMaterial({ ...kings, e2: 'P' })).toBe(false);
+  });
+
+  it('є тура — false', () => {
+    expect(isInsufficientMaterial({ ...kings, e5: 'r' })).toBe(false);
+  });
+
+  it('два коні — false', () => {
+    expect(isInsufficientMaterial({ ...kings, b2: 'n', f2: 'N' })).toBe(false);
+  });
+
+  it('слон проти коня — false', () => {
+    expect(isInsufficientMaterial({ ...kings, b2: 'b', f2: 'N' })).toBe(false);
   });
 });
