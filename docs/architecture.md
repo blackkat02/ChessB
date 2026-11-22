@@ -233,7 +233,8 @@ position = {
   розворот за `playerSide`, підсвітка вибраної клітинки.
 - Позначки легальних ходів: точка — хід, кільце — взяття. `selectTargetMarks`
   один раз на всю дошку будує `{ e3: 'move', d5: 'capture' }`
-  (`buildTargetMarks(legalTargets, board, from)`), `ChessBoardView` передає
+  (`buildTargetMarks(legalTargets, board, from)` у `src/redux/game/` —
+  Redux не імпортує з `components/`), `ChessBoardView` передає
   в кожен `Square` лише рядок або `null` — тож `React.memo` перемальовує
   тільки клітинки, чия позначка змінилась.
   - Рушій повертає лише клітинки, тому «це взяття» визначає UI: на клітинці
@@ -263,8 +264,8 @@ Vitest + jsdom + Testing Library; тести лежать поруч із код
 | Шар   | Файли                                                                                                                                                                |
 | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Рушій | `applyMove`, `attacks`, `boardUtils`, `chessHelpers`, `gameStatus`, `legalMoves`, `notation`, `pieceGeometry`, `promotion`, `pseudoMoves`, `index` (контракт фасаду) |
-| Redux | `gameEvents`, `gameOperations` (thunk-и через справжній store), `gameSelectors`, `gameSlice`, `positionSlice`, `uiSlice`, `persistGame`, `store`                     |
-| UI    | `useGameState`, `Clock`, `GameOverModal`, `ChessBoardView`, `buildTargetMarks`                                                                                       |
+| Redux | `gameEvents`, `gameOperations` (thunk-и через справжній store), `gameSelectors`, `buildTargetMarks`, `gameSlice`, `positionSlice`, `uiSlice`, `persistGame`, `store` |
+| UI    | `useGameState`, `Clock`, `GameOverModal`, `ChessBoardView`                                                                                                           |
 
 Розподіл перевірок: шахові правила — у тестах рушія; «хід дійшов до стану»
 — через `attemptMove`; тести слайсів перевіряють лише запис payload

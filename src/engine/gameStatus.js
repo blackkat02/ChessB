@@ -102,3 +102,11 @@ export function isInsufficientMaterial(board) {
 
   return false;
 }
+
+// 'a1' → 'dark', 'h1' → 'light'
+export function getSquareColor(square) {
+  const [file, rank] = square;
+  const sum = 'abcdefgh'.indexOf(file) + Number(rank);
+
+  return sum % 2 === 0 ? 'light' : 'dark';
+}

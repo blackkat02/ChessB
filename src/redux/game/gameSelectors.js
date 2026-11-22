@@ -7,7 +7,7 @@ import {
   selectPosition,
   selectBoard,
 } from '../position/positionSelectors';
-import { buildTargetMarks } from '../../components/ChessBoardView/buildTargetMarks';
+import { buildTargetMarks } from './buildTargetMarks';
 
 // Селектори запису партії. Позиція (дошка, черга, права рокіровки, en
 // passant) — у ../position/positionSelectors.js (docs/layer-separation-step4.md, 4.4).
