@@ -110,12 +110,14 @@ export const attemptMove = (moveData) => (dispatch, getState) => {
   const { payload, status } = buildMovePayload(position, moveData);
   dispatch(moveExecuted(payload));
 
-  // 8. Мат/пат НАСТУПНОГО гравця. Статус уже порахований для позиції після
+  // 8. Мат/пат, недостатність материала(нічия) НАСТУПНОГО гравця. Статус уже порахований для позиції після
   // ходу, тож перечитувати стан через getState() не треба.
   if (status.isCheckmate) {
     dispatch(endGame({ winner: turn, reason: 'checkmate' }));
   } else if (status.isStalemate) {
     dispatch(endGame({ winner: 'draw', reason: 'stalemate' }));
+  } else if (status.isInsufficientMaterial) {
+    dispatch(endGame({ winner: 'draw', reason: 'insufficient-material' }));
   }
 };
 

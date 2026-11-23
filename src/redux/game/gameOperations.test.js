@@ -201,6 +201,21 @@ describe('attemptMove — товстий thunk', () => {
     expect(reason).toBe('stalemate');
   });
 
+  it('взяття останньої фігури з K+B проти K — нічия', () => {
+    // Слон c4 бере коня f7: лишаються K+B проти K.
+    const store = createTestStore({
+      position: { board: { e1: 'K', c4: 'B', f7: 'n', h8: 'k' } },
+    });
+
+    store.dispatch(attemptMove({ from: 'c4', to: 'f7', piece: 'B' }));
+
+    const { history, isGameOver, winner, reason } = store.getState().game;
+    expect(history[0].san).toBe('Bxf7');
+    expect(isGameOver).toBe(true);
+    expect(winner).toBe('draw');
+    expect(reason).toBe('insufficient-material');
+  });
+
   it('після мату хід застосовується без перевірок (аналіз) і має san', () => {
     const store = createTestStore({
       position: {

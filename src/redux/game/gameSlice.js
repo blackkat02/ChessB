@@ -9,7 +9,10 @@ const initialState = {
   history: [],
   plyCount: 0, // кількість зроблених напівходів (ходи = plyCount пар для запису партії)
   winner: null, // COLORS.WHITE, COLORS.BLACK, або 'draw'
-  reason: null, // 'checkmate', 'timeout', 'resignation'
+  // Чому партія закінчилась (null — ще йде):
+  // перемога — 'checkmate', 'timeout', 'resignation';
+  // нічия — 'stalemate', 'draw-agreement', 'insufficient-material'.
+  reason: null,
   isGameOver: false,
   gameId: 0, // зростає з кожною новою партією; UI використовує це як React key, щоб примусово перемонтувати годинники
 };
