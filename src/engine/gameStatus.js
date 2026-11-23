@@ -47,16 +47,18 @@ export function getAllLegalMoves(gameState, color) {
  *
  * @param {{ board, castlingRights, enPassantTarget }} position
  * @param {'w'|'b'} color
- * @returns {{ isCheck: boolean, isCheckmate: boolean, isStalemate: boolean }}
+ * @returns {{ isCheck: boolean, isCheckmate: boolean, isStalemate: boolean, isInsufficientMaterial: boolean }}
  */
 export function getStatus(position, color) {
   const inCheck = isCheck(position.board, color);
   const hasMoves = getAllLegalMoves(position, color).length > 0;
+  const insufficientMaterial = isInsufficientMaterial(position.board);
 
   return {
     isCheck: inCheck,
     isCheckmate: inCheck && !hasMoves,
     isStalemate: !inCheck && !hasMoves,
+    isInsufficientMaterial: insufficientMaterial,
   };
 }
 

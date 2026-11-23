@@ -76,12 +76,24 @@ describe('engine facade', () => {
     const noCastling = (board) =>
       makeGameState(board, { castlingRights: NO_CASTLING });
 
-    it('звичайна позиція → ні шаху, ні мату, ні пату', () => {
+    it('лише королі → недостатньо матеріалу', () => {
       expect(getStatus(noCastling({ e1: 'K', e8: 'k' }), 'w')).toEqual({
         isCheck: false,
         isCheckmate: false,
         isStalemate: false,
+        isInsufficientMaterial: true,
       });
+    });
+
+    it('король і слон проти короля → недостатньо матеріалу', () => {
+      expect(getStatus(noCastling({ e1: 'K', e8: 'k', e5: 'b' }), 'w')).toEqual(
+        {
+          isCheck: false,
+          isCheckmate: false,
+          isStalemate: false,
+          isInsufficientMaterial: true,
+        }
+      );
     });
 
     it('шах із втечею → лише isCheck', () => {
@@ -91,6 +103,7 @@ describe('engine facade', () => {
         isCheck: true,
         isCheckmate: false,
         isStalemate: false,
+        isInsufficientMaterial: false,
       });
     });
 
@@ -109,6 +122,7 @@ describe('engine facade', () => {
         isCheck: true,
         isCheckmate: true,
         isStalemate: false,
+        isInsufficientMaterial: false,
       });
     });
 
@@ -120,6 +134,7 @@ describe('engine facade', () => {
         isCheck: false,
         isCheckmate: false,
         isStalemate: true,
+        isInsufficientMaterial: false,
       });
     });
   });
