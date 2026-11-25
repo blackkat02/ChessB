@@ -4,6 +4,7 @@ import { COLORS } from '../../redux/game/gameConstants';
 const REASON_TITLE = {
   checkmate: 'Checkmate',
   stalemate: 'Stalemate',
+  'insufficient-material': 'Insufficient material',
   timeout: 'Time out',
   resignation: 'Resignation',
   'draw-agreement': 'Draw by agreement',
@@ -27,7 +28,9 @@ const GameOverModal = ({ isOpen, winner, reason, onNewGame, onClose }) => {
         className="w-full max-w-sm rounded-card border border-border bg-surface p-6 text-center shadow-btn"
         onClick={(event) => event.stopPropagation()}
       >
-        <h2 className="text-2xl font-bold text-fg">{REASON_TITLE[reason] ?? 'Game over'}</h2>
+        <h2 className="text-2xl font-bold text-fg">
+          {REASON_TITLE[reason] ?? 'Game over'}
+        </h2>
         <p className="mt-1 text-fg-subtle">{winnerSubtitle(winner)}</p>
 
         <div className="mt-6 flex flex-col gap-2">

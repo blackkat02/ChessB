@@ -5,7 +5,13 @@ import GameOverModal from './GameOverModal';
 describe('GameOverModal', () => {
   it('нічого не рендерить, коли isOpen=false', () => {
     const { container } = render(
-      <GameOverModal isOpen={false} winner="w" reason="checkmate" onNewGame={() => {}} onClose={() => {}} />
+      <GameOverModal
+        isOpen={false}
+        winner="w"
+        reason="checkmate"
+        onNewGame={() => {}}
+        onClose={() => {}}
+      />
     );
 
     expect(container).toBeEmptyDOMElement();
@@ -13,7 +19,13 @@ describe('GameOverModal', () => {
 
   it('показує "Мат" і переможця білих', () => {
     render(
-      <GameOverModal isOpen winner="w" reason="checkmate" onNewGame={() => {}} onClose={() => {}} />
+      <GameOverModal
+        isOpen
+        winner="w"
+        reason="checkmate"
+        onNewGame={() => {}}
+        onClose={() => {}}
+      />
     );
 
     expect(screen.getByText('Checkmate')).toBeInTheDocument();
@@ -22,16 +34,43 @@ describe('GameOverModal', () => {
 
   it('показує "Пат" і нічию', () => {
     render(
-      <GameOverModal isOpen winner="draw" reason="stalemate" onNewGame={() => {}} onClose={() => {}} />
+      <GameOverModal
+        isOpen
+        winner="draw"
+        reason="stalemate"
+        onNewGame={() => {}}
+        onClose={() => {}}
+      />
     );
 
     expect(screen.getByText('Stalemate')).toBeInTheDocument();
     expect(screen.getByText('Draw')).toBeInTheDocument();
   });
 
+  it('показує нічию при недостатності матеріалу', () => {
+    render(
+      <GameOverModal
+        isOpen
+        winner="draw"
+        reason="insufficient-material"
+        onNewGame={() => {}}
+        onClose={() => {}}
+      />
+    );
+
+    expect(screen.getByText('Insufficient material')).toBeInTheDocument();
+    expect(screen.getByText('Draw')).toBeInTheDocument();
+  });
+
   it('показує "Час вичерпано" і переможця чорних', () => {
     render(
-      <GameOverModal isOpen winner="b" reason="timeout" onNewGame={() => {}} onClose={() => {}} />
+      <GameOverModal
+        isOpen
+        winner="b"
+        reason="timeout"
+        onNewGame={() => {}}
+        onClose={() => {}}
+      />
     );
 
     expect(screen.getByText('Time out')).toBeInTheDocument();
@@ -41,7 +80,13 @@ describe('GameOverModal', () => {
   it('кнопка "New game" викликає onNewGame', () => {
     const onNewGame = vi.fn();
     render(
-      <GameOverModal isOpen winner="w" reason="checkmate" onNewGame={onNewGame} onClose={() => {}} />
+      <GameOverModal
+        isOpen
+        winner="w"
+        reason="checkmate"
+        onNewGame={onNewGame}
+        onClose={() => {}}
+      />
     );
 
     fireEvent.click(screen.getByText('New game'));
@@ -51,7 +96,13 @@ describe('GameOverModal', () => {
   it('кнопка "View board" викликає onClose', () => {
     const onClose = vi.fn();
     render(
-      <GameOverModal isOpen winner="w" reason="checkmate" onNewGame={() => {}} onClose={onClose} />
+      <GameOverModal
+        isOpen
+        winner="w"
+        reason="checkmate"
+        onNewGame={() => {}}
+        onClose={onClose}
+      />
     );
 
     fireEvent.click(screen.getByText('View board'));
