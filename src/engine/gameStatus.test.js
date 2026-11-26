@@ -7,6 +7,7 @@ import {
   getNonKingPieces,
   isInsufficientMaterial,
   getSquareColor,
+  canCheckmate,
 } from './gameStatus';
 import { makeGameState, NO_CASTLING } from '../test/fixtures';
 
@@ -195,7 +196,27 @@ describe('getSquareColor', () => {
     expect(getSquareColor('a1')).toBe('dark');
   });
 
-  it('e4 — light', () => {
+  it('h1 — light', () => {
     expect(getSquareColor('h1')).toBe('light');
+  });
+});
+
+describe('canCheckmate', () => {
+  it('в чорних лише король — false', () => {
+    expect(canCheckmate({ e1: 'K', a2: 'P', e8: 'k' }, 'b')).toBe(false);
+  });
+
+  it('на дошці лише королі — false', () => {
+    expect(canCheckmate({ e1: 'K', e8: 'k' }, 'w')).toBe(false);
+  });
+
+  it('в білих є слони однопольні — false', () => {
+    expect(canCheckmate({ e1: 'K', a2: 'B', a4: 'B', e8: 'k' }, 'w')).toBe(
+      false
+    );
+  });
+
+  it('у білих пішак — true', () => {
+    expect(canCheckmate({ e1: 'K', a2: 'P', e8: 'k' }, 'w')).toBe(true);
   });
 });

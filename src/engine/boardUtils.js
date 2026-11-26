@@ -43,3 +43,10 @@ export const coordsToAlgebraic = (row, col) => {
 
   return `${fileChar}${rankChar}`;
 };
+
+// filterBoard({ e1:'K', d1:'Q', e8:'k' }, (p) => p === 'Q')  →  { d1:'Q' }
+export function filterBoard(board, predicate) {
+  return Object.fromEntries(
+    Object.entries(board).filter(([square, piece]) => predicate(piece, square))
+  );
+}

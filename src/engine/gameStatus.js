@@ -5,6 +5,7 @@
 import { getPieceColor, getOpponentColor, getPieceType } from './chessHelpers';
 import { findKingSquare, getLegalMoves } from './legalMoves';
 import { isSquareAttacked } from './attacks';
+import { filterBoard } from './boardUtils';
 
 /**
  * @param {Record<string, string>} board
@@ -130,4 +131,18 @@ export function getSquareColor(square) {
   const sum = 'abcdefgh'.indexOf(file) + Number(rank);
 
   return sum % 2 === 0 ? 'light' : 'dark';
+}
+
+/**
+ * Чи може сторона `color` хоч коли-небудь поставити мат.
+ * Рахується лише матеріал `color` — фігури суперника не допомагають.
+ *
+ * @param {Record<string, string>} board
+ * @param {'w'|'b'} color
+ * @returns {boolean}
+ */
+export function canCheckmate(board, color) {
+  const colorBoard = filterBoard(board, (p) => getPieceColor(p) === color);
+
+  return !isInsufficientMaterial(colorBoard);
 }

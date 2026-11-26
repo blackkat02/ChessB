@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { algebraicToCoords, coordsToAlgebraic } from './boardUtils';
+import {
+  algebraicToCoords,
+  coordsToAlgebraic,
+  filterBoard,
+} from './boardUtils';
 
 describe('boardUtils', () => {
   describe('algebraicToCoords', () => {
@@ -60,10 +64,18 @@ describe('boardUtils', () => {
     });
 
     it('кидає помилку для координат поза межами 0-7', () => {
-      expect(() => coordsToAlgebraic(-1, 0)).toThrow(/Недійсні координати масиву/);
-      expect(() => coordsToAlgebraic(8, 0)).toThrow(/Недійсні координати масиву/);
-      expect(() => coordsToAlgebraic(0, -1)).toThrow(/Недійсні координати масиву/);
-      expect(() => coordsToAlgebraic(0, 8)).toThrow(/Недійсні координати масиву/);
+      expect(() => coordsToAlgebraic(-1, 0)).toThrow(
+        /Недійсні координати масиву/
+      );
+      expect(() => coordsToAlgebraic(8, 0)).toThrow(
+        /Недійсні координати масиву/
+      );
+      expect(() => coordsToAlgebraic(0, -1)).toThrow(
+        /Недійсні координати масиву/
+      );
+      expect(() => coordsToAlgebraic(0, 8)).toThrow(
+        /Недійсні координати масиву/
+      );
     });
   });
 
@@ -77,6 +89,20 @@ describe('boardUtils', () => {
           expect(coordsToAlgebraic(row, col)).toBe(square);
         }
       }
+    });
+  });
+
+  describe('filterBoard', () => {
+    it('залишає фігури за умовою на фігуру', () => {
+      expect(
+        filterBoard({ e1: 'K', d1: 'Q', e8: 'k' }, (p) => p === 'Q')
+      ).toEqual({ d1: 'Q' });
+    });
+
+    it('залишає фігури за умовою горизонталі', () => {
+      expect(
+        filterBoard({ e1: 'K', d1: 'Q', e8: 'k' }, (p, sq) => sq[1] === '1')
+      ).toEqual({ e1: 'K', d1: 'Q' });
     });
   });
 });
