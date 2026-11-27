@@ -1,15 +1,14 @@
 import { describe, it, expect } from 'vitest';
-import { render, act } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { useGameState } from './useGameState';
 import { createTestStore } from '../test/fixtures/store';
 
-function Harness({ onState, onHandlers }) {
-  const gameStateResult = useGameState();
-  onState(gameStateResult.gameState);
-  onHandlers?.(gameStateResult);
-  return null;
-}
+// Хук працює лише всередині <Provider>, тож загортаємо його через wrapper.
+const renderWithStore = (store) =>
+  renderHook(() => useGameState(), {
+    wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
+  });
 
 describe('useGameState — сирі поля годинника й handleTimeUp', () => {
   it('gameState віддає whiteTime/blackTime/turnStartedAt БЕЗ обчислень — так, як у сторі', () => {
@@ -22,20 +21,18 @@ describe('useGameState — сирі поля годинника й handleTimeUp'
       },
     });
 
-    let latestState;
-    render(
-      <Provider store={store}>
-        <Harness onState={(s) => (latestState = s)} />
-      </Provider>
-    );
+    const { result } = renderWithStore(store);
+    const { gameState } = result.current;
 
-    expect(latestState.whiteTime).toBe(111000);
-    expect(latestState.blackTime).toBe(222000);
-    expect(latestState.turnStartedAt).toBe(555);
+    expect(gameState.whiteTime).toBe(111000);
+    expect(gameState.blackTime).toBe(222000);
+    expect(gameState.turnStartedAt).toBe(555);
   });
 
   it('handleTimeUp(color) диспатчить timeExpired — партія завершується таймаутом', () => {
     const store = createTestStore({
+      // У чорних є ферзь — таймаут білих означає перемогу чорних, а не нічию.
+      position: { board: { e1: 'K', e8: 'k', d8: 'q' } },
       game: {
         plyCount: 2, // парне — хід білих
         whiteTime: 0,
@@ -43,19 +40,15 @@ describe('useGameState — сирі поля годинника й handleTimeUp'
       },
     });
 
-    let handlers;
-    render(
-      <Provider store={store}>
-        <Harness onState={() => {}} onHandlers={(h) => (handlers = h)} />
-      </Provider>
-    );
+    const { result } = renderWithStore(store);
 
     act(() => {
-      handlers.handleTimeUp('w');
+      result.current.handleTimeUp('w');
     });
 
-    expect(store.getState().game.isGameOver).toBe(true);
-    expect(store.getState().game.reason).toBe('timeout');
-    expect(store.getState().game.winner).toBe('b');
+    const { game } = store.getState();
+    expect(game.isGameOver).toBe(true);
+    expect(game.reason).toBe('timeout');
+    expect(game.winner).toBe('b');
   });
 });

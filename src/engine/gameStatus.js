@@ -135,7 +135,12 @@ export function getSquareColor(square) {
 
 /**
  * Чи може сторона `color` хоч коли-небудь поставити мат.
- * Рахується лише матеріал `color` — фігури суперника не допомагають.
+ * Ні — якщо в `color` лише король або вся дошка є недостатнім матеріалом.
+ * Фігури суперника враховуються: вони можуть закрити втечу власному королю
+ * (K+N проти K+N — мат можливий).
+ *
+ * Обмеження: позиції, де мат неможливий через заблоковані пішаки,
+ * не розпізнаються — для них потрібен пошук по дереву ходів.
  *
  * @param {Record<string, string>} board
  * @param {'w'|'b'} color
@@ -144,5 +149,7 @@ export function getSquareColor(square) {
 export function canCheckmate(board, color) {
   const colorBoard = filterBoard(board, (p) => getPieceColor(p) === color);
 
-  return !isInsufficientMaterial(colorBoard);
+  if (getNonKingPieces(colorBoard).length === 0) return false;
+
+  return !isInsufficientMaterial(board);
 }

@@ -102,12 +102,12 @@ npx vitest run src/engine --coverage --coverage.include="src/engine/**"
 
 | Модуль | Файл тестів | Що перевіряється |
 |---|---|---|
-| `engine/boardUtils.js` | `boardUtils.test.js` | `algebraicToCoords` / `coordsToAlgebraic`: кути та центр дошки, незалежність від регістру, валідація помилок, round-trip для всіх 64 клітинок |
+| `engine/boardUtils.js` | `boardUtils.test.js` | `algebraicToCoords` / `coordsToAlgebraic`: кути та центр дошки, незалежність від регістру, валідація помилок, round-trip для всіх 64 клітинок, `filterBoard` (умова на фігуру й на клітинку) |
 | `engine/pieceGeometry.js` | `pieceGeometry.test.js` | Зміщення коня й короля, напрямки тури, слона, ферзя |
 | `engine/pseudoMoves.js` | `pseudoMoves.test.js` | Псевдолегальні ходи всіх фігур: блокування, взяття, подвійний хід пішака, en passant |
 | `engine/attacks.js` | `attacks.test.js` | `isSquareAttacked`: атаки кожної фігури, зупинка променя на першій фігурі, фільтр за кольором |
 | `engine/legalMoves.js` | `legalMoves.test.js` | `filterByKingSafety` (зв'язки, вихід із шаху), `getCastlingMoves` (права, блокування, атаковані клітинки) |
-| `engine/gameStatus.js` | `gameStatus.test.js` | `isCheck`, `getAllLegalMoves`, `isCheckmate`, `isStalemate` |
+| `engine/gameStatus.js` | `gameStatus.test.js` | `isCheck`, `getAllLegalMoves`, `isCheckmate`, `isStalemate`, `isInsufficientMaterial`, `getSquareColor`, `canCheckmate` (зокрема `K+N` проти `K+N`, одно- й різнопольні слони) |
 | `engine/promotion.js` | `promotion.test.js` | `requiresPromotion`, `isValidPromotionPiece`, `resolvePromotionPiece` |
 | `engine/notation.js` | `notation.test.js` | `buildSan`: взяття, дизамбігуація, рокіровки, промоція, суфікси `+`/`#` |
 | `engine/applyMove.js` | `applyMove.test.js` | `applyMove` (зокрема `turn`), `nextCastlingRights`, `nextEnPassantTarget`, `getCastlingRookMove` |
@@ -116,13 +116,13 @@ npx vitest run src/engine --coverage --coverage.include="src/engine/**"
 | `redux/game/gameSlice.js` | `gameSlice.test.js` | Запис партії з payload `moveExecuted` (history, годинник, `analysis`), `newGameStarted`, `endGame` |
 | `redux/position/positionSlice.js` | `positionSlice.test.js` | Початкова позиція, `moveExecuted` кладе `payload.position`, `newGameStarted` |
 | `redux/ui/uiSlice.js` | `uiSlice.test.js` | `setSelection`, скидання вибору на `moveExecuted`, `playerSide` з `newGameStarted` |
-| `redux/game/gameOperations.js` | `gameOperations.test.js` | `attemptMove` через справжній store (легальність, зв'язка, промоція, SAN, мат, пат, аналіз), `timeExpired`, здача, нічия |
+| `redux/game/gameOperations.js` | `gameOperations.test.js` | `attemptMove` через справжній store (легальність, зв'язка, промоція, SAN, мат, пат, недостатній матеріал, аналіз), `timeExpired` (перемога або нічия залежно від `canCheckmate`), здача, нічия |
 | `redux/game/gameSelectors.js` | `gameSelectors.test.js` | `selectMovePairs` (зокрема мемоізація), `selectClockRemaining` |
 | `redux/persistGame.js` | `persistGame.test.js` | Збереження/читання `localStorage`: round-trip, версія схеми, битий JSON, помилки квоти |
 | `redux/store.js` | `store.test.jsx` | Відновлення стану при старті, таймаут «flag on reconnect», що саме записується в `localStorage` |
 | `hooks/useGameState.js` | `useGameState.test.jsx` | Сирі поля годинника, `handleTimeUp` |
 | `components/Clock` | `Clock.test.jsx` | Формат часу, тік, одноразовий `onTimeUp`, очищення таймера, `visibilitychange` |
-| `components/GameOverModal` | `GameOverModal.test.jsx` | Тексти для мату, пату й таймауту, кнопки «New game» та «View board» |
+| `components/GameOverModal` | `GameOverModal.test.jsx` | Тексти для мату, пату, недостатнього матеріалу й таймауту, кнопки «New game» та «View board» |
 
 ## Документація
 

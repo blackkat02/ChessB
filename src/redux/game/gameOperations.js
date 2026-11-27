@@ -12,6 +12,7 @@ import {
   getOpponentColor,
   requiresPromotion,
   isValidPromotionPiece,
+  canCheckmate,
 } from '../../engine';
 
 // Усе, що редюсер раніше рахував сам, тепер рахує thunk через фасад рушія:
@@ -140,9 +141,13 @@ export const timeExpired = (color) => (dispatch, getState) => {
   // прийшло ще одне повідомлення про той самий таймаут).
   if (gameSelectors.selectClockRemaining(state, color) > 0) return;
 
+  // FIDE 6.9: перемога за часом лише тоді, коли суперникові є чим поставити мат.
+  const opponent = getOpponentColor(color);
+  const board = positionSelectors.selectBoard(state);
+
   dispatch(
     endGame({
-      winner: getOpponentColor(color),
+      winner: canCheckmate(board, opponent) ? opponent : 'draw',
       reason: 'timeout',
       timedOutColor: color,
     })

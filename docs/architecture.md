@@ -67,17 +67,18 @@ position = {
 
 ### 2.2. Публічний API (фасад)
 
-| Функція                                                    | Повертає                                | Примітка                                                                                                                  |
-| ---------------------------------------------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| `getLegalMoves(position, from)`                            | `string[]` цільових клітинок            | геометрія + безпека короля + рокіровка; колір — з фігури, черги не знає; порожня клітинка → `[]`; порядок не гарантований |
-| `isMoveLegal(position, from, to)`                          | `boolean`                               | `getLegalMoves(...).includes(to)`                                                                                         |
-| `applyMove(position, move)`                                | `{ position, details }`                 | **новий** об'єкт, вхід не змінюється; `turn` — суперник того, хто ходив (колір з фігури)                                  |
-| `getStatus(position, color)`                               | `{ isCheck, isCheckmate, isStalemate }` | легальні ходи рахуються один раз                                                                                          |
-| `toSan(positionBefore, move, status)`                      | `'Nbd2+'`                               | `buildSan`; `status` — суперника **після** ходу                                                                           |
-| `getPieceColor`, `getOpponentColor`                        | колір                                   |                                                                                                                           |
-| `getPieceType(piece)`                                      | `'P'`, `'N'`, … або `null`              | тип без кольору; порожня клітинка → `null`. Рушій перевіряє тип фігури лише через неї                                     |
-| `requiresPromotion(piece, to)`, `isValidPromotionPiece(p)` | `boolean`                               |                                                                                                                           |
-| `COLORS`                                                   | `{ WHITE: 'w', BLACK: 'b' }`            | Redux ре-експортує для UI через `gameConstants.js`                                                                        |
+| Функція                                                    | Повертає                                                        | Примітка                                                                                                                  |
+| ---------------------------------------------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `getLegalMoves(position, from)`                            | `string[]` цільових клітинок                                    | геометрія + безпека короля + рокіровка; колір — з фігури, черги не знає; порожня клітинка → `[]`; порядок не гарантований |
+| `isMoveLegal(position, from, to)`                          | `boolean`                                                       | `getLegalMoves(...).includes(to)`                                                                                         |
+| `applyMove(position, move)`                                | `{ position, details }`                                         | **новий** об'єкт, вхід не змінюється; `turn` — суперник того, хто ходив (колір з фігури)                                  |
+| `getStatus(position, color)`                               | `{ isCheck, isCheckmate, isStalemate, isInsufficientMaterial }` | легальні ходи рахуються один раз; `isInsufficientMaterial` — про всю дошку, не про `color`                                |
+| `canCheckmate(board, color)`                               | `boolean`                                                       | чи може `color` колись поставити мат; див. «Тонкі місця» в 2.3                                                            |
+| `toSan(positionBefore, move, status)`                      | `'Nbd2+'`                                                       | `buildSan`; `status` — суперника **після** ходу                                                                           |
+| `getPieceColor`, `getOpponentColor`                        | колір                                                           |                                                                                                                           |
+| `getPieceType(piece)`                                      | `'P'`, `'N'`, … або `null`                                      | тип без кольору; порожня клітинка → `null`. Рушій перевіряє тип фігури лише через неї                                     |
+| `requiresPromotion(piece, to)`, `isValidPromotionPiece(p)` | `boolean`                                                       |                                                                                                                           |
+| `COLORS`                                                   | `{ WHITE: 'w', BLACK: 'b' }`                                    | Redux ре-експортує для UI через `gameConstants.js`                                                                        |
 
 `move = { from, to, piece, promotion? }`. Без `promotion` пішак на
 останньому ряду стає ферзем.
@@ -92,11 +93,11 @@ position = {
 | `pseudoMoves.js`                                   | псевдолегальні ходи фігури (без своїх фігур на цілі, з en passant)                     |
 | `attacks.js`                                       | `isSquareAttacked(board, square, byColor)`                                             |
 | `legalMoves.js`                                    | `filterByKingSafety`, `getCastlingMoves`, `getLegalMoves`                              |
-| `gameStatus.js`                                    | `isCheck`, `getAllLegalMoves`, `getStatus`                                             |
+| `gameStatus.js`                                    | `isCheck`, `getAllLegalMoves`, `getStatus`, `isInsufficientMaterial`, `canCheckmate`   |
 | `applyMove.js`                                     | застосування ходу, `nextCastlingRights`, `nextEnPassantTarget`, хід тури при рокіровці |
 | `notation.js`                                      | SAN зі строгою дизамбігуацією (через легальні ходи), `+`/`#`, `=Q`, `O-O`/`O-O-O`      |
 | `promotion.js`                                     | промоція: перевірка, дефолт-ферзь                                                      |
-| `boardUtils.js`, `chessHelpers.js`, `constants.js` | нотація ↔ координати, колір фігури, `COLORS`                                          |
+| `boardUtils.js`, `chessHelpers.js`, `constants.js` | нотація ↔ координати, `filterBoard(board, predicate)`, колір фігури, `COLORS`         |
 
 Тонкі місця:
 
@@ -104,6 +105,12 @@ position = {
   `getCastlingMoves` сам перевіряє шах, прохід і ціль короля.
 - Права рокіровки зникають і при ході короля/тури, і при **взятті** тури на
   її стартовій клітинці.
+- Недостатній матеріал (FIDE 5.2.2): `K-K`, `K+N-K`, `K+B-K`, слони лише
+  одного кольору клітинок (будь-яка кількість, у будь-якої сторони). **Не**
+  нічия: `K+N+N-K`, `K+N-K+N`, `K+B-K+N`, різнопольні слони — мат можливий,
+  якщо суперник «допоможе», а 5.2.2 вимагає неможливості мату будь-якою
+  послідовністю ходів. З тієї ж причини `canCheckmate` дивиться на всю
+  дошку, а не лише на фігури `color`.
 - Bitboards та інші оптимізації свідомо не робились: для гри людини
   швидкості досить (`archive/move-validation.md`, розділ 3.1).
 
@@ -136,8 +143,9 @@ position = {
 Події оголошені в `game/gameEvents.js` через `createAction`. Типи `game/...`
 не змінюються: на них зав'язаний persist.
 
-`reason`: `checkmate`, `stalemate`, `timeout`, `resignation`,
-`draw-agreement`.
+`reason`: `checkmate`, `stalemate`, `insufficient-material`, `timeout`,
+`resignation`, `draw-agreement`. `timeout` буває і з `winner: 'draw'`
+(див. `timeExpired`).
 
 ### 3.3. Thunk-и (`game/gameOperations.js`)
 
@@ -150,11 +158,15 @@ position = {
    промоції → нічого не диспатчиться.
 4. `buildMovePayload`: `applyMove` → `getStatus` суперника → `toSan` →
    `timestamp = Date.now()` → один `dispatch(moveExecuted(payload))`.
-5. Мат → `endGame({ winner: turn, reason: 'checkmate' })`; пат → нічия.
-   Стан після диспатчу не перечитується: статус уже пораховано.
+5. Мат → `endGame({ winner: turn, reason: 'checkmate' })`; пат або
+   недостатній матеріал → нічия. Стан після диспатчу не перечитується:
+   статус уже пораховано.
 
 **`timeExpired(color)`** — ще раз перевіряє залишок живим селектором
-(захист від гонки), потім `endGame` з `reason: 'timeout'`.
+(захист від гонки), потім `endGame` з `reason: 'timeout'`. Переможець —
+суперник, якщо `canCheckmate(board, суперник)`, інакше `'draw'` (FIDE 6.9).
+`reason` лишається `'timeout'` і для нічиєї: лише за ним слайс фіксує
+годинник того, хто прострочив, у 0.
 **`resignGame()`** — здається `playerSide`, незалежно від черги.
 **`offerDraw()`** — нічия за згодою (підтвердження — `window.confirm` в UI).
 

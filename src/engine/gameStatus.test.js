@@ -219,4 +219,22 @@ describe('canCheckmate', () => {
   it('у білих пішак — true', () => {
     expect(canCheckmate({ e1: 'K', a2: 'P', e8: 'k' }, 'w')).toBe(true);
   });
+
+  it('K+N проти K+N — true', () => {
+    expect(canCheckmate({ e1: 'K', g1: 'N', e8: 'k', b8: 'n' }, 'b')).toBe(
+      true
+    );
+  });
+
+  it('слон проти слона, однопольні (c1 і f8 темні) — false', () => {
+    expect(canCheckmate({ e1: 'K', c1: 'B', e8: 'k', f8: 'b' }, 'b')).toBe(
+      false
+    );
+  });
+
+  it('слон проти слона, різнопольні (c1 темна, c8 світла) — true', () => {
+    expect(canCheckmate({ e1: 'K', c1: 'B', e8: 'k', c8: 'b' }, 'b')).toBe(
+      true
+    );
+  });
 });

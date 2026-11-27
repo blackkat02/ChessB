@@ -41,23 +41,14 @@ export const useGameState = () => {
 
   const handleSquareClick = useCallback(
     (squareId) => {
-      if (pendingPromotion) return; // дошка заблокована, поки відкрита модалка вибору фігури
+      if (pendingPromotion) return;
 
-      console.log('--- [CLICK START] ---', squareId);
       const piece = board[squareId];
-      console.log(
-        '--- [piece = board[squareId]] ---',
-        piece,
-        squareId,
-        turn,
-        selectedSquare
-      );
+      const isOwnPiece = piece && getPieceColor(piece) === turn;
 
       if (!selectedSquare) {
-        if (piece && getPieceColor(piece) === turn) {
+        if (isOwnPiece) {
           dispatch(setSelection(squareId));
-        } else if (piece && getPieceColor(piece) !== turn) {
-          console.log('--- [[хід чужим кольором]] ---');
         }
         return;
       }
@@ -77,23 +68,13 @@ export const useGameState = () => {
 
       const movingPiece = board[selectedSquare];
 
+      const move = { from: selectedSquare, to: squareId, piece: movingPiece };
+
       if (requiresPromotion(movingPiece, squareId)) {
-        setPendingPromotion({
-          from: selectedSquare,
-          to: squareId,
-          piece: movingPiece,
-        });
+        setPendingPromotion(move);
         return;
       }
-
-      // Якщо вже щось вибрано — намагаємося ходити
-      dispatch(
-        attemptMove({
-          from: selectedSquare,
-          to: squareId,
-          piece: movingPiece,
-        })
-      );
+      dispatch(attemptMove(move));
     },
     [dispatch, board, selectedSquare, turn, pendingPromotion]
   );

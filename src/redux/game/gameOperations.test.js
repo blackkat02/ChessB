@@ -264,11 +264,45 @@ describe('timeExpired', () => {
 
   it('завершує партію перемогою суперника кольору, чий час вичерпався', () => {
     const store = createTestStore({
+      // У чорних є ферзь — їм є чим поставити мат, тож таймаут = перемога.
+      position: { board: { e1: 'K', e8: 'k', d8: 'q' } },
       game: {
         plyCount: 2, // парне число — хід білих, і саме їхній час вичерпався
         whiteTime: 0,
         turnStartedAt: Date.now(),
       },
+    });
+
+    store.dispatch(timeExpired('w'));
+
+    expect(store.getState().game).toMatchObject({
+      isGameOver: true,
+      winner: 'b',
+      reason: 'timeout',
+    });
+  });
+
+  // FIDE 6.9: таймаут — нічия, якщо суперник не може поставити мат.
+  it('нічия, якщо в суперника лише король (навіть коли в того, хто прострочив, є пішак)', () => {
+    const store = createTestStore({
+      position: { board: { e1: 'K', a2: 'P', e8: 'k' } },
+      game: { plyCount: 2, whiteTime: 0, turnStartedAt: Date.now() },
+    });
+
+    store.dispatch(timeExpired('w'));
+
+    expect(store.getState().game).toMatchObject({
+      isGameOver: true,
+      winner: 'draw',
+      reason: 'timeout', // саме 'timeout' — слайс фіксує годинник у 0 лише за ним
+      whiteTime: 0,
+    });
+  });
+
+  it('K+N проти K+N — перемога суперника: білий кінь може закрити втечу своєму королю', () => {
+    const store = createTestStore({
+      position: { board: { e1: 'K', g1: 'N', e8: 'k', b8: 'n' } },
+      game: { plyCount: 2, whiteTime: 0, turnStartedAt: Date.now() },
     });
 
     store.dispatch(timeExpired('w'));
